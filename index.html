@@ -10,6 +10,8 @@
 <meta property="og:description" content="Pon tu calle y compite en 10 recorridos reales de tu barrio. Gratis, sin registro.">
 <meta property="og:url" content="https://55europe.com/">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://55europe.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0b0f14">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FFD600'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' font-family='Arial' font-weight='900'%3ECR%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -92,6 +94,9 @@ footer{border-top:1px solid var(--line);padding:18px 16px;text-align:center;font
 .leaflet-div-icon{background:none;border:0}
 @media (max-width:640px){
   .steps,.routes{grid-template-columns:1fr}
+  .hud{grid-template-columns:1fr 1fr}
+  .hud .street{grid-column:1/-1}
+  .hud b{font-size:18px}
   .map{height:46vh}
   .map.race{height:48vh}
   .lead{font-size:16px}
@@ -175,7 +180,7 @@ footer{border-top:1px solid var(--line);padding:18px 16px;text-align:center;font
     <h2 id="stop-title"></h2>
     <p class="note" data-t="stopHint"></p>
     <div class="checks" id="checks"></div>
-    <p class="note">⏱ <b id="stop-time">0:00</b></p>
+    <p class="note">⏱ <b id="stop-time">0:00</b> · 📏 <b id="stop-dist">0 m</b></p>
   </section>
 
   <!-- RESULT -->
@@ -451,14 +456,16 @@ function startRace(){
   runnerMarker = L.marker(c[0], {icon:icon(state.runner.em,'runner-pin'), zIndexOffset:1000}).addTo(m);
   m.fitBounds(routeLine.getBounds(), {padding:[30,30]});
   setTimeout(function(){ m.invalidateSize(); m.fitBounds(routeLine.getBounds(), {padding:[30,30]}); }, 80);
+  if (state.route.fallback) { $('h-street').textContent = t('routeFallback'); }
   race = {t:0, d:0, stamina:1, sprint:false, last:performance.now(), done:false, follow:0};
   $('h-street').textContent = state.street || '—';
   requestAnimationFrame(tick);
 }
 function setSprint(on){ if (!race || race.done) return; race.sprint = on; $('sprint').classList.toggle('on', on); }
 var sp = $('sprint');
-['pointerdown'].forEach(function(e){ sp.addEventListener(e, function(ev){ ev.preventDefault(); setSprint(true); }); });
-['pointerup','pointerleave','pointercancel'].forEach(function(e){ sp.addEventListener(e, function(){ setSprint(false); }); });
+sp.addEventListener('pointerdown', function(ev){ ev.preventDefault(); try{ sp.setPointerCapture(ev.pointerId); }catch(e){} setSprint(true); });
+sp.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+['pointerup','pointercancel','lostpointercapture'].forEach(function(e){ sp.addEventListener(e, function(){ setSprint(false); }); });
 document.addEventListener('keydown', function(e){ if (e.code === 'Space' && $('s-race').classList.contains('on')) { e.preventDefault(); setSprint(true); } });
 document.addEventListener('keyup', function(e){ if (e.code === 'Space') setSprint(false); });
 function tick(now){
@@ -503,6 +510,7 @@ function arrive(){
   var p = state.route.place;
   show('s-stop');
   $('stop-title').textContent = PLACES[p.type].ic + ' ' + t('arrive', {p:placeLabel(p)});
+  $('stop-dist').textContent = fmtDist(state.route.len);
   var box = $('checks'); box.innerHTML = '';
   var items = PLACES[p.type].c[LANG], left = items.length;
   items.forEach(function(it){
@@ -523,7 +531,7 @@ function arrive(){
 
 /* ---------------- result + ranking ---------------- */
 function rankKey(){ return 'calle-real:' + norm(state.street) + ':' + norm(state.city) + ':' + state.route.id; }
-function norm(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+function norm(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
 var lastSaved = null;
 function finish(){
   show('s-result');
