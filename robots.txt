@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://55europe.com/sitemap.xml
