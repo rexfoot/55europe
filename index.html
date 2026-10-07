@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Calle Real — Corre desde tu puerta por tu barrio real</title>
+<meta name="description" content="Juego gratis: pon la puerta de tu casa y compite a pie en 10 recorridos reales de tu barrio, generados con OpenStreetMap.">
+<link rel="canonical" href="https://55europe.com/">
+<meta property="og:title" content="Calle Real — Corre desde tu puerta">
+<meta property="og:description" content="Pon tu calle y compite en 10 recorridos reales de tu barrio. Gratis, sin registro.">
+<meta property="og:url" content="https://55europe.com/">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0b0f14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FFD600'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' font-family='Arial' font-weight='900'%3ECR%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--bg:#0b0f14;--card:#141a22;--line:#26303c;--tx:#fff;--tx2:#b9c2cd;--y:#FFD600;--g:#39FF14;--r:#ff4d4d}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+a{color:var(--y)}
+.app{min-height:100%;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.logo{font-weight:900;letter-spacing:.04em;font-size:18px}
+.logo b{color:var(--y)}
+.lang{display:flex;gap:4px}
+.lang button{background:none;border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:700;color:var(--tx2);cursor:pointer}
+.lang button.on{background:var(--y);color:#000;border-color:var(--y)}
+main{flex:1;width:100%;max-width:960px;margin:0 auto;padding:20px 16px 32px}
+.screen{display:none}
+.screen.on{display:block}
+h1{font-size:clamp(34px,8vw,60px);line-height:1.02;font-weight:900;letter-spacing:-.02em}
+h1 span{color:var(--y)}
+h2{font-size:clamp(24px,5vw,34px);font-weight:900;margin-bottom:8px}
+.lead{color:var(--tx2);font-size:18px;margin:14px 0 22px;max-width:620px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 24px;border-radius:14px;border:0;background:var(--y);color:#000;font-weight:900;font-size:16px;cursor:pointer;text-decoration:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--tx);border:1px solid var(--line)}
+.btn.green{background:var(--g)}
+.btn.w{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.note{font-size:13px;color:var(--tx2)}
+.note.g{color:var(--g)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0}
+.steps .card b{display:block;color:var(--y);font-size:13px;letter-spacing:.1em}
+input.big{width:100%;min-height:54px;border-radius:14px;border:1px solid var(--line);background:#0f141b;padding:0 16px;font-size:17px;outline:none}
+input.big:focus{border-color:var(--y)}
+.results{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.results button{text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer}
+.results button:hover,.results button:focus{border-color:var(--y);outline:none}
+.results small{display:block;color:var(--tx2)}
+.map{height:52vh;min-height:300px;border-radius:18px;overflow:hidden;border:1px solid var(--line);margin:14px 0;background:#e8e4dc}
+.map.race{height:58vh}
+.routes{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+.routes button{display:flex;gap:12px;align-items:center;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer}
+.routes button:hover,.routes button:focus{border-color:var(--y);outline:none}
+.routes button[aria-pressed=true]{border-color:var(--y);background:#1d1a05}
+.routes .ic{font-size:26px;width:40px;text-align:center}
+.routes small{display:block;color:var(--tx2)}
+.chars{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:14px 0}
+.chars button{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 10px;cursor:pointer;text-align:center}
+.chars button[aria-pressed=true]{border-color:var(--y);background:#1d1a05}
+.chars .em{font-size:36px;display:block}
+.chars small{display:block;color:var(--tx2);font-size:12px}
+.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hud div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.hud small{display:block;color:var(--tx2);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.hud b{font-size:20px;font-variant-numeric:tabular-nums}
+.hud .street b{font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stamina{height:10px;background:#222a35;border-radius:10px;overflow:hidden;margin:10px 0}
+.stamina i{display:block;height:100%;width:100%;background:var(--g);transition:width .1s}
+.sprint{width:100%;min-height:68px;font-size:20px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.sprint.on{background:var(--g)}
+.checks{display:flex;flex-direction:column;gap:10px;margin:16px 0}
+.checks button{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 16px;background:var(--card);border:1px solid var(--line);border-radius:14px;cursor:pointer;font-size:17px;text-align:left}
+.checks button[aria-pressed=true]{border-color:var(--g);color:var(--g)}
+.checks button span{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;flex:none}
+.checks button[aria-pressed=true] span{border-color:var(--g);background:var(--g);color:#000}
+.bigtime{font-size:clamp(48px,14vw,88px);font-weight:900;color:var(--y);font-variant-numeric:tabular-nums;line-height:1}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;font-size:15px}
+th{color:var(--tx2);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+tr.me td{color:var(--y);font-weight:800}
+.loader{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--y);border-radius:50%;animation:sp 1s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+.err{color:var(--r);margin-top:10px;font-weight:600}
+footer{border-top:1px solid var(--line);padding:18px 16px;text-align:center;font-size:13px;color:var(--tx2)}
+.home-pin{font-size:28px;line-height:1}
+.runner-pin{font-size:30px;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.leaflet-div-icon{background:none;border:0}
+@media (max-width:640px){
+  .steps,.routes{grid-template-columns:1fr}
+  .map{height:46vh}
+  .map.race{height:48vh}
+  .lead{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="logo">CALLE <b>REAL</b></div>
+  <div class="lang" role="group" aria-label="Idioma">
+    <button data-l="es">ES</button><button data-l="fr">FR</button><button data-l="en">EN</button>
+  </div>
+</header>
+
+<main>
+  <!-- INTRO -->
+  <section class="screen on" id="s-intro">
+    <h1 data-t="introTitle"></h1>
+    <p class="lead" data-t="introLead"></p>
+    <button class="btn" id="go-start" data-t="start"></button>
+    <div class="steps">
+      <div class="card"><b>01</b><span data-t="step1"></span></div>
+      <div class="card"><b>02</b><span data-t="step2"></span></div>
+      <div class="card"><b>03</b><span data-t="step3"></span></div>
+    </div>
+    <p class="note g" data-t="privacy"></p>
+    <p class="note" style="margin-top:8px" data-t="credits"></p>
+  </section>
+
+  <!-- SEARCH -->
+  <section class="screen" id="s-search">
+    <h2 data-t="searchTitle"></h2>
+    <p class="note" data-t="searchHint" style="margin-bottom:12px"></p>
+    <input class="big" id="q" type="search" autocomplete="off" data-tp="searchPh" aria-label="Dirección">
+    <div class="results" id="results" aria-live="polite"></div>
+    <p class="note g" style="margin-top:12px" data-t="privacy"></p>
+  </section>
+
+  <!-- CONFIRM -->
+  <section class="screen" id="s-confirm">
+    <h2 data-t="confirmTitle"></h2>
+    <p class="note" data-t="confirmHint"></p>
+    <div class="map" id="map-confirm"></div>
+    <div class="row"><button class="btn" id="go-confirm" data-t="confirmBtn"></button><button class="btn ghost" id="back-search" data-t="back"></button></div>
+    <p class="err" id="confirm-err" hidden></p>
+  </section>
+
+  <!-- ROUTES -->
+  <section class="screen" id="s-routes">
+    <h2 data-t="routesTitle"></h2>
+    <p class="note" id="routes-status"></p>
+    <div class="routes" id="routes"></div>
+    <div class="row"><button class="btn" id="go-route" disabled data-t="next"></button><button class="btn ghost" id="back-confirm" data-t="back"></button></div>
+  </section>
+
+  <!-- CHARACTERS -->
+  <section class="screen" id="s-chars">
+    <h2 data-t="charsTitle"></h2>
+    <p class="note" id="route-info"></p>
+    <div class="chars" id="chars"></div>
+    <div class="row"><button class="btn" id="go-race" disabled data-t="ready"></button><button class="btn ghost" id="back-routes" data-t="back"></button></div>
+  </section>
+
+  <!-- RACE -->
+  <section class="screen" id="s-race">
+    <div class="hud">
+      <div><small data-t="time"></small><b id="h-time">0:00</b></div>
+      <div><small data-t="dist"></small><b id="h-dist">0 m</b></div>
+      <div class="street"><small data-t="street"></small><b id="h-street">—</b></div>
+    </div>
+    <div class="map race" id="map-race"></div>
+    <div class="stamina" aria-hidden="true"><i id="stam"></i></div>
+    <button class="btn green sprint" id="sprint" data-t="sprint"></button>
+    <p class="note" style="margin-top:8px" data-t="sprintHint"></p>
+  </section>
+
+  <!-- STOP -->
+  <section class="screen" id="s-stop">
+    <h2 id="stop-title"></h2>
+    <p class="note" data-t="stopHint"></p>
+    <div class="checks" id="checks"></div>
+    <p class="note">⏱ <b id="stop-time">0:00</b></p>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="s-result">
+    <p class="note" data-t="yourTime"></p>
+    <div class="bigtime" id="final-time">0:00</div>
+    <p class="note" id="final-info" style="margin:8px 0 16px"></p>
+    <div class="card" id="save-box">
+      <label for="pname" class="note" data-t="yourName"></label>
+      <div class="row" style="margin-top:8px"><input class="big" id="pname" maxlength="16" style="flex:1;min-width:160px"><button class="btn" id="save" data-t="save"></button></div>
+    </div>
+    <h2 style="margin-top:22px" data-t="ranking"></h2>
+    <p class="note" data-t="rankHint"></p>
+    <table><thead><tr><th>#</th><th data-t="name"></th><th data-t="time"></th><th data-t="runner"></th></tr></thead><tbody id="rank"></tbody></table>
+    <div class="row" style="margin-top:18px">
+      <button class="btn" id="again" data-t="again"></button>
+      <button class="btn ghost" id="other" data-t="otherRoute"></button>
+      <a class="btn ghost" id="share" target="_blank" rel="noopener" data-t="share"></a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p data-t="footer"></p>
+  <p style="margin-top:6px"><span data-t="contact"></span> <a href="mailto:footrexofficial@gmail.com">footrexofficial@gmail.com</a></p>
+  <p style="margin-top:6px" data-t="credits"></p>
+</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------------- i18n ---------------- */
+var T = {
+ es:{introTitle:'Corre desde <span>tu puerta.</span>',introLead:'Pon la dirección de tu casa y compite a pie en 10 recorridos reales de tu barrio: el súper, la farmacia, el parque, el campo de fútbol… ¿Quién llega antes?',start:'Empezar',step1:'Escribe tu calle y tu número.',step2:'Elige un recorrido real y un corredor.',step3:'Corre, haz la parada y entra en el ranking.',privacy:'🔒 Tu dirección no sale de tu dispositivo, salvo para la búsqueda en el mapa.',credits:'Mapas © OpenStreetMap contributors · © CARTO · Búsqueda: Photon · Rutas: OSRM',searchTitle:'¿Dónde está tu puerta?',searchHint:'Calle + número + ciudad. Ejemplo: 23 rue des Merles, Mulhouse',searchPh:'Calle, número, ciudad',noResults:'No encuentro esa dirección. Prueba con la ciudad.',confirmTitle:'¿Es aquí tu puerta?',confirmHint:'Arrastra el pin si hace falta.',confirmBtn:'Sí, es aquí',back:'Atrás',routesTitle:'Elige tu recorrido',searching:'Buscando lugares reales cerca de tu casa…',found:'{n} recorridos encontrados.',noneFound:'No he encontrado lugares cerca. Prueba otra dirección.',next:'Siguiente',charsTitle:'Elige tu corredor',ready:'¡A correr!',time:'Tiempo',dist:'Distancia',street:'Calle',sprint:'MANTÉN PARA ESPRINTAR',sprintHint:'Mantén pulsado (o la barra espaciadora) para ir más rápido. Cuidado con la energía.',stopHint:'Marca las 3 cosas para terminar. ¡El reloj sigue corriendo!',yourTime:'Tu tiempo',yourName:'Tu nombre para el ranking',save:'Guardar',ranking:'Ranking de esta calle',rankHint:'Guardado solo en este dispositivo.',name:'Nombre',runner:'Corredor',again:'Repetir',otherRoute:'Otro recorrido',share:'Compartir por WhatsApp',footer:'Calle Real — juego gratis en 55europe.com',contact:'Contacto:',slow:'El servicio de mapas va lento. Inténtalo en unos minutos.',routeFallback:'Ruta aproximada (línea recta): el servicio de rutas no responde.',shareText:'He hecho {t} corriendo hasta {p} en Calle Real. ¿Me ganas?',arrive:'Has llegado a: {p}',minWalk:'≈ {m} min a pie'},
+ fr:{introTitle:'Cours depuis <span>ta porte.</span>',introLead:'Entre l’adresse de ta maison et affronte 10 parcours réels de ton quartier : le supermarché, la pharmacie, le parc, le terrain de foot… Qui arrive le premier ?',start:'Commencer',step1:'Écris ta rue et ton numéro.',step2:'Choisis un parcours réel et un coureur.',step3:'Cours, fais l’arrêt et entre dans le classement.',privacy:'🔒 Ton adresse ne quitte pas ton appareil, sauf pour la recherche sur la carte.',credits:'Cartes © OpenStreetMap contributors · © CARTO · Recherche : Photon · Itinéraires : OSRM',searchTitle:'Où est ta porte ?',searchHint:'Rue + numéro + ville. Exemple : 23 rue des Merles, Mulhouse',searchPh:'Rue, numéro, ville',noResults:'Adresse introuvable. Essaie avec la ville.',confirmTitle:'C’est bien ta porte ?',confirmHint:'Déplace l’épingle si besoin.',confirmBtn:'Oui, c’est ici',back:'Retour',routesTitle:'Choisis ton parcours',searching:'Recherche de lieux réels près de chez toi…',found:'{n} parcours trouvés.',noneFound:'Aucun lieu trouvé à proximité. Essaie une autre adresse.',next:'Suivant',charsTitle:'Choisis ton coureur',ready:'Partez !',time:'Temps',dist:'Distance',street:'Rue',sprint:'MAINTIENS POUR SPRINTER',sprintHint:'Maintiens appuyé (ou la barre d’espace) pour aller plus vite. Attention à l’énergie.',stopHint:'Coche les 3 choses pour finir. Le chrono tourne !',yourTime:'Ton temps',yourName:'Ton nom pour le classement',save:'Enregistrer',ranking:'Classement de cette rue',rankHint:'Enregistré seulement sur cet appareil.',name:'Nom',runner:'Coureur',again:'Rejouer',otherRoute:'Autre parcours',share:'Partager sur WhatsApp',footer:'Calle Real — jeu gratuit sur 55europe.com',contact:'Contact :',slow:'Le service de cartes est lent. Réessaie dans quelques minutes.',routeFallback:'Itinéraire approximatif (ligne droite) : le service d’itinéraires ne répond pas.',shareText:'J’ai fait {t} jusqu’à {p} sur Calle Real. Tu me bats ?',arrive:'Arrivée : {p}',minWalk:'≈ {m} min à pied'},
+ en:{introTitle:'Run from <span>your door.</span>',introLead:'Enter your home address and race on foot along 10 real routes in your neighbourhood: the supermarket, the pharmacy, the park, the football pitch… Who gets there first?',start:'Start',step1:'Type your street and number.',step2:'Pick a real route and a runner.',step3:'Run, make the stop and get on the leaderboard.',privacy:'🔒 Your address never leaves your device, except for the map search.',credits:'Maps © OpenStreetMap contributors · © CARTO · Search: Photon · Routes: OSRM',searchTitle:'Where is your door?',searchHint:'Street + number + city. Example: 23 rue des Merles, Mulhouse',searchPh:'Street, number, city',noResults:'Address not found. Try adding the city.',confirmTitle:'Is this your door?',confirmHint:'Drag the pin if needed.',confirmBtn:'Yes, it’s here',back:'Back',routesTitle:'Choose your route',searching:'Looking for real places near your home…',found:'{n} routes found.',noneFound:'No places found nearby. Try another address.',next:'Next',charsTitle:'Choose your runner',ready:'Go!',time:'Time',dist:'Distance',street:'Street',sprint:'HOLD TO SPRINT',sprintHint:'Hold (or the space bar) to go faster. Watch your energy.',stopHint:'Tick the 3 items to finish. The clock is still running!',yourTime:'Your time',yourName:'Your name for the leaderboard',save:'Save',ranking:'Leaderboard for this street',rankHint:'Saved on this device only.',name:'Name',runner:'Runner',again:'Play again',otherRoute:'Another route',share:'Share on WhatsApp',footer:'Calle Real — free game on 55europe.com',contact:'Contact:',slow:'The map service is slow. Try again in a few minutes.',routeFallback:'Approximate route (straight line): the routing service is not responding.',shareText:'I ran {t} to {p} on Calle Real. Can you beat me?',arrive:'Arrived at: {p}',minWalk:'≈ {m} min walk'}
+};
+var PLACES = {
+ futbol:{ic:'⚽',r:1500,q:'nwr["leisure"="pitch"]["sport"="soccer"]',n:{es:'Campo de fútbol',fr:'Terrain de foot',en:'Football pitch'},c:{es:['Botas','Agua','Balón'],fr:['Crampons','Eau','Ballon'],en:['Boots','Water','Ball']}},
+ cine:{ic:'🎬',r:4000,q:'nwr["amenity"="cinema"]',n:{es:'Cine',fr:'Cinéma',en:'Cinema'},c:{es:['Entrada','Palomitas','Móvil en silencio'],fr:['Billet','Pop-corn','Téléphone en silencieux'],en:['Ticket','Popcorn','Phone on silent']}},
+ super:{ic:'🛒',r:1500,q:'nwr["shop"="supermarket"]',n:{es:'Supermercado',fr:'Supermarché',en:'Supermarket'},c:{es:['Pan','Leche','Fruta'],fr:['Pain','Lait','Fruits'],en:['Bread','Milk','Fruit']}},
+ farmacia:{ic:'💊',r:1500,q:'nwr["amenity"="pharmacy"]',n:{es:'Farmacia',fr:'Pharmacie',en:'Pharmacy'},c:{es:['Tiritas','Pañuelos','Crema solar'],fr:['Pansements','Mouchoirs','Crème solaire'],en:['Plasters','Tissues','Sunscreen']}},
+ cole:{ic:'🏫',r:1500,q:'nwr["amenity"="school"]',n:{es:'Colegio',fr:'École',en:'School'},c:{es:['Mochila','Cuaderno','Merienda'],fr:['Cartable','Cahier','Goûter'],en:['Backpack','Notebook','Snack']}},
+ parque:{ic:'🌳',r:1500,q:'nwr["leisure"="park"]',n:{es:'Parque',fr:'Parc',en:'Park'},c:{es:['Estirar','Beber agua','Respirar hondo'],fr:['S’étirer','Boire de l’eau','Respirer'],en:['Stretch','Drink water','Breathe']}},
+ cafe:{ic:'☕',r:1000,q:'nwr["amenity"="cafe"]',n:{es:'Cafetería',fr:'Café',en:'Café'},c:{es:['Café','Croissant','Pagar'],fr:['Café','Croissant','Payer'],en:['Coffee','Croissant','Pay']}},
+ gym:{ic:'🏋️',r:2500,q:'nwr["leisure"="fitness_centre"]',n:{es:'Gimnasio',fr:'Salle de sport',en:'Gym'},c:{es:['Toalla','Agua','Zapatillas'],fr:['Serviette','Eau','Baskets'],en:['Towel','Water','Trainers']}},
+ clinica:{ic:'🏥',r:3000,q:'nwr["amenity"~"^(clinic|hospital|doctors)$"]',n:{es:'Centro médico',fr:'Centre médical',en:'Medical centre'},c:{es:['Tarjeta sanitaria','Cita','Mascarilla'],fr:['Carte Vitale','Rendez-vous','Masque'],en:['Health card','Appointment','Mask']}},
+ culto:{ic:'🕌',r:1500,q:'nwr["amenity"="place_of_worship"]',n:{es:'Lugar de culto',fr:'Lieu de culte',en:'Place of worship'},c:{es:['Silencio','Respeto','Zapatos en orden'],fr:['Silence','Respect','Chaussures rangées'],en:['Silence','Respect','Shoes in order']}}
+};
+var RUNNERS = [
+ {id:'abuela',em:'👵',pace:1.40,n:{es:'La Abuela',fr:'Mamie',en:'Grandma'}},
+ {id:'perro',em:'🐕',pace:1.35,n:{es:'El Perro',fr:'Le Chien',en:'The Dog'}},
+ {id:'atleta',em:'🏃',pace:2.05,n:{es:'La Atleta',fr:'L’Athlète',en:'The Athlete'}},
+ {id:'turista',em:'🧳',pace:1.00,n:{es:'El Turista',fr:'Le Touriste',en:'The Tourist'}},
+ {id:'movil',em:'📱',pace:0.95,n:{es:'Pegado al móvil',fr:'Accro au téléphone',en:'Phone zombie'}},
+ {id:'ciclista',em:'🛴',pace:1.55,n:{es:'Patinete',fr:'Trottinette',en:'Scooter kid'}},
+ {id:'vecino',em:'🧔',pace:1.18,n:{es:'El Vecino',fr:'Le Voisin',en:'The Neighbour'}}
+];
+
+var LANG = (function(){
+  var q = new URLSearchParams(location.search).get('lang');
+  if (q && T[q]) { store('cr_lang', q); return q; }
+  var s = load('cr_lang'); if (s && T[s]) return s;
+  var n = (navigator.language || 'es').slice(0,2);
+  return T[n] ? n : 'es';
+})();
+function t(k, v){ var s = (T[LANG][k] || T.es[k] || k); if (v) Object.keys(v).forEach(function(x){ s = s.replace('{'+x+'}', v[x]); }); return s; }
+function store(k, v){ try{ localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function loadJSON(k, d){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } }
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-t]').forEach(function(el){ el.innerHTML = t(el.getAttribute('data-t')); });
+  document.querySelectorAll('[data-tp]').forEach(function(el){ el.placeholder = t(el.getAttribute('data-tp')); });
+  document.querySelectorAll('.lang button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-l') === LANG); });
+  if (state.places) renderRoutes();
+  renderChars();
+}
+document.querySelectorAll('.lang button').forEach(function(b){ b.addEventListener('click', function(){ LANG = b.getAttribute('data-l'); store('cr_lang', LANG); applyLang(); }); });
+
+/* ---------------- state / screens ---------------- */
+var state = { home:null, street:'', city:'', places:null, route:null, runner:null };
+function show(id){ document.querySelectorAll('.screen').forEach(function(s){ s.classList.toggle('on', s.id === id); }); window.scrollTo(0,0); setTimeout(function(){ if (maps.confirm) maps.confirm.invalidateSize(); if (maps.race) maps.race.invalidateSize(); }, 60); }
+var maps = {};
+var TILE = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+var ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+function makeMap(el){ var m = L.map(el, {zoomControl:true}); L.tileLayer(TILE, {attribution:ATTR, subdomains:'abcd', maxZoom:20}).addTo(m); return m; }
+function icon(html, cls){ return L.divIcon({html:'<div class="'+cls+'">'+html+'</div>', className:'', iconSize:[32,32], iconAnchor:[16,28]}); }
+
+/* ---------------- cache + fetch ---------------- */
+var mem = {};
+function cached(key, fn){
+  if (mem[key]) return Promise.resolve(mem[key]);
+  var ss = null; try{ ss = sessionStorage.getItem(key); }catch(e){}
+  if (ss) { try{ mem[key] = JSON.parse(ss); return Promise.resolve(mem[key]); }catch(e){} }
+  return fn().then(function(v){ mem[key] = v; try{ sessionStorage.setItem(key, JSON.stringify(v)); }catch(e){} return v; });
+}
+function getJSON(url, opts, ms){
+  var ctl = ('AbortController' in window) ? new AbortController() : null;
+  var to = setTimeout(function(){ if (ctl) ctl.abort(); }, ms || 15000);
+  opts = opts || {}; if (ctl) opts.signal = ctl.signal;
+  return fetch(url, opts).then(function(r){ clearTimeout(to); if (!r.ok) throw new Error('http '+r.status); return r.json(); }, function(e){ clearTimeout(to); throw e; });
+}
+
+/* ---------------- intro / search (Photon) ---------------- */
+$('go-start').addEventListener('click', function(){ show('s-search'); $('q').focus(); });
+var qTimer = null, qSeq = 0;
+$('q').addEventListener('input', function(){
+  clearTimeout(qTimer);
+  var v = this.value.trim();
+  if (v.length < 4) { $('results').innerHTML = ''; return; }
+  qTimer = setTimeout(function(){ search(v); }, 350);
+});
+function search(v){
+  var my = ++qSeq;
+  $('results').innerHTML = '<p class="note"><span class="loader"></span></p>';
+  var lang = LANG === 'es' ? 'default' : (LANG === 'fr' ? 'fr' : 'en');
+  var url = 'https://photon.komoot.io/api/?limit=6&q=' + encodeURIComponent(v) + (lang !== 'default' ? '&lang=' + lang : '');
+  cached('ph:' + v.toLowerCase(), function(){ return getJSON(url); }).then(function(d){
+    if (my !== qSeq) return;
+    var fs = (d.features || []).filter(function(f){ return f.geometry && f.geometry.coordinates; });
+    if (!fs.length) { $('results').innerHTML = '<p class="note">' + esc(t('noResults')) + '</p>'; return; }
+    $('results').innerHTML = '';
+    fs.forEach(function(f){
+      var p = f.properties || {};
+      var street = p.street || (p.type === 'street' ? p.name : '') || p.name || '';
+      var line1 = [p.housenumber, street].filter(Boolean).join(' ') || p.name || '';
+      var city = p.city || p.town || p.village || p.county || p.state || '';
+      var b = document.createElement('button');
+      b.innerHTML = esc(line1) + '<small>' + esc([p.postcode, city, p.country].filter(Boolean).join(' · ')) + '</small>';
+      b.addEventListener('click', function(){
+        state.home = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
+        state.street = street || line1; state.city = city || '';
+        openConfirm();
+      });
+      $('results').appendChild(b);
+    });
+  }).catch(function(){ if (my === qSeq) $('results').innerHTML = '<p class="err">' + esc(t('slow')) + '</p>'; });
+}
+
+/* ---------------- confirm ---------------- */
+var homeMarker = null;
+function openConfirm(){
+  show('s-confirm');
+  $('confirm-err').hidden = true;
+  if (!maps.confirm) maps.confirm = makeMap('map-confirm');
+  maps.confirm.setView(state.home, 18);
+  if (homeMarker) homeMarker.remove();
+  homeMarker = L.marker(state.home, {draggable:true, icon:icon('🏠','home-pin')}).addTo(maps.confirm);
+  homeMarker.on('dragend', function(){ state.home = homeMarker.getLatLng(); });
+}
+$('back-search').addEventListener('click', function(){ show('s-search'); });
+$('go-confirm').addEventListener('click', function(){ state.home = homeMarker.getLatLng(); findPlaces(); });
+
+/* ---------------- Overpass: 10 place types ---------------- */
+function findPlaces(){
+  show('s-routes');
+  $('routes').innerHTML = ''; $('go-route').disabled = true; state.route = null;
+  $('routes-status').innerHTML = '<span class="loader"></span> ' + esc(t('searching'));
+  var lat = state.home.lat.toFixed(5), lon = state.home.lng.toFixed(5);
+  var parts = Object.keys(PLACES).map(function(k){ var p = PLACES[k]; return p.q + '(around:' + p.r + ',' + lat + ',' + lon + ');'; }).join('');
+  var query = '[out:json][timeout:25];(' + parts + ');out center tags 400;';
+  var key = 'op:' + lat + ',' + lon;
+  cached(key, function(){
+    return getJSON('https://overpass-api.de/api/interpreter', {method:'POST', body:'data=' + encodeURIComponent(query), headers:{'Content-Type':'application/x-www-form-urlencoded'}}, 30000)
+      .catch(function(){ return getJSON('https://overpass.kumi.systems/api/interpreter', {method:'POST', body:'data=' + encodeURIComponent(query), headers:{'Content-Type':'application/x-www-form-urlencoded'}}, 30000); });
+  }).then(function(d){
+    var best = {};
+    (d.elements || []).forEach(function(e){
+      var la = e.lat || (e.center && e.center.lat), lo = e.lon || (e.center && e.center.lon);
+      if (la == null) return;
+      var tg = e.tags || {}, type = classify(tg);
+      if (!type) return;
+      var dist = state.home.distanceTo([la, lo]);
+      if (dist < 60 || dist > PLACES[type].r) return;
+      var score = dist - (tg.name ? 150 : 0);
+      if (!best[type] || score < best[type].score) best[type] = {type:type, lat:la, lon:lo, name:tg.name || '', dist:dist, score:score, id:e.type + e.id};
+    });
+    state.places = Object.keys(PLACES).map(function(k){ return best[k]; }).filter(Boolean);
+    if (!state.places.length) { $('routes-status').textContent = t('noneFound'); return; }
+    $('routes-status').textContent = t('found', {n:state.places.length});
+    renderRoutes();
+  }).catch(function(){ $('routes-status').innerHTML = '<span class="err">' + esc(t('slow')) + '</span>'; });
+}
+function classify(tg){
+  if (tg.leisure === 'pitch' && /soccer/.test(tg.sport || '')) return 'futbol';
+  if (tg.amenity === 'cinema') return 'cine';
+  if (tg.shop === 'supermarket') return 'super';
+  if (tg.amenity === 'pharmacy') return 'farmacia';
+  if (tg.amenity === 'school') return 'cole';
+  if (tg.leisure === 'park') return 'parque';
+  if (tg.amenity === 'cafe') return 'cafe';
+  if (tg.leisure === 'fitness_centre') return 'gym';
+  if (/^(clinic|hospital|doctors)$/.test(tg.amenity || '')) return 'clinica';
+  if (tg.amenity === 'place_of_worship') return 'culto';
+  return null;
+}
+function placeLabel(p){ return p.name || PLACES[p.type].n[LANG]; }
+function renderRoutes(){
+  var box = $('routes'); box.innerHTML = '';
+  (state.places || []).forEach(function(p){
+    var b = document.createElement('button');
+    b.setAttribute('aria-pressed', state.route && state.route.place.id === p.id ? 'true' : 'false');
+    b.innerHTML = '<span class="ic">' + PLACES[p.type].ic + '</span><span><b>' + esc(placeLabel(p)) + '</b><small>' + esc(PLACES[p.type].n[LANG]) + ' · ' + fmtDist(p.dist) + '</small></span>';
+    b.addEventListener('click', function(){
+      box.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed','true');
+      state.route = {place:p}; $('go-route').disabled = false;
+    });
+    box.appendChild(b);
+  });
+}
+$('back-confirm').addEventListener('click', function(){ openConfirm(); });
+
+/* ---------------- OSRM foot route ---------------- */
+$('go-route').addEventListener('click', function(){
+  var p = state.route.place, btn = this;
+  btn.disabled = true; btn.innerHTML = '<span class="loader"></span>';
+  var a = state.home.lng.toFixed(6) + ',' + state.home.lat.toFixed(6), b = p.lon.toFixed(6) + ',' + p.lat.toFixed(6);
+  var url = 'https://routing.openstreetmap.de/routed-foot/route/v1/foot/' + a + ';' + b + '?overview=full&geometries=geojson&steps=true';
+  cached('rt:' + a + ';' + b, function(){ return getJSON(url, null, 15000); }).then(function(d){
+    var r = d.routes && d.routes[0];
+    if (!r) throw new Error('no route');
+    var coords = r.geometry.coordinates.map(function(c){ return L.latLng(c[1], c[0]); });
+    var names = [];
+    (r.legs || []).forEach(function(l){ (l.steps || []).forEach(function(s){ names.push({d:s.distance, name:s.name || ''}); }); });
+    return {coords:coords, names:names, fallback:false};
+  }).catch(function(){
+    return {coords:[state.home, L.latLng(p.lat, p.lon)], names:[], fallback:true};
+  }).then(function(rt){
+    state.route.coords = rt.coords; state.route.names = rt.names; state.route.fallback = rt.fallback;
+    state.route.len = pathLen(rt.coords);
+    state.route.id = p.type + ':' + p.id;
+    btn.disabled = false; btn.innerHTML = t('next');
+    $('route-info').innerHTML = esc(PLACES[p.type].ic + ' ' + placeLabel(p)) + ' · ' + fmtDist(state.route.len) + ' · ' + esc(t('minWalk', {m:Math.max(1, Math.round(state.route.len / 1.3 / 60))})) + (rt.fallback ? '<br><span class="err">' + esc(t('routeFallback')) + '</span>' : '');
+    show('s-chars');
+  });
+});
+function pathLen(c){ var s = 0; for (var i = 1; i < c.length; i++) s += c[i-1].distanceTo(c[i]); return s; }
+function fmtDist(m){ return m < 1000 ? Math.round(m) + ' m' : (m/1000).toFixed(2).replace('.', LANG === 'en' ? '.' : ',') + ' km'; }
+function fmtTime(s){ s = Math.max(0, Math.round(s)); var m = Math.floor(s/60), r = s % 60; return m + ':' + (r < 10 ? '0' : '') + r; }
+
+/* ---------------- characters ---------------- */
+function renderChars(){
+  var box = $('chars'); if (!box) return; box.innerHTML = '';
+  RUNNERS.forEach(function(r){
+    var b = document.createElement('button');
+    b.setAttribute('aria-pressed', state.runner && state.runner.id === r.id ? 'true' : 'false');
+    b.innerHTML = '<span class="em">' + r.em + '</span><b>' + esc(r.n[LANG]) + '</b><small>' + r.pace.toFixed(2) + ' m/s · ' + (r.pace * 3.6).toFixed(1) + ' km/h</small>';
+    b.addEventListener('click', function(){ state.runner = r; renderChars(); $('go-race').disabled = false; });
+    box.appendChild(b);
+  });
+}
+$('back-routes').addEventListener('click', function(){ show('s-routes'); });
+
+/* ---------------- race ---------------- */
+var SPEEDUP = 12;         // game seconds per real second
+var race = null, routeLine = null, runnerMarker = null, destMarker = null, homeMk2 = null;
+$('go-race').addEventListener('click', startRace);
+function startRace(){
+  show('s-race');
+  if (!maps.race) maps.race = makeMap('map-race');
+  var m = maps.race, c = state.route.coords, p = state.route.place;
+  [routeLine, runnerMarker, destMarker, homeMk2].forEach(function(x){ if (x) x.remove(); });
+  routeLine = L.polyline(c, {color:'#111', weight:6, opacity:.75, dashArray:state.route.fallback ? '8 8' : null}).addTo(m);
+  homeMk2 = L.marker(c[0], {icon:icon('🏠','home-pin')}).addTo(m);
+  destMarker = L.marker(c[c.length-1], {icon:icon(PLACES[p.type].ic,'home-pin')}).addTo(m);
+  runnerMarker = L.marker(c[0], {icon:icon(state.runner.em,'runner-pin'), zIndexOffset:1000}).addTo(m);
+  m.fitBounds(routeLine.getBounds(), {padding:[30,30]});
+  setTimeout(function(){ m.invalidateSize(); m.fitBounds(routeLine.getBounds(), {padding:[30,30]}); }, 80);
+  race = {t:0, d:0, stamina:1, sprint:false, last:performance.now(), done:false, follow:0};
+  $('h-street').textContent = state.street || '—';
+  requestAnimationFrame(tick);
+}
+function setSprint(on){ if (!race || race.done) return; race.sprint = on; $('sprint').classList.toggle('on', on); }
+var sp = $('sprint');
+['pointerdown'].forEach(function(e){ sp.addEventListener(e, function(ev){ ev.preventDefault(); setSprint(true); }); });
+['pointerup','pointerleave','pointercancel'].forEach(function(e){ sp.addEventListener(e, function(){ setSprint(false); }); });
+document.addEventListener('keydown', function(e){ if (e.code === 'Space' && $('s-race').classList.contains('on')) { e.preventDefault(); setSprint(true); } });
+document.addEventListener('keyup', function(e){ if (e.code === 'Space') setSprint(false); });
+function tick(now){
+  if (!race || race.done) return;
+  var dt = Math.min(0.1, (now - race.last) / 1000); race.last = now;
+  var g = dt * SPEEDUP;
+  var boost = 1;
+  if (race.sprint && race.stamina > 0.02) { boost = 1.6; race.stamina = Math.max(0, race.stamina - dt * 0.28); }
+  else race.stamina = Math.min(1, race.stamina + dt * 0.12);
+  race.t += g;
+  race.d = Math.min(state.route.len, race.d + state.runner.pace * boost * g);
+  var pos = pointAt(state.route.coords, race.d);
+  runnerMarker.setLatLng(pos);
+  race.follow += dt;
+  if (race.follow > 0.8) { race.follow = 0; if (!maps.race.getBounds().pad(-0.15).contains(pos)) maps.race.panTo(pos, {animate:true}); }
+  $('h-time').textContent = fmtTime(race.t);
+  $('h-dist').textContent = fmtDist(race.d);
+  $('h-street').textContent = streetAt(race.d) || state.street || '—';
+  $('stam').style.width = Math.round(race.stamina * 100) + '%';
+  if (race.d >= state.route.len - 0.5) { race.done = true; setSprint(false); arrive(); return; }
+  requestAnimationFrame(tick);
+}
+function pointAt(c, d){
+  var acc = 0;
+  for (var i = 1; i < c.length; i++) {
+    var seg = c[i-1].distanceTo(c[i]);
+    if (acc + seg >= d) { var f = seg ? (d - acc) / seg : 0; return L.latLng(c[i-1].lat + (c[i].lat - c[i-1].lat) * f, c[i-1].lng + (c[i].lng - c[i-1].lng) * f); }
+    acc += seg;
+  }
+  return c[c.length-1];
+}
+function streetAt(d){
+  var n = state.route.names, acc = 0;
+  for (var i = 0; i < n.length; i++) { acc += n[i].d; if (d <= acc) { for (var j = i; j >= 0; j--) if (n[j].name) return n[j].name; return ''; } }
+  for (var k = n.length - 1; k >= 0; k--) if (n[k].name) return n[k].name;
+  return '';
+}
+
+/* ---------------- stop with 3 checks ---------------- */
+var stopTimer = null;
+function arrive(){
+  var p = state.route.place;
+  show('s-stop');
+  $('stop-title').textContent = PLACES[p.type].ic + ' ' + t('arrive', {p:placeLabel(p)});
+  var box = $('checks'); box.innerHTML = '';
+  var items = PLACES[p.type].c[LANG], left = items.length;
+  items.forEach(function(it){
+    var b = document.createElement('button');
+    b.setAttribute('aria-pressed','false');
+    b.innerHTML = '<span>✓</span>' + esc(it);
+    b.addEventListener('click', function(){
+      if (b.getAttribute('aria-pressed') === 'true') return;
+      b.setAttribute('aria-pressed','true'); left--;
+      if (!left) { clearInterval(stopTimer); setTimeout(finish, 350); }
+    });
+    box.appendChild(b);
+  });
+  var last = performance.now();
+  clearInterval(stopTimer);
+  stopTimer = setInterval(function(){ var n = performance.now(); race.t += (n - last) / 1000 * SPEEDUP; last = n; $('stop-time').textContent = fmtTime(race.t); }, 100);
+}
+
+/* ---------------- result + ranking ---------------- */
+function rankKey(){ return 'calle-real:' + norm(state.street) + ':' + norm(state.city) + ':' + state.route.id; }
+function norm(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+var lastSaved = null;
+function finish(){
+  show('s-result');
+  var p = state.route.place;
+  $('final-time').textContent = fmtTime(race.t);
+  $('final-info').textContent = state.runner.em + ' ' + state.runner.n[LANG] + ' → ' + PLACES[p.type].ic + ' ' + placeLabel(p) + ' · ' + fmtDist(state.route.len);
+  $('save-box').hidden = false; $('pname').value = load('cr_name') || ''; lastSaved = null;
+  var url = 'https://55europe.com/';
+  $('share').href = 'https://wa.me/?text=' + encodeURIComponent(t('shareText', {t:fmtTime(race.t), p:placeLabel(p)}) + ' ' + url);
+  renderRank();
+}
+$('save').addEventListener('click', function(){
+  var name = $('pname').value.trim().slice(0,16) || '—';
+  store('cr_name', name);
+  var list = loadJSON(rankKey(), []);
+  lastSaved = Date.now();
+  list.push({n:name, t:Math.round(race.t), r:state.runner.em, at:lastSaved});
+  list.sort(function(a,b){ return a.t - b.t; });
+  store(rankKey(), list.slice(0,10));
+  $('save-box').hidden = true;
+  renderRank();
+});
+function renderRank(){
+  var list = loadJSON(rankKey(), []);
+  $('rank').innerHTML = list.length ? list.map(function(e, i){ return '<tr' + (e.at === lastSaved ? ' class="me"' : '') + '><td>' + (i+1) + '</td><td>' + esc(e.n) + '</td><td>' + fmtTime(e.t) + '</td><td>' + esc(e.r) + '</td></tr>'; }).join('') : '<tr><td colspan="4" class="note">—</td></tr>';
+}
+$('again').addEventListener('click', startRace);
+$('other').addEventListener('click', function(){ show('s-routes'); });
+
+applyLang();
+})();
+</script>
+</body>
+</html>
