@@ -696,7 +696,7 @@ function applyInner(){try{window.refreshChecklist&&window.refreshChecklist()}cat
 var m=mode(),t=TX[L()],req=m==="request";
  var vp=document.getElementById("v-p");if(!vp)return;
  var b=document.getElementById("pmodeBanner");if(!b){b=document.createElement("div");b.id="pmodeBanner";b.style.cssText="margin:0 0 .8rem;padding:.75rem 1rem;border-radius:12px;font-weight:600;font-size:.95rem;line-height:1.5";var ck=document.getElementById("checklist");(ck&&ck.parentNode===vp?vp:ck?ck.parentNode:vp).insertBefore(b,ck||vp.firstChild)}
- b.textContent=req?t.banner:t.bannerT;b.style.background=req?"#e8f3ec":"#f8fafc";b.style.color=req?"#006233":"#1f2937";b.style.border=req?"1px solid #b7dcc4":"1px solid #e5e7eb";
+ b.style.display="none";/* Hicham: sin frase explicativa */b.style.background=req?"#e8f3ec":"#f8fafc";b.style.color=req?"#006233":"#1f2937";b.style.border=req?"1px solid #b7dcc4":"1px solid #e5e7eb";
  var c=document.getElementById("ckC");if(c)c.style.display=req?"none":"";
  var lp=lab("f-price");if(lp)lp.textContent=req?t.price:t.priceT;
  var ls=lab("f-seats");if(ls)ls.textContent=req?t.seats:t.seatsT;
