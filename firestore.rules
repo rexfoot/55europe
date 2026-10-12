@@ -287,7 +287,8 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
-    // ---- Notes après course : les 2 participants, une fois chacun ----    match /ratings/{rid} {
+    // ---- Notes après course : les 2 participants, une fois chacun ----
+    match /ratings/{rid} {
       allow read: if request.auth != null;
       allow create: if request.auth != null
         && rid == request.resource.data.rideId + '_' + request.auth.uid
