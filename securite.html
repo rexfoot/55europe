@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>السلامة · Sécurité — Rakbin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,"Segoe UI",Tahoma,Arial,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.8}
+.container{max-width:800px;margin:0 auto;padding:1.2rem}
+header{background:#fff;border-bottom:1px solid #e2e8f0;padding:.8rem 0;position:sticky;top:0}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap}
+.logo{font-weight:800;font-size:1.3rem;text-decoration:none}
+.logo .a{color:#006233}.logo .f{color:#c1272d}
+.lang button{padding:.4rem .8rem;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-weight:700}
+.lang button.on{background:#006233;color:#fff;border-color:#006233}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1.4rem;margin:1.2rem 0}
+h1{font-size:1.5rem;margin-bottom:.5rem}h2{font-size:1.1rem;margin:1.2rem 0 .4rem;color:#006233}
+ul{margin-inline-start:1.2rem}li{margin-bottom:.4rem}
+.warn{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:1rem;color:#92400e;font-weight:700;margin:1rem 0}
+footer{color:#64748b;font-size:.9rem;text-align:center;padding:2rem 0}
+footer a{color:#006233;font-weight:700}
+[lang=fr]{display:none}
+html[dir=ltr] [lang=fr]{display:block}
+html[dir=ltr] [lang=ar]{display:none}
+</style>
+</head>
+<body>
+<header><div class="container hd">
+<a class="logo" href="index.html"><span class="a">راكبين</span> · <span class="f">Rakbin</span></a>
+<div class="lang"><button id="b-ar" class="on" onclick="setL('ar')">العربية</button><button id="b-fr" onclick="setL('fr')">Français</button></div>
+</div></header>
+<main class="container">
+<div class="card">
+<div lang="ar">
+<h1>السلامة أولا</h1>
+<div class="warn">لا تدفع أبدا مسبقا. الدفع نقدا يدا بيد يوم الرحلة فقط.</div>
+<h2>للركاب</h2>
+<ul>
+<li>تواصل عبر واتساب وتأكد من التفاصيل: المدن، التاريخ، الساعة، الثمن، المقاعد.</li>
+<li>التقِ بالسائق في مكان عام ومزدحم، وتجنب الأماكن المعزولة ليلا.</li>
+<li>أخبر أحد أقاربك أو أصدقائك بتفاصيل رحلتك: اسم السائق، السيارة، الساعة.</li>
+<li>عند الوصول، تحقق أن السيارة والسائق يطابقان الصورة والمعلومات في الإعلان.</li>
+<li>لا تدفع أي مبلغ قبل الركوب. أي طلب للدفع المسبق = بلّغ فورا.</li>
+</ul>
+<h2>للسائقين</h2>
+<ul>
+<li>انشر معلومات صحيحة: مدن حقيقية، ساعة دقيقة، ثمن واضح، سيارتك الحقيقية.</li>
+<li>التقِ بالركاب في نقطة انطلاق عامة ومتفق عليها.</li>
+<li>لا تطلب الدفع المسبق. استلم المبلغ نقدا يوم الرحلة.</li>
+<li>أخبر أحدا بمسار رحلتك وركابك.</li>
+</ul>
+<h2>كيف تبلّغ؟</h2>
+<p>كل إعلان فيه زر «تبليغ». الإعلانات التي تصل إلى 3 تبليغات تُخفى تلقائيا ويراجعها المشرف، الذي قد يحظر الحساب. للطوارئ راسلنا: <a href="mailto:footrexofficial@gmail.com">footrexofficial@gmail.com</a></p>
+</div>
+<div lang="fr">
+<h1>La sécurité d’abord</h1>
+<div class="warn">Ne payez jamais à l’avance. Paiement en espèces, en main propre, le jour du trajet uniquement.</div>
+<h2>Pour les passagers</h2>
+<ul>
+<li>Contactez via WhatsApp et vérifiez les détails : villes, date, heure, prix, places.</li>
+<li>Retrouvez le conducteur dans un lieu public et fréquenté, évitez les endroits isolés la nuit.</li>
+<li>Prévenez un proche : nom du conducteur, voiture, heure du trajet.</li>
+<li>À l’arrivée, vérifiez que la voiture et le conducteur correspondent à la photo et à l’annonce.</li>
+<li>Ne payez rien avant de monter. Toute demande d’avance = signalez aussitôt.</li>
+</ul>
+<h2>Pour les conducteurs</h2>
+<ul>
+<li>Publiez des infos exactes : vraies villes, heure précise, prix clair, votre vraie voiture.</li>
+<li>Retrouvez les passagers à un point de départ public convenu.</li>
+<li>Ne demandez pas d’avance. Encaissez en espèces le jour du trajet.</li>
+<li>Prévenez un proche de votre itinéraire et de vos passagers.</li>
+</ul>
+<h2>Comment signaler ?</h2>
+<p>Chaque annonce a un bouton « Signaler ». Les annonces à 3 signalements sont masquées automatiquement et revues par le modérateur, qui peut bannir le compte. Urgences : <a href="mailto:footrexofficial@gmail.com">footrexofficial@gmail.com</a></p>
+</div>
+</div>
+</main>
+<footer><div class="container"><a href="index.html">← Rakbin</a> · <a href="conditions.html">شروط الاستخدام · Conditions</a> · <a href="privacy.html">الخصوصية · Confidentialité</a></div></footer>
+<script>
+function setL(l){document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
+document.getElementById("b-ar").classList.toggle("on",l==="ar");document.getElementById("b-fr").classList.toggle("on",l==="fr");}
+</script>
+</body>
+</html>
