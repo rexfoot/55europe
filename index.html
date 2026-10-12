@@ -682,5 +682,31 @@ new MutationObserver(function(){requestAnimationFrame(run)}).observe(document.bo
 if(document.readyState!=="loading")run();else document.addEventListener("DOMContentLoaded",run);
 })();
 </script>
+<script>
+/* Claude: modo pasajero claro (sin coche) */
+(function(){
+var TX={ar:{banner:"أبحث عن سائق: أدخل مسارك من المدينة أ إلى المدينة ب، والتاريخ والثمن الذي تقترحه. لا حاجة لسيارة.",price:"الثمن الذي أقترحه (درهم)",seats:"عدد الركاب",btn:"نشر طلبي",bannerT:"أقترح رحلة بسيارتي: أدخل المسار والتاريخ والثمن لكل راكب.",priceT:"الثمن لكل راكب (درهم)",seatsT:"المقاعد المتاحة (1–8)",btnT:"نشر الرحلة"},
+fr:{banner:"Je cherche un chauffeur : indique ton trajet (ville A → ville B), la date et le prix que tu proposes. Pas besoin de voiture.",price:"Prix que je propose (MAD)",seats:"Nombre de passagers",btn:"Publier ma demande",bannerT:"Je propose un trajet avec ma voiture : indique le trajet, la date et le prix par passager.",priceT:"Prix par passager (MAD)",seatsT:"Places disponibles (1–8)",btnT:"Publier le trajet"}};
+function L(){return document.documentElement.lang==="ar"?"ar":"fr"}
+function mode(){var r=document.querySelector('[name=ptype]:checked');return r?r.value:"trip"}
+function lab(id){var e=document.getElementById(id);if(!e)return null;var c=e.closest(".fg")||e.parentElement;return c?c.querySelector("label"):null}
+function apply(){var m=mode(),t=TX[L()],req=m==="request";
+ var vp=document.getElementById("v-p");if(!vp)return;
+ var b=document.getElementById("pmodeBanner");if(!b){b=document.createElement("div");b.id="pmodeBanner";b.style.cssText="margin:0 0 .8rem;padding:.75rem 1rem;border-radius:12px;font-weight:600;font-size:.95rem;line-height:1.5";var ck=document.getElementById("checklist");(ck&&ck.parentNode===vp?vp:ck?ck.parentNode:vp).insertBefore(b,ck||vp.firstChild)}
+ b.textContent=req?t.banner:t.bannerT;b.style.background=req?"#e8f3ec":"#f8fafc";b.style.color=req?"#006233":"#1f2937";b.style.border=req?"1px solid #b7dcc4":"1px solid #e5e7eb";
+ var c=document.getElementById("ckC");if(c)c.style.display=req?"none":"";
+ var lp=lab("f-price");if(lp)lp.textContent=req?t.price:t.priceT;
+ var ls=lab("f-seats");if(ls)ls.textContent=req?t.seats:t.seatsT;
+ var pb=document.querySelector('#v-p [data-i="pubBtn"]');if(pb)pb.textContent=req?t.btn:t.btnT;
+}
+function wrap(n){var o=window[n];if(typeof o!=="function"||o.__cl)return;var w=function(){var r=o.apply(this,arguments);setTimeout(apply,0);return r};w.__cl=1;window[n]=w}
+function hook(){wrap("ptypeUI");wrap("setLang");
+ var og=window.goTab;if(typeof og==="function"&&!og.__cl){var g=function(w){var r=og.apply(this,arguments);if(w==="p"&&!g.__fromReq){var tr=document.querySelector('[name=ptype][value=trip]');if(tr)tr.checked=true;try{window.ptypeUI&&window.ptypeUI()}catch(e){}}setTimeout(apply,0);return r};g.__cl=1;window.goTab=g;
+  window.goReq=function(){g.__fromReq=1;try{window.goTab("p")}finally{g.__fromReq=0}var r=document.querySelector('[name=ptype][value=request]');if(r){r.checked=true;try{window.ptypeUI&&window.ptypeUI()}catch(e){}}setTimeout(apply,0);var vp=document.getElementById("v-p");if(vp)vp.scrollIntoView({behavior:"smooth",block:"start"})};}
+ document.querySelectorAll('[name=ptype]').forEach(function(r){r.addEventListener("change",function(){setTimeout(apply,0)})});
+ apply();}
+if(document.readyState==="complete")setTimeout(hook,300);else window.addEventListener("load",function(){setTimeout(hook,300)});
+})();
+</script>
 </body>
 </html>
