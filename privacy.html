@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الخصوصية · Confidentialité — Rakbin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,"Segoe UI",Tahoma,Arial,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.8}
+.container{max-width:800px;margin:0 auto;padding:1.2rem}
+header{background:#fff;border-bottom:1px solid #e2e8f0;padding:.8rem 0;position:sticky;top:0}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap}
+.logo{font-weight:800;font-size:1.3rem;text-decoration:none}
+.logo .a{color:#006233}.logo .f{color:#c1272d}
+.lang button{padding:.4rem .8rem;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-weight:700}
+.lang button.on{background:#006233;color:#fff;border-color:#006233}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1.4rem;margin:1.2rem 0}
+h1{font-size:1.5rem;margin-bottom:.5rem}h2{font-size:1.1rem;margin:1.2rem 0 .4rem;color:#006233}
+footer{color:#64748b;font-size:.9rem;text-align:center;padding:2rem 0}
+footer a{color:#006233;font-weight:700}
+[lang=fr]{display:none}
+html[dir=ltr] [lang=fr]{display:block}
+html[dir=ltr] [lang=ar]{display:none}
+</style>
+</head>
+<body>
+<header><div class="container hd">
+<a class="logo" href="index.html"><span class="a">راكبين</span> · <span class="f">Rakbin</span></a>
+<div class="lang"><button id="b-ar" class="on" onclick="setL('ar')">العربية</button><button id="b-fr" onclick="setL('fr')">Français</button></div>
+</div></header>
+<main class="container">
+<div class="card">
+<div lang="ar">
+<h1>سياسة الخصوصية</h1>
+<p>آخر تحديث: أكتوبر 2026</p>
+<h2>1. ما البيانات التي نجمعها؟</h2>
+<p>الاسم والصورة من حساب Google، رقم الواتساب الذي تدخله، صورة السيلفي (مصغرة 240×240)، وتفاصيل الرحلات التي تنشرها (المدن، التاريخ، الساعة، المقاعد، الثمن).</p>
+<h2>2. من يرى بياناتي؟</h2>
+<p>الرحلات (بدون رقم الهاتف) عامة للجميع. رقم الواتساب وصورة السيلفي ظاهران فقط للمستخدمين المسجلين. لا نبيع بياناتك ولا نشاركها مع أي طرف.</p>
+<h2>3. أين تُحفظ؟</h2>
+<p>في قاعدة بيانات Firebase (Google) الخاصة بالمشروع. لا نستخدم أي تخزين مدفوع إضافي.</p>
+<h2>4. حذف بياناتي</h2>
+<p>يمكنك حذف صورتك من «حسابي» في أي وقت، وحذف رحلاتك بزر الحذف. لحذف حسابك وكل بياناتك راسلنا: <a href="mailto:footrexofficial@gmail.com">footrexofficial@gmail.com</a> وسنحذفها.</p>
+<h2>5. الأطفال</h2>
+<p>Rakbin للبالغين. لا يسمح للقاصرين بالنشر أو السفر دون مرافق.</p>
+</div>
+<div lang="fr">
+<h1>Politique de confidentialité</h1>
+<p>Dernière mise à jour : octobre 2026</p>
+<h2>1. Quelles données collectons-nous ?</h2>
+<p>Nom et photo du compte Google, numéro WhatsApp saisi, selfie (réduit à 240×240) et détails des trajets publiés (villes, date, heure, places, prix).</p>
+<h2>2. Qui voit mes données ?</h2>
+<p>Les trajets (sans le numéro) sont publics. Le WhatsApp et le selfie ne sont visibles que par les membres connectés. Nous ne vendons ni ne partageons vos données.</p>
+<h2>3. Où sont-elles stockées ?</h2>
+<p>Dans la base Firebase (Google) du projet. Aucun stockage payant supplémentaire.</p>
+<h2>4. Supprimer mes données</h2>
+<p>Vous pouvez supprimer votre photo depuis « Mon compte » à tout moment, et vos trajets via le bouton Supprimer. Pour effacer votre compte et toutes vos données, écrivez à : <a href="mailto:footrexofficial@gmail.com">footrexofficial@gmail.com</a>.</p>
+<h2>5. Mineurs</h2>
+<p>Rakbin est réservé aux adultes. Les mineurs ne peuvent ni publier ni voyager sans accompagnant.</p>
+</div>
+</div>
+</main>
+<footer><div class="container"><a href="index.html">← Rakbin</a> · <a href="conditions.html">شروط الاستخدام · Conditions</a></div></footer>
+<script>
+function setL(l){document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
+document.getElementById("b-ar").classList.toggle("on",l==="ar");document.getElementById("b-fr").classList.toggle("on",l==="fr");}
+</script>
+</body>
+</html>
