@@ -55,7 +55,7 @@ footer{background:#0f172a;color:#94a3b8;text-align:center;padding:2rem 0;margin-
 <section class="sec">
 <div id="profileCard" class="card" style="display:none">
 <h3 data-i="prof">حسابي</h3>
-<div class="fg" style="margin-top:.8rem"><label data-i="wa">واتساب (212xxxxxxxxx)</label><input id="p-wa" placeholder="212600000000" inputmode="numeric"></div>
+<div class="fg" style="margin-top:.8rem"><label data-i="wa">واتساب مع رمز الدولة (مثال: 212600000000 أو 33612345678)</label><input id="p-wa" placeholder="+212 600 000 000 / +33 6 12 34 56 78" inputmode="tel"></div>
 <button class="btn btn-p btn-sm" onclick="saveProfile()" data-i="save">حفظ</button>
 <span class="muted" id="profMsg"></span>
 </div>
@@ -97,8 +97,8 @@ const db = getFirestore(app);
 const TRIPS = collection(db, "trips");
 
 var T={
-ar:{t1:"سفر تشاركي بين مدن المغرب",t2:"سجّل الدخول بحساب Google، أضف واتساب الخاص بك، انشر رحلتك. الراكب يتواصل معك مباشرة. الدفع نقدا.",search:"بحث",pub:"انشر رحلة",prof:"حسابي",save:"حفظ",from:"مدينة الانطلاق",to:"مدينة الوصول",date:"التاريخ",time:"الساعة",seats:"المقاعد (1–8)",price:"الثمن (درهم MAD)",wa:"واتساب (212xxxxxxxxx)",searchBtn:"ابحث",fromPh:"مثال: الدار البيضاء",toPh:"مثال: مراكش",none:"لا توجد رحلات مطابقة حاليا.",contact:"تواصل واتساب",loginToContact:"سجّل الدخول للتواصل",del:"حذف",rep:"تبليغ",reported:"تم التبليغ",pubBtn:"نشر الرحلة",needLogin:"يتطلب النشر تسجيل الدخول وإضافة رقم واتساب في حسابك.",bad:"حقول غير صالحة (مدن، تاريخ مستقبلي، مقاعد 1-8، ثمن 1-10000).",noWa:"أضف رقم واتساب مغربي في حسابك أولا.",login:"دخول Google",logout:"خروج",pubOk:"تم نشر رحلتك!",delOk:"تم حذف الإعلان.",repOk:"شكرا، تم تسجيل التبليغ.",cash:"الدفع نقدا بين السائق والراكب",banned:"حسابك موقوف."},
-fr:{t1:"Covoiturage entre les villes du Maroc",t2:"Connectez-vous avec Google, ajoutez votre WhatsApp, publiez. Le passager vous contacte directement. Paiement cash.",search:"Rechercher",pub:"Publier",prof:"Mon compte",save:"Enregistrer",from:"Ville de départ",to:"Ville d'arrivée",date:"Date",time:"Heure",seats:"Places (1–8)",price:"Prix (MAD)",wa:"WhatsApp (212xxxxxxxxx)",searchBtn:"Rechercher",fromPh:"Ex : Casablanca",toPh:"Ex : Marrakech",none:"Aucun trajet pour le moment.",contact:"Contacter WhatsApp",loginToContact:"Connectez-vous pour contacter",del:"Supprimer",rep:"Signaler",reported:"Signalé",pubBtn:"Publier",needLogin:"La publication exige connexion + WhatsApp dans votre profil.",bad:"Champs invalides (villes, date future, places 1-8, prix 1-10000).",noWa:"Ajoutez d'abord un WhatsApp marocain dans votre profil.",login:"Connexion Google",logout:"Déconnexion",pubOk:"Trajet publié !",delOk:"Annonce supprimée.",repOk:"Merci, signalement enregistré.",cash:"Paiement cash entre conducteur et passager",banned:"Votre compte est suspendu."}};
+ar:{t1:"سفر تشاركي بين مدن المغرب",t2:"سجّل الدخول بحساب Google، أضف واتساب الخاص بك، انشر رحلتك. الراكب يتواصل معك مباشرة. الدفع نقدا.",search:"بحث",pub:"انشر رحلة",prof:"حسابي",save:"حفظ",from:"مدينة الانطلاق",to:"مدينة الوصول",date:"التاريخ",time:"الساعة",seats:"المقاعد (1–8)",price:"الثمن (درهم MAD)",wa:"واتساب مع رمز الدولة (مثال: 212600000000 أو 33612345678)",searchBtn:"ابحث",fromPh:"مثال: الدار البيضاء",toPh:"مثال: مراكش",none:"لا توجد رحلات مطابقة حاليا.",contact:"تواصل واتساب",loginToContact:"سجّل الدخول للتواصل",del:"حذف",rep:"تبليغ",reported:"تم التبليغ",pubBtn:"نشر الرحلة",needLogin:"يتطلب النشر تسجيل الدخول وإضافة رقم واتساب في حسابك.",bad:"حقول غير صالحة (مدن، تاريخ مستقبلي، مقاعد 1-8، ثمن 1-10000).",noWa:"أضف رقم واتساب مغربي في حسابك أولا.",login:"دخول Google",logout:"خروج",pubOk:"تم نشر رحلتك!",delOk:"تم حذف الإعلان.",repOk:"شكرا، تم تسجيل التبليغ.",cash:"الدفع نقدا بين السائق والراكب",banned:"حسابك موقوف."},
+fr:{t1:"Covoiturage entre les villes du Maroc",t2:"Connectez-vous avec Google, ajoutez votre WhatsApp, publiez. Le passager vous contacte directement. Paiement cash.",search:"Rechercher",pub:"Publier",prof:"Mon compte",save:"Enregistrer",from:"Ville de départ",to:"Ville d'arrivée",date:"Date",time:"Heure",seats:"Places (1–8)",price:"Prix (MAD)",wa:"WhatsApp avec indicatif pays (ex : 212600000000 ou 33612345678)",searchBtn:"Rechercher",fromPh:"Ex : Casablanca",toPh:"Ex : Marrakech",none:"Aucun trajet pour le moment.",contact:"Contacter WhatsApp",loginToContact:"Connectez-vous pour contacter",del:"Supprimer",rep:"Signaler",reported:"Signalé",pubBtn:"Publier",needLogin:"La publication exige connexion + WhatsApp dans votre profil.",bad:"Champs invalides (villes, date future, places 1-8, prix 1-10000).",noWa:"Ajoutez d'abord un WhatsApp marocain dans votre profil.",login:"Connexion Google",logout:"Déconnexion",pubOk:"Trajet publié !",delOk:"Annonce supprimée.",repOk:"Merci, signalement enregistré.",cash:"Paiement cash entre conducteur et passager",banned:"Votre compte est suspendu."}};
 var lang="ar", me=null, myProfile=null, cache=[], repCount={};
 window.setLang=function(l){lang=l;var d=document.documentElement;d.lang=l;d.dir=l==="ar"?"rtl":"ltr";
 document.getElementById("b-ar").classList.toggle("on",l==="ar");document.getElementById("b-fr").classList.toggle("on",l==="fr");
@@ -121,8 +121,8 @@ else{document.getElementById("profileCard").style.display="none";
 document.getElementById("authbox").innerHTML='<button class="btn btn-p btn-sm" onclick="login()">'+T[lang].login+'</button>';}
 draw();});
 window.saveProfile=async function(){
-if(!me)return;var wa=document.getElementById("p-wa").value.replace(/\D/g,"");if(wa.indexOf("00212")===0)wa=wa.slice(2);if(/^0[5-7]\d{8}$/.test(wa))wa="212"+wa.slice(1);
-if(!/^212\d{9}$/.test(wa)){alert(T[lang].noWa);return}
+if(!me)return;var wa=document.getElementById("p-wa").value.replace(/\D/g,"");if(wa.indexOf("00")===0)wa=wa.slice(2);if(/^0[5-7]\d{8}$/.test(wa))wa="212"+wa.slice(1);
+if(!/^[1-9]\d{7,14}$/.test(wa)){alert(T[lang].noWa);return}
 try{var r=doc(db,"users",me.uid);var s=await getDoc(r);
 if(s.exists()){await updateDoc(r,{nombre:me.displayName||"",foto:me.photoURL||"",wa:wa});}
 else{await setDoc(r,{nombre:me.displayName||"",foto:me.photoURL||"",wa:wa,banned:false,createdAt:serverTimestamp()});}
@@ -130,7 +130,7 @@ myProfile=(await getDoc(r)).data();document.getElementById("profMsg").textConten
 function valid(f){return f.from.length>=2&&f.from.length<=60&&f.to.length>=2&&f.to.length<=60&&/^\d{4}-\d{2}-\d{2}$/.test(f.date)&&f.date>=today()&&/^\d{2}:\d{2}$/.test(f.time)
 &&Number.isInteger(f.seats)&&f.seats>=1&&f.seats<=8&&f.price>0&&f.price<=10000}
 window.publish=async function(){
-if(!me||!myProfile||!/^212\d{9}$/.test(myProfile.wa||"")){alert(T[lang].noWa);return}
+if(!me||!myProfile||!/^[1-9]\d{7,14}$/.test(myProfile.wa||"")){alert(T[lang].noWa);return}
 if(myProfile.banned){alert(T[lang].banned);return}
 var f={from:document.getElementById("f-from").value.trim(),to:document.getElementById("f-to").value.trim(),date:document.getElementById("f-date").value,time:document.getElementById("f-time").value,seats:parseInt(document.getElementById("f-seats").value,10),price:parseFloat(document.getElementById("f-price").value),ownerUid:me.uid,createdAt:serverTimestamp()};
 if(!valid(f)){alert(T[lang].bad);return}
