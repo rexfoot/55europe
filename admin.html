@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rakbin Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,"Segoe UI",Tahoma,Arial,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.7}
+.container{max-width:960px;margin:0 auto;padding:1.2rem}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1.2rem;margin-bottom:1rem}
+.btn{padding:.5rem 1rem;border-radius:9px;font-weight:700;cursor:pointer;border:1px solid #e2e8f0;background:#fff;font-size:.9rem}
+.btn-danger{background:#dc2626;color:#fff;border:none}.btn-ban{background:#b45309;color:#fff;border:none}
+table{width:100%;border-collapse:collapse;font-size:.9rem}td,th{border-bottom:1px solid #e2e8f0;padding:.5rem;text-align:start}
+.warn{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:1rem;color:#92400e;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>راكبين · Admin</h1>
+<p style="color:#64748b">Solo Hicham (uid admin de las reglas). No enlazar esta página desde la web pública.</p>
+<div class="card"><span id="authbox"></span></div>
+<div id="msg" class="warn" style="display:none"></div>
+<div id="list"></div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = { apiKey: "AIzaSyDASn4yK7WgytFk_zgGHUAjaVwsWz9HG38", authDomain: "rakbin.firebaseapp.com", projectId: "rakbin", storageBucket: "rakbin.firebasestorage.app", messagingSenderId: "483183046870", appId: "1:483183046870:web:aeb5127558ccfa41a81977" };
+const ADMIN_UID = "PEGA-UID-HICHAM";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+onAuthStateChanged(auth,async function(u){
+if(!u){document.getElementById("authbox").innerHTML='<button class="btn" id="b">دخول Google / Connexion Google</button>';
+document.getElementById("b").onclick=function(){signInWithPopup(auth,new GoogleAuthProvider())};return}
+if(u.uid!==ADMIN_UID){document.getElementById("authbox").textContent="⛔ "+u.uid+" no es admin.";return}
+document.getElementById("authbox").textContent="✓ Admin: "+u.uid;
+load();});
+async function load(){
+var trips=(await getDocs(collection(db,"trips"))).docs.map(function(d){var o=d.data();o._id=d.id;return o});
+var reps=(await getDocs(collection(db,"reports"))).docs.map(function(d){return d.data()});
+var count={};reps.forEach(function(r){if(r.tripId)count[r.tripId]=(count[r.tripId]||0)+1});
+var flagged=trips.filter(function(t){return (count[t._id]||0)>=1});
+flagged.sort(function(a,b){return (count[b._id]-count[a._id])});
+if(!flagged.length){document.getElementById("list").innerHTML='<div class="card">لا بلاغات · Aucun signalement.</div>';return}
+document.getElementById("list").innerHTML='<div class="card"><table><tr><th>Viaje</th><th>Fecha</th><th>Denuncias</th><th>ownerUid</th><th></th></tr>'+
+flagged.map(function(t){return '<tr><td>'+esc(t.from)+' → '+esc(t.to)+'</td><td>'+esc(t.date)+' '+esc(t.time)+'</td><td><strong>'+(count[t._id]||0)+'</strong></td><td><small>'+esc(t.ownerUid)+'</small></td>'+
+'<td><button class="btn btn-danger" onclick="delTrip(\''+t._id+'\')">Borrar viaje</button> '+
+'<button class="btn btn-ban" onclick="ban(\''+t.ownerUid+'\')">Ban usuario</button></td></tr>'}).join("")+'</table></div>';}
+window.delTrip=async function(id){if(!confirm("Borrar viaje "+id+"?"))return;await deleteDoc(doc(db,"trips",id));load()};
+window.ban=async function(uid){if(!confirm("Poner banned=true a "+uid+"?"))return;await updateDoc(doc(db,"users",uid),{banned:true});alert("OK banned=true")};
+</script>
+</body>
+</html>
