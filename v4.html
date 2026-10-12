@@ -298,7 +298,7 @@ try{await setDoc(doc(db,"reports",id+"_"+me.uid),{tripId:id,uid:me.uid,createdAt
 var b=document.getElementById("rp-"+id);if(b)b.textContent="✓ "+T[lang].reported;
 alert(T[lang].repOk);await render();}catch(e){alert("Error: "+e.message)}};
 window.routeGo=function(b){document.getElementById("q-from").value=b.getAttribute("data-from");document.getElementById("q-to").value=b.getAttribute("data-to");tab("s");render();document.getElementById("list").scrollIntoView({behavior:"smooth",block:"nearest"})};
-function minPrice(f,t){var today=today();var m=null;cache.forEach(function(x){if((repCount[x._id]||0)<3&&x.date>=today&&norm(x.from).indexOf(norm(f))>-1&&norm(x.to).indexOf(norm(t))>-1){if(m===null||x.price<m)m=x.price}});return m}
+function minPrice(f,t){var td=today();var m=null;cache.forEach(function(x){if(x.ownerUid&&(repCount[x._id]||0)<3&&x.date>=td&&norm(x.from).indexOf(norm(f))>-1&&norm(x.to).indexOf(norm(t))>-1){if(m===null||x.price<m)m=x.price}});return m}
 function fillRoutes(){var rs=document.querySelectorAll("#routes .route");rs.forEach(function(b){var p=minPrice(b.getAttribute("data-from"),b.getAttribute("data-to"));var s=b.querySelector(".route-price");if(!s)return;if(p===null){s.textContent="";s.style.display="none"}else{s.textContent=T[lang].from2+" "+p+" MAD";s.style.display=""}});}
 window.backToList=function(){document.getElementById("detail").style.display="none";document.getElementById("list").style.display="";};
 window.showDetail=async function(id){
