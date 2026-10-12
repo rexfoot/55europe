@@ -39,6 +39,10 @@ footer{background:#0f172a;color:#94a3b8;text-align:center;padding:2rem 0;margin-
 .logo .lg-ar{color:#006233}
 .logo .lg-fr{color:#c1272d}
 </style>
+<meta property="og:title" content="راكبين Rakbin — سفر تشاركي بين مدن المغرب">
+<meta property="og:description" content="Covoiturage entre les villes du Maroc : le conducteur publie, le passager le contacte sur WhatsApp. Gratuit.">
+<meta property="og:url" content="https://55europe.com/">
+<meta property="og:type" content="website">
 </head>
 <body>
 <header><div class="container hd">
@@ -95,6 +99,24 @@ footer{background:#0f172a;color:#94a3b8;text-align:center;padding:2rem 0;margin-
 </div></div>
 </section>
 </main>
+<div style="text-align:center;margin:1.5rem auto 2rem;padding:0 16px">
+<button type="button" id="shareBtn" class="btn btn-p" style="font-size:1rem;padding:.7rem 1.4rem">📤 <span id="shareTxt">شارك راكبين · Partager Rakbin</span></button>
+<div id="shareMsg" class="muted" style="font-size:.85rem;margin-top:.4rem"></div>
+</div>
+<script>
+(function(){
+var URL_="https://55europe.com/";
+function msg(){var ar=document.documentElement.lang==="ar";
+return ar?"🚗 راكبين Rakbin — سفر تشاركي بين مدن المغرب. السائق ينشر رحلته مجاناً والراكب يتواصل معه مباشرة فالواتساب. "+URL_
+:"🚗 Rakbin — covoiturage entre les villes du Maroc. Le conducteur publie son trajet gratuitement, le passager le contacte directement sur WhatsApp. "+URL_;}
+document.getElementById("shareBtn").onclick=function(){
+var m=msg();
+if(navigator.share){navigator.share({title:"Rakbin · راكبين",text:m}).catch(function(){});return;}
+window.open("https://wa.me/?text="+encodeURIComponent(m),"_blank","noopener");
+try{navigator.clipboard.writeText(URL_);document.getElementById("shareMsg").textContent=document.documentElement.lang==="ar"?"✓ تم نسخ الرابط":"✓ Lien copié";}catch(e){}
+};
+})();
+</script>
 <footer><div class="container"><p>راكبين Rakbin · Maroc · <span data-i="cash">الدفع نقدا بين السائق والراكب</span></p></div></footer>
 
 <script type="module">
