@@ -7,11 +7,20 @@ service cloud.firestore {
     function isAdmin() { return request.auth != null && request.auth.uid == adminUid(); }
     function me(uid) { return request.auth != null && request.auth.uid == uid; }
     function selfiePath(uid) { return /databases/$(database)/documents/selfies/$(uid); }
+    function userData(uid) { return get(/databases/$(database)/documents/users/$(uid)).data; }
+    function validCar(c) {
+      return c is map && c.keys().hasOnly(['brand','model','color'])
+        && c.brand is string && c.brand.size() >= 2 && c.brand.size() <= 40
+        && c.brand in ['Dacia','Renault','Peugeot','Citroën','Hyundai','Kia','Toyota','Volkswagen','Fiat','Ford','Skoda','Seat','Opel','Nissan','Suzuki','Mercedes-Benz','BMW','Audi','Chevrolet','Mitsubishi','Honda','Mazda','Chery','MG','Autre']
+        && c.model is string && c.model.size() >= 1 && c.model.size() <= 40
+        && c.color is string && c.color.size() >= 2 && c.color.size() <= 40;
+    }
     function profileOk(uid) {
       return exists(/databases/$(database)/documents/users/$(uid))
         && exists(selfiePath(uid))
-        && get(/databases/$(database)/documents/users/$(uid)).data.wa.matches('^[1-9][0-9]{7,14}$')
-        && get(/databases/$(database)/documents/users/$(uid)).data.get('banned', false) == false;
+        && userData(uid).wa.matches('^[1-9][0-9]{7,14}$')
+        && userData(uid).get('banned', false) == false
+        && validCar(userData(uid).car); // v5: voiture obligatoire pour publier
     }
 
     function isValidTrip(d, uid) {
@@ -33,15 +42,17 @@ service cloud.firestore {
       allow get: if me(uid) || isAdmin() || (request.auth != null && exists(selfiePath(request.auth.uid)));
       allow list: if isAdmin();
       allow create: if me(uid)
-        && request.resource.data.keys().hasOnly(['nombre','foto','wa','banned','createdAt'])
+        && request.resource.data.keys().hasOnly(['nombre','foto','wa','banned','car','createdAt'])
         && request.resource.data.nombre is string && request.resource.data.nombre.size() >= 2
         && request.resource.data.wa is string && request.resource.data.wa.matches('^[1-9][0-9]{7,14}$')
         && request.resource.data.banned == false
+        && (!('car' in request.resource.data) || validCar(request.resource.data.car))
         && (!('foto' in request.resource.data) || (request.resource.data.foto is string && request.resource.data.foto.size() <= 600))
         && (!('createdAt' in request.resource.data) || request.resource.data.createdAt == request.time);
       allow update: if (me(uid)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre','foto','wa'])
-          && request.resource.data.wa.matches('^[1-9][0-9]{7,14}$'))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre','foto','wa','car'])
+          && request.resource.data.wa.matches('^[1-9][0-9]{7,14}$')
+          && (!('car' in request.resource.data) || validCar(request.resource.data.car)))
         || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['banned']));
       allow delete: if false;
     }
