@@ -89,6 +89,7 @@ footer.site a{color:#fff;font-weight:600}
 #nowMap,#nowMap2{z-index:0}
 #nt-pax.on,#nt-drv.on{background:var(--green);color:#fff;border-color:var(--green)}
 #v-now .leaflet-container{font:inherit}
+.moto-pin{background:none;border:none}
 .hero-search{margin:1.4rem 0 0}
 @media(min-width:760px){
 .topnav{order:0;width:auto}
@@ -193,14 +194,15 @@ footer.site a{color:#fff;font-weight:600}
 <div id="now-pax">
 <div class="card">
 <p style="font-weight:700;color:#b45309;margin-bottom:.8rem" data-i="nowSafe">الخوذة إجبارية للاثنين · الدفع نقدا عند الوصول · شارك رحلتك مع عائلتك</p>
-<div class="fg"><label data-i="cityL">المدينة</label><input id="nw-city" list="cities" autocomplete="off"></div>
+<div class="fg"><label data-i="cityL">المدينة</label><input id="nw-city" list="cities" autocomplete="off" onchange="watchDrivers()" oninput="watchDrivers()"></div>
 <div class="fg"><label data-i="from">مدينة الانطلاق</label><input id="nw-from" maxlength="80"></div>
 <button type="button" class="btn btn-o btn-sm" onclick="gpsMe()" data-i="myLoc">موقعي</button>
 <div id="nowMap" style="height:260px;border-radius:12px;margin:.8rem 0;border:1px solid var(--bd)"></div>
 <div class="fg"><label data-i="to">مدينة الوصول</label><input id="nw-to" maxlength="80"></div>
 <button type="button" class="btn btn-o btn-sm" id="nw-destbtn" onclick="destMode()" data-i="markDest">تحديد الوجهة في الخريطة</button>
 <p class="muted" id="nw-dist" style="margin:.5rem 0"></p>
-<div class="grid2"><div class="fg"><label data-i="price">الثمن (درهم MAD)</label><input id="nw-price" type="number" min="5" max="500"></div>
+<p style="font-weight:800;color:var(--green);margin:.2rem 0" id="nw-near"></p>
+<div class="grid2"><div class="fg"><label data-i="price">الثمن (درهم MAD)</label><div style="display:flex;gap:.4rem"><button type="button" class="btn btn-o btn-sm" onclick="chPrice(-1)">−1</button><input id="nw-price" type="number" min="5" max="500" style="flex:1"><button type="button" class="btn btn-o btn-sm" onclick="chPrice(1)">+1</button></div></div>
 <div class="fg"><label data-i="reqMsg">رسالة (اختياري، 200 حرف)</label><input id="nw-comment" maxlength="120"></div></div>
 <p class="muted" id="nw-sug" style="margin-bottom:.6rem"></p>
 <button type="button" class="btn btn-p" style="width:100%" onclick="nwGo()" data-i="findDriver">ابحث عن سائق</button>
@@ -211,7 +213,7 @@ footer.site a{color:#fff;font-weight:600}
 <div class="card">
 <label style="display:flex;gap:.6rem;align-items:center;font-weight:800;font-size:1.05rem;cursor:pointer"><input type="checkbox" id="drvOnline" style="width:22px;height:22px" onchange="drvToggle()"> <span data-i="drvOn">متصل (وضع الدراجة)</span></label>
 <div class="grid2" style="margin-top:.8rem"><div class="fg"><label data-i="cityL">المدينة</label><input id="drv-city" list="cities" autocomplete="off"></div>
-<div class="fg"><label>&nbsp;</label><button type="button" class="btn btn-o btn-sm" onclick="gpsDrv()" data-i="myLoc">موقعي</button></div></div>
+<div class="fg"><label data-i="rangeL">النطاق</label><div style="display:flex;gap:.4rem"><select id="drv-range" onchange="paintDrv()"><option value="5">5 km</option><option value="10">10 km</option></select><button type="button" class="btn btn-o btn-sm" onclick="gpsDrv()" data-i="myLoc">موقعي</button></div></div></div>
 <div id="drvList"></div>
 </div>
 </div>
@@ -347,8 +349,8 @@ try{refreshChecklist()}catch(e){}};
 window.resTab=function(k){resKind=k;var a=document.getElementById("rt-trips"),b=document.getElementById("rt-reqs"),c=document.getElementById("rt-moto");if(a)a.classList.toggle("on",k==="trips");if(b)b.classList.toggle("on",k==="reqs");if(c)c.classList.toggle("on",k==="moto");backToList();draw();};
 
 var T={
-ar:{t1:"سفر تشاركي بين مدن المغرب",t2:"سجّل الدخول بحساب Google، أضف واتساب الخاص بك، انشر رحلتك. الراكب يتواصل معك مباشرة. الدفع نقدا.",search:"بحث",pub:"انشر رحلة",prof:"حسابي",save:"حفظ",from:"مدينة الانطلاق",to:"مدينة الوصول",date:"التاريخ",time:"الساعة",seats:"المقاعد (1–8)",price:"الثمن (درهم MAD)",wa:"واتساب مع رمز الدولة (مثال: 212600000000 أو 33612345678)",searchBtn:"ابحث",fromPh:"مثال: الدار البيضاء",toPh:"مثال: مراكش",none:"لا توجد رحلات مطابقة حاليا.",contact:"تواصل واتساب",loginToContact:"سجّل الدخول للتواصل",del:"حذف",rep:"تبليغ",reported:"تم التبليغ",pubBtn:"نشر الرحلة",needLogin:"يتطلب النشر تسجيل الدخول وواتساب وصورة سيلفي في حسابك.",bad:"حقول غير صالحة (مدن، تاريخ مستقبلي، مقاعد 1-8، ثمن 1-10000).",noWa:"أضف رقم واتساب دولي صالح في حسابك أولا.",login:"دخول Google",logout:"خروج",pubOk:"تم نشر رحلتك!",delOk:"تم حذف الإعلان.",repOk:"شكرا، تم تسجيل التبليغ.",cash:"الدفع نقدا بين السائق والراكب",banned:"حسابك موقوف.",navSearch:"بحث",navPub:"انشر رحلة",heroCtaS:"ابحث عن رحلة",heroCtaP:"انشر رحلتك",heroCtaR:"🙋 أبحث عن سائق",pax:"المسافرون",routes:"طرق رائجة",go:"بحث ←",from2:"ابتداء من",drvT:"عندك سيارة؟ شارك مصاريف رحلتك",drvB:"انشر رحلة",a1t:"متى وأين تريد",a1p:"اختر مدينتك وتاريخك وساعتك",a2t:"أثمنة منخفضة، الدفع نقدا",a2p:"تتفق مع السائق وتدفع في اليد، بدون عمولة",a3t:"سافر بثقة",a3p:"حساب Google، سيلفي إجباري، تبليغ ومراقبة",howT:"كيف يعمل؟",s1t:"ابحث",s1p:"اختر مدينتي الانطلاق والوصول والتاريخ",s2t:"تواصل واتساب",s2p:"اتفق مباشرة مع السائق",s3t:"سافر وادفع يدا بيد",s3p:"ادفع نقدا يوم الرحلة",safeT:"نصائح السلامة",safe1:"لا تدفع أبدا مسبقا",safe2:"التقِ في مكان عام",safe3:"أخبر أحدا برحلتك",seatsFree:"مقاعد حرة",detail:"تفاصيل الرحلة",back:"رجوع",driver:"السائق",footCond:"شروط الاستخدام",footPriv:"الخصوصية",footSafe:"السلامة",footShare:"مشاركة",nocarrier:"Rakbin للتواصل فقط، ليست شركة نقل",needProf:"أكمل حسابك: أضف صورتك السيلفي ورقم الواتساب",warn:"⚠️ لا تدفع أبداً مسبقاً",share:"مشاركة Rakbin",carT:"السيارة (إجبارية للنشر)",carBrand:"الماركة",carModel:"الموديل",carColor:"اللون",other:"أخرى",ckTitle:"قبل النشر، أكمل حسابك",ckS:"السيلفي",ckW:"الواتساب",ckC:"السيارة",ckGo:"إكمال حسابي",pDriver:"أقترح رحلة (سائق)",pPass:"أبحث عن رحلة (راكب)",reqMsg:"رسالة (اختياري، 200 حرف)",resTrips:"الرحلات المقترحة",resReqs:"طلبات الركاب",interest:"مهتم",intTitle:"أبدِ اهتمامك",intMsg:"رسالتك (اختياري)",intPrice:"سعرك المقترح (اختياري، درهم)",intSend:"إرسال",myPosts:"إعلاناتي",mySent:"طلبات التواصل التي أرسلتها",received:"المهتمون",accept:"قبول",refuse:"رفض",stPending:"بانتظار الرد",stAccepted:"مقبول",stRefused:"مرفوض",openWA:"افتح واتساب",catT:"نوع السيارة",catAll:"الكل",cat1:"صغيرة",cat2:"مريحة",cat3:"دفع رباعي",cat4:"7 مقاعد",cat5:"فاخرة",carCat:"الفئة",priceHint:"الثمن المقترح قابل للتفاوض",noneReq:"لا توجد طلبات مطابقة حاليا.",intOk:"تم إرسال اهتمامك!",accOk:"تم القبول. رقم الواتساب ظاهر الآن.",refOk:"تم الرفض.",noPhone:"لا يمكن عرض الرقم.",loginNeed:"سجّل الدخول أولا.",sentEmpty:"لم ترسل أي طلب بعد.",myEmpty:"لم تنشر أي إعلان بعد.",nowRide:"موتو الآن",nowPax:"أطلب دراجة",nowDrv:"أنا سائق",nowSafe:"الخوذة إجبارية للاثنين · الدفع نقدا عند الوصول · شارك رحلتك مع عائلتك",myLoc:"موقعي",markDest:"تحديد الوجهة في الخريطة",tapDest:"اضغط على الخريطة لتحديد الوجهة",findDriver:"ابحث عن سائق",sugPrice:"مقترح: {p} درهم",waitingDrv:"نبحث عن سائق…",expiresIn:"ينتهي خلال",cancel:"إلغاء",noOffers:"لا عروض بعد. انتظر قليلا.",choose:"اختيار",matched:"تم! سائقك في الطريق",shareTrip:"شارك رحلتي",rateQ:"كيف كانت الرحلة؟",rideCancelled:"أُلغي الطلب",drvOn:"متصل (وضع الدراجة)",pickCity:"اختر مدينتك أولا",newRide:"طلب جديد!",needMoto:"تحتاج ملف دراجة نارية + سيلفي + واتساب",propose:"اقتراح سعر",etaMin:"الوصول (دقائق)",agoMin:"منذ {n} د",noRides:"لا توجد طلبات مفتوحة حاليا",scopeL:"النطاق",yourNum:"رقمك",ccOther:"أخرى (حدد الرمز)",vCar:"سيارة",vMoto:"دراجة نارية",scopeCity:"داخل المدينة",scopeInter:"بين المدن",cityL:"المدينة",qFrom:"حي / نقطة الانطلاق",qTo:"حي / نقطة الوصول",nowBtn:"الآن",wantedL:"أبحث عن",wantedCar:"سيارة",wantedMoto:"دراجة نارية",wantedAny:"لا يهم",resMoto:"دراجات نارية",catMoto:"دراجة نارية",helmet:"الخوذة إجبارية للسائق والراكب",otherDates:"تواريخ أخرى متاحة",newsP:"🔔 {n} مهتمون برحلتك ← شاهد",newsA:"✅ تم قبول تواصلك ← شاهد الواتساب",afterPub:"ارجع إلى Rakbin لترى من المهتم. فعّل التنبيهات.",notifOn:"التنبيهات: مفعّلة",notifOff:"التنبيهات: متوقفة",photo:"الصورة: Graphe Tween عبر Unsplash"},
-fr:{t1:"Covoiturage entre les villes du Maroc",t2:"Connectez-vous avec Google, ajoutez votre WhatsApp, publiez. Le passager vous contacte directement. Paiement cash.",search:"Rechercher",pub:"Publier",prof:"Mon compte",save:"Enregistrer",from:"Ville de départ",to:"Ville d'arrivée",date:"Date",time:"Heure",seats:"Places (1–8)",price:"Prix (MAD)",wa:"WhatsApp avec indicatif pays (ex : 212600000000 ou 33612345678)",searchBtn:"Rechercher",fromPh:"Ex : Casablanca",toPh:"Ex : Marrakech",none:"Aucun trajet pour le moment.",contact:"Contacter WhatsApp",loginToContact:"Connectez-vous pour contacter",del:"Supprimer",rep:"Signaler",reported:"Signalé",pubBtn:"Publier",needLogin:"La publication exige connexion + WhatsApp + selfie.",bad:"Champs invalides (villes, date future, places 1-8, prix 1-10000).",noWa:"Ajoutez d'abord un WhatsApp international valide.",login:"Connexion Google",logout:"Déconnexion",pubOk:"Trajet publié !",delOk:"Annonce supprimée.",repOk:"Merci, signalement enregistré.",cash:"Paiement cash entre conducteur et passager",banned:"Votre compte est suspendu.",navSearch:"Rechercher",navPub:"Publier un trajet",heroCtaS:"Chercher un trajet",heroCtaP:"Publier ton trajet",heroCtaR:"🙋 Je cherche un chauffeur",pax:"Passagers",routes:"Itinéraires populaires",go:"Rechercher →",from2:"Dès",drvT:"Tu as une voiture ? Partage tes frais de route",drvB:"Publier un trajet",a1t:"Où et quand tu veux",a1p:"Choisis tes villes, ta date et ton heure",a2t:"Petits prix, paiement cash",a2p:"Prix convenu, payé en main propre, sans commission",a3t:"Voyage en confiance",a3p:"Compte Google, selfie obligatoire, signalements et modération",howT:"Comment ça marche ?",s1t:"Cherche",s1p:"Mets tes villes de départ et d’arrivée et ta date",s2t:"Contacte sur WhatsApp",s2p:"Accorde-toi directement avec le conducteur",s3t:"Voyage et paie cash",s3p:"Paie en espèces le jour du trajet",safeT:"Conseils de sécurité",safe1:"Ne payez jamais à l’avance",safe2:"Retrouve-toi dans un lieu public",safe3:"Préviens un proche de ton voyage",seatsFree:"places libres",detail:"Détails du trajet",back:"Retour",driver:"Conducteur",footCond:"Conditions d’utilisation",footPriv:"Confidentialité",footSafe:"Sécurité",footShare:"Partager",nocarrier:"Rakbin met en contact, ce n’est pas un transporteur",needProf:"Complète ton compte : ajoute ton selfie et ton WhatsApp",warn:"⚠️ Ne payez jamais à l’avance",share:"Partager Rakbin",carT:"Voiture (obligatoire pour publier)",carBrand:"Marque",carModel:"Modèle",carColor:"Couleur",other:"Autre",ckTitle:"Avant de publier, complète ton compte",ckS:"Selfie",ckW:"WhatsApp",ckC:"Voiture",ckGo:"Compléter mon compte",photo:"Photo : Graphe Tween via Unsplash",pDriver:"Je propose un trajet (conducteur)",pPass:"Je cherche un trajet (passager)",reqMsg:"Message (optionnel, 200 caractères)",resTrips:"Trajets proposés",resReqs:"Demandes de passagers",interest:"Je suis intéressé",intTitle:"Manifeste ton intérêt",intMsg:"Ton message (optionnel)",intPrice:"Ton prix proposé (optionnel, MAD)",intSend:"Envoyer",myPosts:"Mes annonces",mySent:"Demandes envoyées",received:"Personnes intéressées",accept:"Accepter",refuse:"Refuser",stPending:"En attente",stAccepted:"Accepté",stRefused:"Refusé",openWA:"Ouvrir WhatsApp",catT:"Type de voiture",catAll:"Tous",cat1:"Citadine (petite)",cat2:"Berline (confort)",cat3:"SUV",cat4:"7 places",cat5:"Luxe",carCat:"Catégorie",priceHint:"Prix proposé, à négocier",noneReq:"Aucune demande pour le moment.",intOk:"Intérêt envoyé !",accOk:"Accepté. Les numéros sont visibles.",refOk:"Refusé.",noPhone:"Numéro indisponible.",loginNeed:"Connecte-toi d’abord.",sentEmpty:"Aucune demande envoyée.",myEmpty:"Aucune annonce publiée.",nowRide:"Moto maintenant",nowPax:"Commander",nowDrv:"Je suis conducteur",nowSafe:"Casque obligatoire pour les deux · Cash à l’arrivée · Partage ton trajet avec un proche",myLoc:"Ma position",markDest:"Placer la destination",tapDest:"Touchez la carte pour la destination",findDriver:"Chercher un motard",sugPrice:"Suggéré : {p} MAD",waitingDrv:"On cherche un motard…",expiresIn:"Expire dans",cancel:"Annuler",noOffers:"Pas d’offres pour l’instant.",choose:"Choisir",matched:"C’est parti ! Ton motard arrive",shareTrip:"Partager mon trajet",rateQ:"Comment s’est passé le trajet ?",rideCancelled:"Demande annulée",drvOn:"En ligne (mode moto)",pickCity:"Choisis d’abord ta ville",newRide:"Nouvelle demande !",needMoto:"Profil moto + selfie + WhatsApp requis",propose:"Proposer un prix",etaMin:"Arrivée (min)",agoMin:"il y a {n} min",noRides:"Aucune demande ouverte",scopeL:"Portée",yourNum:"Ton numéro",ccOther:"Autre (préciser)",vCar:"Voiture",vMoto:"Moto",scopeCity:"En ville",scopeInter:"Interurbain",cityL:"Ville",qFrom:"Quartier / point de départ",qTo:"Quartier / point d’arrivée",nowBtn:"Maintenant",wantedL:"Je cherche",wantedCar:"Voiture",wantedMoto:"Moto",wantedAny:"Peu importe",resMoto:"Motos",catMoto:"Moto",helmet:"Casque obligatoire pour conducteur et passager",otherDates:"Autres dates disponibles",newsP:"🔔 {n} personnes intéressées → Voir",newsA:"✅ Ton contact a été accepté → Voir le WhatsApp",afterPub:"Reviens sur Rakbin pour voir qui est intéressé. Active les notifications.",notifOn:"Notifications : ON",notifOff:"Notifications : OFF"}};
+ar:{t1:"سفر تشاركي بين مدن المغرب",t2:"سجّل الدخول بحساب Google، أضف واتساب الخاص بك، انشر رحلتك. الراكب يتواصل معك مباشرة. الدفع نقدا.",search:"بحث",pub:"انشر رحلة",prof:"حسابي",save:"حفظ",from:"مدينة الانطلاق",to:"مدينة الوصول",date:"التاريخ",time:"الساعة",seats:"المقاعد (1–8)",price:"الثمن (درهم MAD)",wa:"واتساب مع رمز الدولة (مثال: 212600000000 أو 33612345678)",searchBtn:"ابحث",fromPh:"مثال: الدار البيضاء",toPh:"مثال: مراكش",none:"لا توجد رحلات مطابقة حاليا.",contact:"تواصل واتساب",loginToContact:"سجّل الدخول للتواصل",del:"حذف",rep:"تبليغ",reported:"تم التبليغ",pubBtn:"نشر الرحلة",needLogin:"يتطلب النشر تسجيل الدخول وواتساب وصورة سيلفي في حسابك.",bad:"حقول غير صالحة (مدن، تاريخ مستقبلي، مقاعد 1-8، ثمن 1-10000).",noWa:"أضف رقم واتساب دولي صالح في حسابك أولا.",login:"دخول Google",logout:"خروج",pubOk:"تم نشر رحلتك!",delOk:"تم حذف الإعلان.",repOk:"شكرا، تم تسجيل التبليغ.",cash:"الدفع نقدا بين السائق والراكب",banned:"حسابك موقوف.",navSearch:"بحث",navPub:"انشر رحلة",heroCtaS:"ابحث عن رحلة",heroCtaP:"انشر رحلتك",heroCtaR:"🙋 أبحث عن سائق",pax:"المسافرون",routes:"طرق رائجة",go:"بحث ←",from2:"ابتداء من",drvT:"عندك سيارة؟ شارك مصاريف رحلتك",drvB:"انشر رحلة",a1t:"متى وأين تريد",a1p:"اختر مدينتك وتاريخك وساعتك",a2t:"أثمنة منخفضة، الدفع نقدا",a2p:"تتفق مع السائق وتدفع في اليد، بدون عمولة",a3t:"سافر بثقة",a3p:"حساب Google، سيلفي إجباري، تبليغ ومراقبة",howT:"كيف يعمل؟",s1t:"ابحث",s1p:"اختر مدينتي الانطلاق والوصول والتاريخ",s2t:"تواصل واتساب",s2p:"اتفق مباشرة مع السائق",s3t:"سافر وادفع يدا بيد",s3p:"ادفع نقدا يوم الرحلة",safeT:"نصائح السلامة",safe1:"لا تدفع أبدا مسبقا",safe2:"التقِ في مكان عام",safe3:"أخبر أحدا برحلتك",seatsFree:"مقاعد حرة",detail:"تفاصيل الرحلة",back:"رجوع",driver:"السائق",footCond:"شروط الاستخدام",footPriv:"الخصوصية",footSafe:"السلامة",footShare:"مشاركة",nocarrier:"Rakbin للتواصل فقط، ليست شركة نقل",needProf:"أكمل حسابك: أضف صورتك السيلفي ورقم الواتساب",warn:"⚠️ لا تدفع أبداً مسبقاً",share:"مشاركة Rakbin",carT:"السيارة (إجبارية للنشر)",carBrand:"الماركة",carModel:"الموديل",carColor:"اللون",other:"أخرى",ckTitle:"قبل النشر، أكمل حسابك",ckS:"السيلفي",ckW:"الواتساب",ckC:"السيارة",ckGo:"إكمال حسابي",pDriver:"أقترح رحلة (سائق)",pPass:"أبحث عن رحلة (راكب)",reqMsg:"رسالة (اختياري، 200 حرف)",resTrips:"الرحلات المقترحة",resReqs:"طلبات الركاب",interest:"مهتم",intTitle:"أبدِ اهتمامك",intMsg:"رسالتك (اختياري)",intPrice:"سعرك المقترح (اختياري، درهم)",intSend:"إرسال",myPosts:"إعلاناتي",mySent:"طلبات التواصل التي أرسلتها",received:"المهتمون",accept:"قبول",refuse:"رفض",stPending:"بانتظار الرد",stAccepted:"مقبول",stRefused:"مرفوض",openWA:"افتح واتساب",catT:"نوع السيارة",catAll:"الكل",cat1:"صغيرة",cat2:"مريحة",cat3:"دفع رباعي",cat4:"7 مقاعد",cat5:"فاخرة",carCat:"الفئة",priceHint:"الثمن المقترح قابل للتفاوض",noneReq:"لا توجد طلبات مطابقة حاليا.",intOk:"تم إرسال اهتمامك!",accOk:"تم القبول. رقم الواتساب ظاهر الآن.",refOk:"تم الرفض.",noPhone:"لا يمكن عرض الرقم.",loginNeed:"سجّل الدخول أولا.",sentEmpty:"لم ترسل أي طلب بعد.",myEmpty:"لم تنشر أي إعلان بعد.",nowRide:"موتو الآن",nowPax:"أطلب دراجة",nowDrv:"أنا سائق",nowSafe:"الخوذة إجبارية للاثنين · الدفع نقدا عند الوصول · شارك رحلتك مع عائلتك",myLoc:"موقعي",markDest:"تحديد الوجهة في الخريطة",tapDest:"اضغط على الخريطة لتحديد الوجهة",findDriver:"ابحث عن سائق",sugPrice:"مقترح: {p} درهم",waitingDrv:"نبحث عن سائق…",expiresIn:"ينتهي خلال",cancel:"إلغاء",noOffers:"لا عروض بعد. انتظر قليلا.",choose:"اختيار",matched:"تم! سائقك في الطريق",shareTrip:"شارك رحلتي",rateQ:"كيف كانت الرحلة؟",rideCancelled:"أُلغي الطلب",drvOn:"متصل (وضع الدراجة)",pickCity:"اختر مدينتك أولا",newRide:"طلب جديد!",needMoto:"تحتاج ملف دراجة نارية + سيلفي + واتساب",propose:"اقتراح سعر",etaMin:"الوصول (دقائق)",agoMin:"منذ {n} د",noRides:"لا توجد طلبات مفتوحة حاليا",nearDrv:"سائقون على بعد أقل من 3 كم",closest:"الأقرب",rangeL:"النطاق",chatPh:"اكتب رسالة…",noNum:"ممنوع الأرقام هنا. الواتساب يظهر عند الاختيار.",updOffer:"تحديث السعر",scopeL:"النطاق",yourNum:"رقمك",ccOther:"أخرى (حدد الرمز)",vCar:"سيارة",vMoto:"دراجة نارية",scopeCity:"داخل المدينة",scopeInter:"بين المدن",cityL:"المدينة",qFrom:"حي / نقطة الانطلاق",qTo:"حي / نقطة الوصول",nowBtn:"الآن",wantedL:"أبحث عن",wantedCar:"سيارة",wantedMoto:"دراجة نارية",wantedAny:"لا يهم",resMoto:"دراجات نارية",catMoto:"دراجة نارية",helmet:"الخوذة إجبارية للسائق والراكب",otherDates:"تواريخ أخرى متاحة",newsP:"🔔 {n} مهتمون برحلتك ← شاهد",newsA:"✅ تم قبول تواصلك ← شاهد الواتساب",afterPub:"ارجع إلى Rakbin لترى من المهتم. فعّل التنبيهات.",notifOn:"التنبيهات: مفعّلة",notifOff:"التنبيهات: متوقفة",photo:"الصورة: Graphe Tween عبر Unsplash"},
+fr:{t1:"Covoiturage entre les villes du Maroc",t2:"Connectez-vous avec Google, ajoutez votre WhatsApp, publiez. Le passager vous contacte directement. Paiement cash.",search:"Rechercher",pub:"Publier",prof:"Mon compte",save:"Enregistrer",from:"Ville de départ",to:"Ville d'arrivée",date:"Date",time:"Heure",seats:"Places (1–8)",price:"Prix (MAD)",wa:"WhatsApp avec indicatif pays (ex : 212600000000 ou 33612345678)",searchBtn:"Rechercher",fromPh:"Ex : Casablanca",toPh:"Ex : Marrakech",none:"Aucun trajet pour le moment.",contact:"Contacter WhatsApp",loginToContact:"Connectez-vous pour contacter",del:"Supprimer",rep:"Signaler",reported:"Signalé",pubBtn:"Publier",needLogin:"La publication exige connexion + WhatsApp + selfie.",bad:"Champs invalides (villes, date future, places 1-8, prix 1-10000).",noWa:"Ajoutez d'abord un WhatsApp international valide.",login:"Connexion Google",logout:"Déconnexion",pubOk:"Trajet publié !",delOk:"Annonce supprimée.",repOk:"Merci, signalement enregistré.",cash:"Paiement cash entre conducteur et passager",banned:"Votre compte est suspendu.",navSearch:"Rechercher",navPub:"Publier un trajet",heroCtaS:"Chercher un trajet",heroCtaP:"Publier ton trajet",heroCtaR:"🙋 Je cherche un chauffeur",pax:"Passagers",routes:"Itinéraires populaires",go:"Rechercher →",from2:"Dès",drvT:"Tu as une voiture ? Partage tes frais de route",drvB:"Publier un trajet",a1t:"Où et quand tu veux",a1p:"Choisis tes villes, ta date et ton heure",a2t:"Petits prix, paiement cash",a2p:"Prix convenu, payé en main propre, sans commission",a3t:"Voyage en confiance",a3p:"Compte Google, selfie obligatoire, signalements et modération",howT:"Comment ça marche ?",s1t:"Cherche",s1p:"Mets tes villes de départ et d’arrivée et ta date",s2t:"Contacte sur WhatsApp",s2p:"Accorde-toi directement avec le conducteur",s3t:"Voyage et paie cash",s3p:"Paie en espèces le jour du trajet",safeT:"Conseils de sécurité",safe1:"Ne payez jamais à l’avance",safe2:"Retrouve-toi dans un lieu public",safe3:"Préviens un proche de ton voyage",seatsFree:"places libres",detail:"Détails du trajet",back:"Retour",driver:"Conducteur",footCond:"Conditions d’utilisation",footPriv:"Confidentialité",footSafe:"Sécurité",footShare:"Partager",nocarrier:"Rakbin met en contact, ce n’est pas un transporteur",needProf:"Complète ton compte : ajoute ton selfie et ton WhatsApp",warn:"⚠️ Ne payez jamais à l’avance",share:"Partager Rakbin",carT:"Voiture (obligatoire pour publier)",carBrand:"Marque",carModel:"Modèle",carColor:"Couleur",other:"Autre",ckTitle:"Avant de publier, complète ton compte",ckS:"Selfie",ckW:"WhatsApp",ckC:"Voiture",ckGo:"Compléter mon compte",photo:"Photo : Graphe Tween via Unsplash",pDriver:"Je propose un trajet (conducteur)",pPass:"Je cherche un trajet (passager)",reqMsg:"Message (optionnel, 200 caractères)",resTrips:"Trajets proposés",resReqs:"Demandes de passagers",interest:"Je suis intéressé",intTitle:"Manifeste ton intérêt",intMsg:"Ton message (optionnel)",intPrice:"Ton prix proposé (optionnel, MAD)",intSend:"Envoyer",myPosts:"Mes annonces",mySent:"Demandes envoyées",received:"Personnes intéressées",accept:"Accepter",refuse:"Refuser",stPending:"En attente",stAccepted:"Accepté",stRefused:"Refusé",openWA:"Ouvrir WhatsApp",catT:"Type de voiture",catAll:"Tous",cat1:"Citadine (petite)",cat2:"Berline (confort)",cat3:"SUV",cat4:"7 places",cat5:"Luxe",carCat:"Catégorie",priceHint:"Prix proposé, à négocier",noneReq:"Aucune demande pour le moment.",intOk:"Intérêt envoyé !",accOk:"Accepté. Les numéros sont visibles.",refOk:"Refusé.",noPhone:"Numéro indisponible.",loginNeed:"Connecte-toi d’abord.",sentEmpty:"Aucune demande envoyée.",myEmpty:"Aucune annonce publiée.",nowRide:"Moto maintenant",nowPax:"Commander",nowDrv:"Je suis conducteur",nowSafe:"Casque obligatoire pour les deux · Cash à l’arrivée · Partage ton trajet avec un proche",myLoc:"Ma position",markDest:"Placer la destination",tapDest:"Touchez la carte pour la destination",findDriver:"Chercher un motard",sugPrice:"Suggéré : {p} MAD",waitingDrv:"On cherche un motard…",expiresIn:"Expire dans",cancel:"Annuler",noOffers:"Pas d’offres pour l’instant.",choose:"Choisir",matched:"C’est parti ! Ton motard arrive",shareTrip:"Partager mon trajet",rateQ:"Comment s’est passé le trajet ?",rideCancelled:"Demande annulée",drvOn:"En ligne (mode moto)",pickCity:"Choisis d’abord ta ville",newRide:"Nouvelle demande !",needMoto:"Profil moto + selfie + WhatsApp requis",propose:"Proposer un prix",etaMin:"Arrivée (min)",agoMin:"il y a {n} min",noRides:"Aucune demande ouverte",nearDrv:"motards à moins de 3 km",closest:"Le plus proche",rangeL:"Rayon",chatPh:"Écris un message…",noNum:"Pas de numéros ici. Le WhatsApp s’affiche après choix.",updOffer:"Maj prix",scopeL:"Portée",yourNum:"Ton numéro",ccOther:"Autre (préciser)",vCar:"Voiture",vMoto:"Moto",scopeCity:"En ville",scopeInter:"Interurbain",cityL:"Ville",qFrom:"Quartier / point de départ",qTo:"Quartier / point d’arrivée",nowBtn:"Maintenant",wantedL:"Je cherche",wantedCar:"Voiture",wantedMoto:"Moto",wantedAny:"Peu importe",resMoto:"Motos",catMoto:"Moto",helmet:"Casque obligatoire pour conducteur et passager",otherDates:"Autres dates disponibles",newsP:"🔔 {n} personnes intéressées → Voir",newsA:"✅ Ton contact a été accepté → Voir le WhatsApp",afterPub:"Reviens sur Rakbin pour voir qui est intéressé. Active les notifications.",notifOn:"Notifications : ON",notifOff:"Notifications : OFF"}};
 var lang="ar", me=null, myProfile=null, cache=[], reqCache=[], repCount={}, ownerCache={}, myHasSelfie=false, myPhone=null, resKind="trips";
 window.setLang=function(l){lang=l;var d=document.documentElement;d.lang=l;d.dir=l==="ar"?"rtl":"ltr";
 document.getElementById("b-ar").classList.toggle("on",l==="ar");document.getElementById("b-fr").classList.toggle("on",l==="fr");
@@ -696,7 +698,7 @@ if(!nowMap){nowMap=L.map("nowMap").setView([31.7917,-7.0926],6);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(nowMap);
 nowMap.on("click",function(e){if(pickDest)setDest(e.latlng);else setFrom(e.latlng)});
 setTimeout(function(){try{nowMap.invalidateSize()}catch(e){}},300)}
-nowTab(nowMode);updSug();}
+nowTab(nowMode);updSug();watchDrivers();}
 function setFrom(ll){fromLL={lat:ll.lat,lng:ll.lng};
 if(!nowFromMk){nowFromMk=L.marker(ll,{draggable:true}).addTo(nowMap);nowFromMk.on("dragend",function(){var p=nowFromMk.getLatLng();fromLL={lat:p.lat,lng:p.lng};updSug()})}else{nowFromMk.setLatLng(ll)}
 updSug()}
@@ -705,11 +707,37 @@ if(!nowToMk){nowToMk=L.marker(ll,{draggable:true}).addTo(nowMap);nowToMk.on("dra
 pickDest=false;updSug()}
 window.destMode=function(){pickDest=true;alert(T[lang].tapDest)};
 function updSug(){var d=document.getElementById("nw-dist"),s=document.getElementById("nw-sug"),pi=document.getElementById("nw-price");
-if(fromLL&&toLL){var km=havKm(fromLL.lat,fromLL.lng,toLL.lat,toLL.lng);var sug=Math.max(9,Math.round(7+3*km));
+if(fromLL&&toLL){var km=havKm(fromLL.lat,fromLL.lng,toLL.lat,toLL.lng)*1.3;var sug=Math.max(9,Math.round(7+3*km));
 if(d)d.textContent="~"+km.toFixed(1)+" km";
 if(s)s.textContent=T[lang].sugPrice.replace("{p}",sug);
 if(pi&&!pi.value)pi.value=sug;}
-else{if(d)d.textContent="";if(s)s.textContent=""}}
+else{if(d)d.textContent="";if(s)s.textContent=""}
+paintNear();}
+window.chPrice=function(dd){var el=document.getElementById("nw-price");var v=parseFloat((el&&el.value)||"0")||0;v=Math.min(500,Math.max(5,v+dd));if(el)el.value=v;};
+function fmtD(km){if(km<1)return "~"+Math.round(km*1000)+" m";return "~"+km.toFixed(1)+" km"}
+// ---- motoristas cercanos en el mapa del pasajero ----
+var nearDrvList=[],drvMk={},drvUnsubP=null;
+function motoIcon(){return L.divIcon({html:'<svg width="26" height="26" viewBox="0 0 24 24" fill="#006233" stroke="#fff" stroke-width="1"><circle cx="5.5" cy="16" r="3.4"/><circle cx="18.5" cy="16" r="3.4"/><path d="M5.5 16l3.5-7H14l4.5 7M9 9H6.5M17 9h-3" fill="none" stroke="#006233" stroke-width="2" stroke-linecap="round"/></svg>',iconSize:[26,26],iconAnchor:[13,13],className:"moto-pin"})}
+function drvFresh(o){var ms=o.updatedAt&&o.updatedAt.toMillis?o.updatedAt.toMillis():0;return ms>0&&(Date.now()-ms)<=120000}
+function watchDrivers(){
+if(drvUnsubP){try{drvUnsubP()}catch(e){}drvUnsubP=null}
+var ck=cityKey((document.getElementById("nw-city")||{value:""}).value.trim());if(!ck||!window.L)return;
+try{
+drvUnsubP=onSnapshot(query(collection(db,"drivers"),where("cityKey","==",ck),where("online","==",true)),function(ss){
+nearDrvList=[];ss.forEach(function(d){if(me&&d.id===me.uid)return;var o=d.data();o._id=d.id;if(drvFresh(o))nearDrvList.push(o)});
+paintNear();
+});
+}catch(e){}}
+function paintNear(){
+if(!nowMap)return;
+var seen={};
+nearDrvList.forEach(function(o){seen[o._id]=1;
+if(!drvMk[o._id]){drvMk[o._id]=L.marker([o.lat,o.lng],{icon:motoIcon(),interactive:false}).addTo(nowMap)}
+else{drvMk[o._id].setLatLng([o.lat,o.lng])}});
+Object.keys(drvMk).forEach(function(id){if(!seen[id]){try{nowMap.removeLayer(drvMk[id])}catch(e){}delete drvMk[id]}});
+var n=0;if(fromLL){nearDrvList.forEach(function(o){if(havKm(fromLL.lat,fromLL.lng,o.lat,o.lng)<=3)n++})}
+else{n=nearDrvList.length}
+var el=document.getElementById("nw-near");if(el)el.textContent=n>0?(n+" "+T[lang].nearDrv):"";}
 window.gpsMe=function(){if(!navigator.geolocation){alert("Error GPS");return}
 navigator.geolocation.getCurrentPosition(function(p){var ll={lat:p.coords.latitude,lng:p.coords.longitude};if(nowMap)nowMap.setView(ll,15);setFrom(ll)},function(){alert("Error GPS")})};
 window.nwGo=async function(){
@@ -728,7 +756,7 @@ if(fromLL){d.fromLat=fromLL.lat;d.fromLng=fromLL.lng}
 if(toLL){d.toLat=toLL.lat;d.toLng=toLL.lng}
 try{var ref=await addDoc(collection(db,"rides"),d);watchRide(ref.id);}catch(e){alert("Error: "+e.message)}};
 function rideLeft(){if(!nowRide||!nowRide.expiresAt)return 0;var ms=nowRide.expiresAt.toMillis?nowRide.expiresAt.toMillis():nowRide.expiresAt;return Math.max(0,(ms-Date.now())/1000)}
-function stopWatch(){if(nowUnsub){try{nowUnsub()}catch(e){}nowUnsub=null}if(nowTimer){clearInterval(nowTimer);nowTimer=null}}
+function stopWatch(){if(nowUnsub){try{nowUnsub()}catch(e){}nowUnsub=null}if(nowTimer){clearInterval(nowTimer);nowTimer=null}chatSubs.forEach(function(u){try{u()}catch(e){}});chatSubs=[];if(chatUnsub){try{chatUnsub()}catch(e){}chatUnsub=null}chatWith=null}
 async function watchRide(id){
 stopWatch();
 try{var s=await getDoc(doc(db,"rides",id));if(!s.exists())return;nowRide={id:id};var dd=s.data();for(var k in dd)nowRide[k]=dd[k];}catch(e){return}
@@ -741,6 +769,7 @@ async function avgRate(uid){if(rateCache[uid])return rateCache[uid];
 try{var q=await getDocs(query(collection(db,"ratings"),where("to","==",uid)));var n=0,s=0;q.forEach(function(d){var st=d.data().stars;if(st>=1&&st<=5){n++;s+=st}});var r={avg:n?(s/n).toFixed(1):"–",n:n};rateCache[uid]=r;return r}catch(e){return{avg:"–",n:0}}}
 async function drawWaiting(){
 var box=document.getElementById("nw-active");if(!box)return;
+var keepChat=chatWith,keepTxt=null;try{var ci0=document.getElementById("chat-in");if(ci0)keepTxt=ci0.value}catch(e){}
 if(!nowRide){box.innerHTML="";return}
 try{var s=await getDoc(doc(db,"rides",nowRide.id));if(s.exists()){var nd=s.data();for(var k in nd)nowRide[k]=nd[k]}}catch(e){}
 var r=nowRide;
@@ -749,13 +778,74 @@ if(r.status==="matched"){drawMatched();return}
 var html='<div class="card"><h3>'+T[lang].waitingDrv+'</h3><p>'+T[lang].expiresIn+' <strong id="nw-count"></strong></p><div class="row"><button class="btn btn-o btn-sm" onclick="bumpPrice()">+2 MAD</button><button class="btn btn-o btn-sm" onclick="cancelRide()">'+T[lang].cancel+'</button></div><div id="nw-offers"><p class="muted">'+T[lang].noOffers+'</p></div></div>';
 box.innerHTML=html;
 if(!nowOffers.length)return;
-var parts=await Promise.all(nowOffers.map(async function(o){
+var enriched=await Promise.all(nowOffers.map(async function(o){
 var p=await profMini(o.driverUid);
 var av=await avgRate(o.driverUid);
+var dd=null;try{var ds=await getDoc(doc(db,"drivers",o.driverUid));if(ds.exists()){var d0=ds.data();if(drvFresh(d0)&&d0.lat!==undefined)dd={lat:d0.lat,lng:d0.lng}}}catch(e){}
+var dist=(fromLL&&dd)?havKm(fromLL.lat,fromLL.lng,dd.lat,dd.lng):null;
+return {o:o,p:p,av:av,dist:dist}}));
+enriched.sort(function(a,b){var da=a.dist===null?1e9:a.dist,db=b.dist===null?1e9:b.dist;if(da!==db)return da-db;return a.o.price-b.o.price});
+var parts=enriched.map(function(e,i){
+var o=e.o,p=e.p,av=e.av;
 var carL=(p.car&&p.car.brand)?(p.car.brand+" "+(p.car.model||"")+" · "+(p.car.color||"")):"";
-return '<div style="display:flex;gap:.6rem;align-items:center;margin-top:.8rem;flex-wrap:wrap">'+(p.im?'<img src="'+p.im+'" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover">':"")+'<div><strong>'+esc(p.nm)+'</strong> ★'+av.avg+' ('+av.n+')<br><small>'+esc(carL)+' · '+esc(o.eta)+' min · <strong>'+esc(o.price)+' MAD</strong></small></div><button class="btn btn-p btn-sm" onclick="chooseOffer(\''+o.driverUid+'\')">'+T[lang].choose+'</button></div>'}));
+var badge=(i===0&&e.dist!==null)?' <strong style="color:var(--green)">· '+T[lang].closest+'</strong>':"";
+var unread=chatUnread(nowRide.id,o.driverUid)?' <strong style="color:#c1272d">●</strong>':"";
+return '<div style="display:flex;gap:.6rem;align-items:center;margin-top:.8rem;flex-wrap:wrap">'+(p.im?'<img src="'+p.im+'" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover">':"")+'<div><strong>'+esc(p.nm)+'</strong> ★'+av.avg+' ('+av.n+')'+badge+'<br><small>'+esc(carL)+(e.dist!==null?(' · '+fmtD(e.dist)):"")+' · '+esc(o.eta)+' min · <strong>'+esc(o.price)+' MAD</strong></small></div><button class="btn btn-p btn-sm" onclick="chooseOffer(\''+o.driverUid+'\')">'+T[lang].choose+'</button><button class="btn btn-o btn-sm" onclick="openChat(\''+o.driverUid+'\')">Chat'+unread+'</button></div><div id="chat-'+o.driverUid+'" style="width:100%"></div>'});
 var el=document.getElementById("nw-offers");if(el)el.innerHTML=parts.join("");
+subChatAll();
+if(keepChat){openChat(keepChat);if(keepTxt){var ci1=document.getElementById("chat-in");if(ci1)ci1.value=keepTxt}}}
+function chatKey(rideId,drv){return "rb_chat_"+rideId+"_"+drv}
+function chatSeen(rideId,drv){try{return parseInt(localStorage.getItem(chatKey(rideId,drv))||"0",10)||0}catch(e){return 0}}
+function chatMark(rideId,drv,ms){try{localStorage.setItem(chatKey(rideId,drv),String(ms))}catch(e){}}
+function chatUnread(rideId,drv){var l=chatLast[rideId+"_"+drv];return l&&l.ms>chatSeen(rideId,drv)&&l.from!==me.uid}
+var chatLast={},chatSubs=[],chatWith=null,chatUnsub=null;
+function subChatAll(){
+chatSubs.forEach(function(u){try{u()}catch(e){}});chatSubs=[];
+if(!nowRide||nowRide.status!=="open")return;
+nowOffers.forEach(function(o){
+try{
+var u=onSnapshot(collection(db,"rides",nowRide.id,"chats",o.driverUid,"messages"),function(ss){
+var last=null;ss.forEach(function(d){var m=d.data();var ms=m.createdAt&&m.createdAt.toMillis?m.createdAt.toMillis():0;if(!last||ms>last.ms)last={ms:ms,from:m.from}});
+chatLast[nowRide.id+"_"+o.driverUid]=last||null;
+if(chatWith===o.driverUid)paintChat();
+else drawWaitingBadge(o.driverUid);
+});
+chatSubs.push(u)}catch(e){}});}
+function drawWaitingBadge(drv){if(!nowRide)return;drawWaiting()}
+window.openChat=function(driverUid){
+chatWith=driverUid;
+if(chatUnsub){try{chatUnsub()}catch(e){}chatUnsub=null}
+var box=document.getElementById("chat-"+driverUid);if(!box)return;
+box.innerHTML='<div style="background:#f8fafc;border:1px solid var(--bd);border-radius:10px;padding:.7rem;margin-top:.4rem"><div id="chat-msgs" style="max-height:180px;overflow-y:auto;margin-bottom:.5rem"></div><div style="display:flex;gap:.4rem"><input id="chat-in" maxlength="300" placeholder="'+T[lang].chatPh+'" style="flex:1"><button class="btn btn-p btn-sm" onclick="sendChat(\''+driverUid+'\')">'+T[lang].intSend+'</button></div><div style="display:flex;gap:.4rem;margin-top:.4rem;align-items:center"><input id="chat-price" type="number" min="5" max="500" style="width:90px"><button class="btn btn-o btn-sm" onclick="chatOffer(\''+driverUid+'\')">'+T[lang].updOffer+'</button><button class="btn btn-p btn-sm" onclick="chooseOffer(\''+driverUid+'\')">'+T[lang].choose+'</button></div></div>';
+paintChat();
+try{
+chatUnsub=onSnapshot(collection(db,"rides",nowRide.id,"chats",driverUid,"messages"),function(ss){
+var ms=[];ss.forEach(function(d){var m=d.data();m._id=d.id;ms.push(m)});
+ms.sort(function(a,b){var ta=a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0;var tb=b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0;return ta-tb});
+var last=null;ms.forEach(function(m){var t=m.createdAt&&m.createdAt.toMillis?m.createdAt.toMillis():0;if(!last||t>last)last=t});
+if(last)chatMark(nowRide.id,driverUid,last);
+chatLast[nowRide.id+"_"+driverUid]=last?{ms:last,from:ms.length?ms[ms.length-1].from:""}:null;
+paintChat(ms);
+});
+}catch(e){}};
+function paintChat(pre){
+var box=document.getElementById("chat-msgs");if(!box||!chatWith)return;
+function render(ms){
+box.innerHTML=ms.map(function(m){var mine=m.from===me.uid;return '<div style="text-align:'+(mine?"end":"start")+';margin:.2rem 0"><span style="display:inline-block;background:'+(mine?"#dcfce7":"#ffffff")+';border:1px solid var(--bd);border-radius:8px;padding:.3rem .6rem">'+esc(m.text)+'</span></div>'}).join("");
+box.scrollTop=box.scrollHeight;}
+if(pre){render(pre);return}
+getDocs(collection(db,"rides",nowRide.id,"chats",chatWith,"messages")).then(function(ss){var ms=[];ss.forEach(function(d){var m=d.data();ms.push(m)});ms.sort(function(a,b){var ta=a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0;var tb=b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0;return ta-tb});render(ms)}).catch(function(){});
 }
+window.sendChat=async function(driverUid){
+if(!me||!nowRide)return;
+var inp=document.getElementById("chat-in");var txt=(inp.value||"").trim().slice(0,300);
+if(!txt)return;
+if(/(\d\D*){8,}/.test(txt)){alert(T[lang].noNum);return}
+try{await addDoc(collection(db,"rides",nowRide.id,"chats",driverUid,"messages"),{from:me.uid,text:txt,createdAt:serverTimestamp()});inp.value="";}catch(e){alert("Error: "+e.message)}};
+window.chatOffer=async function(driverUid){
+var pv=parseFloat((document.getElementById("chat-price")||{value:""}).value);
+if(!(pv>=5&&pv<=500)){alert(T[lang].bad);return}
+try{await updateDoc(doc(db,"rides",nowRide.id,"offers",driverUid),{price:pv});drawWaiting();}catch(e){alert("Error: "+e.message)}};
 window.bumpPrice=async function(){if(!nowRide)return;try{await updateDoc(doc(db,"rides",nowRide.id),{price:nowRide.price+2});var s=await getDoc(doc(db,"rides",nowRide.id));nowRide.price=s.data().price;drawWaiting();}catch(e){alert("Error: "+e.message)}};
 window.cancelRide=async function(){if(!nowRide)return;try{await updateDoc(doc(db,"rides",nowRide.id),{status:"cancelled"});stopWatch();drawWaiting();}catch(e){alert("Error: "+e.message)}};
 window.nowReset=function(){stopWatch();nowRide=null;nowOffers=[];var box=document.getElementById("nw-active");if(box)box.innerHTML="";};
@@ -797,8 +887,22 @@ if(!myProfile||!myPhone){alert(T[lang].noWa);document.getElementById("drvOnline"
 var isM=myProfile.car&&(myProfile.car.type==="moto"||myProfile.car.category==="moto");
 if(!isM||!myHasSelfie){alert(T[lang].needMoto);document.getElementById("drvOnline").checked=false;return}
 startDrv();
-}else{stopDrv();}};
-function stopDrv(){if(drvUnsub){try{drvUnsub()}catch(e){}drvUnsub=null}if(drvUnsub2){try{drvUnsub2()}catch(e){}drvUnsub2=null}drvSeen={};drvOpen=[];drvMine=[]}
+startGeo();
+}else{stopDrv();stopGeo();}};
+var geoWatch=null,geoTimer=null,lastDrv={lat:0,lng:0,cityKey:""};
+function round3(n){return Math.round(n*1000)/1000}
+async function pushPos(lat,lng){
+if(!me)return;var ck=drvCityKey()||lastDrv.cityKey;if(!ck)return;
+lastDrv={lat:round3(lat),lng:round3(lng),cityKey:ck};
+try{await setDoc(doc(db,"drivers",me.uid),{lat:lastDrv.lat,lng:lastDrv.lng,cityKey:ck,online:true,updatedAt:serverTimestamp()});}catch(e){}}
+function startGeo(){stopGeo();if(!navigator.geolocation||!me)return;
+try{geoWatch=navigator.geolocation.watchPosition(function(p){drvPos={lat:p.coords.latitude,lng:p.coords.longitude};pushPos(p.coords.latitude,p.coords.longitude)},function(){},{enableHighAccuracy:true,maximumAge:20000})}catch(e){}
+pushNow();
+geoTimer=setInterval(pushNow,30000);}
+function pushNow(){if(!navigator.geolocation||!me)return;navigator.geolocation.getCurrentPosition(function(p){drvPos={lat:p.coords.latitude,lng:p.coords.longitude};pushPos(p.coords.latitude,p.coords.longitude)},function(){},{maximumAge:60000})}
+async function stopGeo(){if(geoWatch!==null){try{navigator.geolocation.clearWatch(geoWatch)}catch(e){}geoWatch=null}if(geoTimer){clearInterval(geoTimer);geoTimer=null}
+if(me&&lastDrv.cityKey){try{await setDoc(doc(db,"drivers",me.uid),{lat:lastDrv.lat,lng:lastDrv.lng,cityKey:lastDrv.cityKey,online:false,updatedAt:serverTimestamp()})}catch(e){}}}
+function stopDrv(){if(drvUnsub){try{drvUnsub()}catch(e){}drvUnsub=null}if(drvUnsub2){try{drvUnsub2()}catch(e){}drvUnsub2=null}drvSeen={};drvOpen=[];drvMine=[];drvChatSubs.forEach(function(u){try{u()}catch(e){}});drvChatSubs=[];if(drvChatUnsub){try{drvChatUnsub()}catch(e){}drvChatUnsub=null}drvChatOpen=null}
 window.gpsDrv=function(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(function(p){drvPos={lat:p.coords.latitude,lng:p.coords.longitude};drvRefresh()},function(){})};
 function drvCityKey(){var el=document.getElementById("drv-city");var c=el?el.value.trim():"";return c?cityKey(c):""}
 window.drvRefresh=function(){startDrv()};
@@ -823,18 +927,76 @@ drvMine=[];ss.forEach(function(d){var o=d.data();o._id=d.id;if(o.status==="match
 paintDrv();
 });
 }catch(e){}}
+var drvChatSubs=[];
 async function drawDrvList(arr){
 var box=document.getElementById("drvList");if(!box)return;
+drvChatSubs.forEach(function(u){try{u()}catch(e){}});drvChatSubs=[];
+var maxKm=parseFloat((document.getElementById("drv-range")||{value:"5"}).value)||5;
+if(drvPos){arr=arr.filter(function(o){if(o.status==="matched")return true;if(!o.fromLat)return true;return havKm(drvPos.lat,drvPos.lng,o.fromLat,o.fromLng)<=maxKm});
+arr.sort(function(a,b){var da=(drvPos&&a.fromLat)?havKm(drvPos.lat,drvPos.lng,a.fromLat,a.fromLng):1e9;var db=(drvPos&&b.fromLat)?havKm(drvPos.lat,drvPos.lng,b.fromLat,b.fromLng):1e9;return da-db});}
 if(!arr.length){box.innerHTML='<p class="muted">'+T[lang].noRides+'</p>';return}
 var parts=await Promise.all(arr.map(async function(o){
 if(o.status==="matched"&&o.driverUid===me.uid){
 var ph=await getPhone(o.ownerUid);
 return '<div class="card trip"><div><strong>'+esc(o.fromLabel)+' → '+esc(o.toLabel)+'</strong><br><span class="muted">✓ '+T[lang].stAccepted+'</span></div><div class="row">'+(ph?'<button class="btn btn-wa btn-sm" onclick="openWA(\''+ph+'\')">'+T[lang].openWA+'</button>':"")+'</div><div id="rateBoxD-'+o._id+'"></div></div>'}
 var dist=(o.fromLat&&o.toLat)?("~"+havKm(o.fromLat,o.fromLng,o.toLat,o.toLng).toFixed(1)+" km"):"";
-var dd=(drvPos&&o.fromLat)?(" · ~"+havKm(drvPos.lat,drvPos.lng,o.fromLat,o.fromLng).toFixed(1)+" km"):"";
-return '<div class="card trip"><div><strong>'+esc(o.fromLabel)+' → '+esc(o.toLabel)+'</strong><br><span class="muted">'+dist+dd+' · <strong>'+esc(o.price)+' MAD</strong> · '+agoMin(o.createdAt)+'</span></div><div class="row" style="margin-top:.5rem"><input id="pr-'+o._id+'" type="number" min="5" max="500" value="'+esc(o.price)+'" style="width:90px"><input id="eta-'+o._id+'" type="number" min="1" max="60" value="10" style="width:70px" title="'+T[lang].etaMin+'"><button class="btn btn-p btn-sm" onclick="sendOffer(\''+o._id+'\')">'+T[lang].accept+'</button></div></div>'}));
+var dd=(drvPos&&o.fromLat)?(" · "+fmtD(havKm(drvPos.lat,drvPos.lng,o.fromLat,o.fromLng))):"";
+var hasOff=false;try{var os=await getDoc(doc(db,"rides",o._id,"offers",me.uid));hasOff=os.exists()}catch(e){}
+var unread=drvChatUnread(o._id)?' <strong style="color:#c1272d">●</strong>':"";
+return '<div class="card trip"><div><strong>'+esc(o.fromLabel)+' → '+esc(o.toLabel)+'</strong><br><span class="muted">'+dist+dd+' · <strong>'+esc(o.price)+' MAD</strong> · '+agoMin(o.createdAt)+'</span></div><div class="row" style="margin-top:.5rem"><input id="pr-'+o._id+'" type="number" min="5" max="500" value="'+esc(o.price)+'" style="width:90px"><input id="eta-'+o._id+'" type="number" min="1" max="60" value="10" style="width:70px" title="'+T[lang].etaMin+'"><button class="btn btn-p btn-sm" onclick="sendOffer(\''+o._id+'\')">'+T[lang].accept+'</button>'+(hasOff?'<button class="btn btn-o btn-sm" onclick="openDrvChat(\''+o._id+'\')">Chat'+unread+'</button>':"")+'</div><div id="dchat-'+o._id+'" style="width:100%"></div></div>'}));
 box.innerHTML=parts.join("");
-arr.forEach(function(o){if(o.status==="matched"&&o.driverUid===me.uid)rateUI("rateBoxD-"+o._id,o._id,o.ownerUid)});}
+arr.forEach(function(o){if(o.status==="matched"&&o.driverUid===me.uid)rateUI("rateBoxD-"+o._id,o._id,o.ownerUid)});
+subDrvChats(arr);}
+function drvChatKey(rideId){return "rb_dchat_"+rideId}
+function drvChatSeen(rideId){try{return parseInt(localStorage.getItem(drvChatKey(rideId))||"0",10)||0}catch(e){return 0}}
+function drvChatMark(rideId,ms){try{localStorage.setItem(drvChatKey(rideId),String(ms))}catch(e){}}
+function drvChatUnread(rideId){var l=drvChatLast[rideId];return l&&l.ms>drvChatSeen(rideId)&&l.from!==me.uid}
+var drvChatLast={};
+function subDrvChats(arr){
+arr.forEach(function(o){
+if(o.status!=="open")return;
+try{
+var u=onSnapshot(collection(db,"rides",o._id,"chats",me.uid,"messages"),function(ss){
+var last=null;ss.forEach(function(d){var m=d.data();var ms=m.createdAt&&m.createdAt.toMillis?m.createdAt.toMillis():0;if(!last||ms>last.ms)last={ms:ms,from:m.from}});
+drvChatLast[o._id]=last;
+if(drvChatOpen===o._id)paintDrvChat(o._id);
+else if(last&&last.ms>drvChatSeen(o._id)&&last.from!==me.uid)drawDrvList(arr.slice());
+});
+drvChatSubs.push(u)}catch(e){}});}
+var drvChatOpen=null,drvChatUnsub=null;
+window.openDrvChat=function(rideId){
+drvChatOpen=rideId;
+if(drvChatUnsub){try{drvChatUnsub()}catch(e){}drvChatUnsub=null}
+var box=document.getElementById("dchat-"+rideId);if(!box)return;
+box.innerHTML='<div style="background:#f8fafc;border:1px solid var(--bd);border-radius:10px;padding:.7rem;margin-top:.4rem"><div id="dchat-msgs" style="max-height:180px;overflow-y:auto;margin-bottom:.5rem"></div><div style="display:flex;gap:.4rem"><input id="dchat-in" maxlength="300" placeholder="'+T[lang].chatPh+'" style="flex:1"><button class="btn btn-p btn-sm" onclick="sendDrvChat(\''+rideId+'\')">'+T[lang].intSend+'</button></div><div style="display:flex;gap:.4rem;margin-top:.4rem;align-items:center"><input id="dchat-price" type="number" min="5" max="500" style="width:90px"><button class="btn btn-o btn-sm" onclick="chatOfferDrv(\''+rideId+'\')">'+T[lang].updOffer+'</button></div></div>';
+paintDrvChat(rideId);
+try{
+drvChatUnsub=onSnapshot(collection(db,"rides",rideId,"chats",me.uid,"messages"),function(ss){
+var ms=[];ss.forEach(function(d){var m=d.data();ms.push(m)});
+ms.sort(function(a,b){var ta=a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0;var tb=b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0;return ta-tb});
+var last=0;ms.forEach(function(m){var t=m.createdAt&&m.createdAt.toMillis?m.createdAt.toMillis():0;if(t>last)last=t});
+if(last)drvChatMark(rideId,last);
+paintDrvChat(ms);
+});
+}catch(e){}};
+function paintDrvChat(rideId,pre){
+var box=document.getElementById("dchat-msgs");if(!box)return;
+function render(ms){
+box.innerHTML=ms.map(function(m){var mine=m.from===me.uid;return '<div style="text-align:'+(mine?"end":"start")+';margin:.2rem 0"><span style="display:inline-block;background:'+(mine?"#dcfce7":"#ffffff")+';border:1px solid var(--bd);border-radius:8px;padding:.3rem .6rem">'+esc(m.text)+'</span></div>'}).join("");
+box.scrollTop=box.scrollHeight;}
+if(pre){render(pre);return}
+getDocs(collection(db,"rides",rideId,"chats",me.uid,"messages")).then(function(ss){var ms=[];ss.forEach(function(d){ms.push(d.data())});ms.sort(function(a,b){var ta=a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0;var tb=b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0;return ta-tb});render(ms)}).catch(function(){});
+}
+window.sendDrvChat=async function(rideId){
+if(!me)return;
+var inp=document.getElementById("dchat-in");var txt=(inp.value||"").trim().slice(0,300);
+if(!txt)return;
+if(/(\d\D*){8,}/.test(txt)){alert(T[lang].noNum);return}
+try{await addDoc(collection(db,"rides",rideId,"chats",me.uid,"messages"),{from:me.uid,text:txt,createdAt:serverTimestamp()});inp.value="";}catch(e){alert("Error: "+e.message)}};
+window.chatOfferDrv=async function(rideId){
+var pv=parseFloat((document.getElementById("dchat-price")||{value:""}).value);
+if(!(pv>=5&&pv<=500)){alert(T[lang].bad);return}
+try{await updateDoc(doc(db,"rides",rideId,"offers",me.uid),{price:pv});}catch(e){alert("Error: "+e.message)}};
 window.sendOffer=async function(rideId){
 var pr=parseFloat((document.getElementById("pr-"+rideId)||{value:""}).value);
 var et=parseInt((document.getElementById("eta-"+rideId)||{value:"10"}).value,10);
