@@ -41,17 +41,19 @@ if(u.uid!==ADMIN_UID){document.getElementById("authbox").textContent="⛔ "+u.ui
 document.getElementById("authbox").textContent="✓ Admin: "+u.uid;
 load();});
 async function load(){
-var trips=(await getDocs(collection(db,"trips"))).docs.map(function(d){var o=d.data();o._id=d.id;return o});
+var trips=(await getDocs(collection(db,"trips"))).docs.map(function(d){var o=d.data();o._id=d.id;o._k="trips";return o});
+var reqs=[];try{reqs=(await getDocs(collection(db,"requests"))).docs.map(function(d){var o=d.data();o._id=d.id;o._k="requests";return o})}catch(e){}
+var all=trips.concat(reqs);
 var reps=(await getDocs(collection(db,"reports"))).docs.map(function(d){return d.data()});
 var count={};reps.forEach(function(r){if(r.tripId)count[r.tripId]=(count[r.tripId]||0)+1});
-var flagged=trips.filter(function(t){return (count[t._id]||0)>=1});
+var flagged=all.filter(function(t){return (count[t._id]||0)>=1});
 flagged.sort(function(a,b){return (count[b._id]-count[a._id])});
 if(!flagged.length){document.getElementById("list").innerHTML='<div class="card">لا بلاغات · Aucun signalement.</div>';return}
-document.getElementById("list").innerHTML='<div class="card"><table><tr><th>Viaje</th><th>Fecha</th><th>Denuncias</th><th>ownerUid</th><th></th></tr>'+
-flagged.map(function(t){return '<tr><td>'+esc(t.from)+' → '+esc(t.to)+'</td><td>'+esc(t.date)+' '+esc(t.time)+'</td><td><strong>'+(count[t._id]||0)+'</strong></td><td><small>'+esc(t.ownerUid)+'</small></td>'+
-'<td><button class="btn btn-danger" onclick="delTrip(\''+t._id+'\')">Borrar viaje</button> '+
+document.getElementById("list").innerHTML='<div class="card"><table><tr><th></th><th>Viaje</th><th>Fecha</th><th>Denuncias</th><th>ownerUid</th><th></th></tr>'+
+flagged.map(function(t){return '<tr><td>'+(t._k==="requests"?"🙋":"🚗")+'</td><td>'+esc(t.from)+' → '+esc(t.to)+'</td><td>'+esc(t.date)+' '+esc(t.time)+'</td><td><strong>'+(count[t._id]||0)+'</strong></td><td><small>'+esc(t.ownerUid)+'</small></td>'+
+'<td><button class="btn btn-danger" onclick="delPost(\''+t._id+'\',\''+t._k+'\')">Borrar</button> '+
 '<button class="btn btn-ban" onclick="ban(\''+t.ownerUid+'\')">Ban usuario</button></td></tr>'}).join("")+'</table></div>';}
-window.delTrip=async function(id){if(!confirm("Borrar viaje "+id+"?"))return;await deleteDoc(doc(db,"trips",id));load()};
+window.delPost=async function(id,k){if(!confirm("Borrar "+id+"?"))return;await deleteDoc(doc(db,k,id));load()};
 window.ban=async function(uid){if(!confirm("Poner banned=true a "+uid+"?"))return;await updateDoc(doc(db,"users",uid),{banned:true});alert("OK banned=true")};
 </script>
 </body>
