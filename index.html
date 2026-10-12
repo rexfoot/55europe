@@ -6,19 +6,20 @@
 <title>راكبين Rakbin — سفر تشاركي بين مدن المغرب</title>
 <meta name="description" content="Rakbin: covoiturage entre les villes du Maroc. Paiement cash.">
 <style>
-:root{--p:#16a34a;--pd:#15803d;--bg:#f8fafc;--tx:#1e293b;--mut:#64748b;--card:#fff;--bd:#e2e8f0;--wa:#25d366}
+:root{--p:#16a34a;--pd:#15803d;--bg:#f8fafc;--tx:#1e293b;--mut:#64748b;--card:#fff;--bd:#e2e8f0;--wa:#25d366;--warn:#b45309;--warnbg:#fffbeb;--warnbd:#fde68a}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--tx);line-height:1.7}
 .container{max-width:960px;margin:0 auto;padding:0 1.2rem}
 header{background:#fff;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50}
-.hd{display:flex;align-items:center;justify-content:space-between;height:64px;gap:.8rem}
+.hd{display:flex;align-items:center;justify-content:space-between;min-height:64px;gap:.8rem;padding:.5rem 1.2rem}
 .logo{font-weight:800;font-size:1.4rem;color:var(--pd)}
+.warn{background:var(--warnbg);border-bottom:1px solid var(--warnbd);color:var(--warn);text-align:center;font-weight:800;padding:.55rem 1rem;font-size:.95rem}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1.2rem;border-radius:10px;font-weight:700;cursor:pointer;border:none;font-size:.95rem;text-decoration:none}
 .btn-p{background:var(--p);color:#fff}.btn-o{background:#fff;border:1px solid var(--bd);color:var(--tx)}
 .btn-wa{background:var(--wa);color:#fff}.btn-sm{padding:.45rem .8rem;font-size:.85rem;border-radius:8px}
 .lang{display:flex;gap:.4rem}.lang button{padding:.4rem .8rem;border-radius:8px;border:1px solid var(--bd);background:#fff;cursor:pointer;font-weight:700}
 .lang button.on{background:var(--p);color:#fff;border-color:var(--p)}
-.hero{background:linear-gradient(135deg,#f0fdf4,#eff6ff);padding:2.5rem 0;text-align:center}
+.hero{background:linear-gradient(135deg,#f0fdf4,#eff6ff);padding:2.2rem 0;text-align:center}
 .hero h1{font-size:2rem;margin-bottom:.5rem}.hero p{color:var(--mut);max-width:640px;margin:0 auto}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:1.3rem;margin-bottom:1.2rem;box-shadow:0 3px 14px rgba(0,0,0,.04)}
 .sec{padding:1.5rem 0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
@@ -30,6 +31,8 @@ input{width:100%;padding:.7rem .9rem;border:1px solid var(--bd);border-radius:9p
 .tabs{display:flex;gap:.6rem;margin-bottom:1rem}
 .tabs button{flex:1;padding:.8rem;border-radius:10px;border:1px solid var(--bd);background:#fff;font-weight:800;cursor:pointer}
 .tabs button.on{background:var(--p);color:#fff;border-color:var(--p)}
+.userbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.userbar img{width:36px;height:36px;border-radius:50%}
 footer{background:#0f172a;color:#94a3b8;text-align:center;padding:2rem 0;margin-top:2rem;font-size:.9rem}
 @media(max-width:640px){.grid2{grid-template-columns:1fr}.hero h1{font-size:1.6rem}}
 /* logo rojo */
@@ -39,12 +42,26 @@ footer{background:#0f172a;color:#94a3b8;text-align:center;padding:2rem 0;margin-
 <body>
 <header><div class="container hd">
 <div class="logo">راكبين · Rakbin</div>
+<div class="userbar">
 <div class="lang"><button id="b-ar" class="on" onclick="setLang('ar')">العربية</button><button id="b-fr" onclick="setLang('fr')">Français</button></div>
+<span id="authbox"></span>
+</div>
 </div></header>
+<div class="warn">⚠️ لا تدفع أبداً مسبقاً · Ne payez jamais à l’avance</div>
+
 <main class="container">
-<section class="hero"><h1 data-i="t1">سفر تشاركي بين مدن المغرب</h1><p data-i="t2">السائق ينشر رحلته برقم واتساب الخاص به. الراكب يبحث ويتواصل مباشرة. الدفع نقدا بينهما.</p></section>
+<section class="hero"><h1 data-i="t1">سفر تشاركي بين مدن المغرب</h1><p data-i="t2">سجّل الدخول بحساب Google، أضف واتساب الخاص بك، انشر رحلتك. الراكب يتواصل معك مباشرة. الدفع نقدا.</p></section>
+
 <section class="sec">
+<div id="profileCard" class="card" style="display:none">
+<h3 data-i="prof">حسابي</h3>
+<div class="fg" style="margin-top:.8rem"><label data-i="wa">واتساب (212xxxxxxxxx)</label><input id="p-wa" placeholder="212600000000" inputmode="numeric"></div>
+<button class="btn btn-p btn-sm" onclick="saveProfile()" data-i="save">حفظ</button>
+<span class="muted" id="profMsg"></span>
+</div>
+
 <div class="tabs"><button id="tab-s" class="on" onclick="tab('s')">🔍 <span data-i="search">بحث</span></button><button id="tab-p" onclick="tab('p')">＋ <span data-i="pub">انشر رحلة</span></button></div>
+
 <div id="v-s">
 <div class="card"><div class="grid2">
 <div class="fg"><label data-i="from">مدينة الانطلاق</label><input id="q-from" data-ph="fromPh" placeholder="مثال: الدار البيضاء"></div>
@@ -53,17 +70,16 @@ footer{background:#0f172a;color:#94a3b8;text-align:center;padding:2rem 0;margin-
 <button class="btn btn-p" onclick="render()" data-i="searchBtn">ابحث</button></div>
 <div id="list"></div>
 </div>
+
 <div id="v-p" style="display:none"><div class="card"><div class="grid2">
 <div class="fg"><label data-i="from">مدينة الانطلاق</label><input id="f-from" data-ph="fromPh" placeholder="مثال: الدار البيضاء"></div>
 <div class="fg"><label data-i="to">مدينة الوصول</label><input id="f-to" data-ph="toPh" placeholder="مثال: مراكش"></div></div>
 <div class="grid2"><div class="fg"><label data-i="date">التاريخ</label><input type="date" id="f-date"></div>
 <div class="fg"><label data-i="time">الساعة</label><input type="time" id="f-time"></div></div>
 <div class="grid2"><div class="fg"><label data-i="seats">المقاعد (1–8)</label><input type="number" id="f-seats" min="1" max="8" value="3"></div>
-<div class="fg"><label data-i="price">الثمن (درهم MAD)</label><input type="number" id="f-price" min="1" placeholder="100"></div></div>
-<div class="fg"><label data-i="wa">واتساب السائق (212xxxxxxxxx)</label><input id="f-wa" placeholder="212600000000" inputmode="numeric"></div>
-<p class="muted" data-i="waHelp">يُستعمل فقط ليتواصل معك الركاب. لا يُطلب لا بطاقة هوية ولا صور.</p>
+<div class="fg"><label data-i="price">الثمن (درهم MAD)</label><input type="number" id="f-price" min="1" max="10000" placeholder="100"></div></div>
 <button class="btn btn-p" onclick="publish()" data-i="pubBtn">نشر الرحلة</button>
-<p class="muted" style="margin-top:.6rem" data-i="delHelp">ستحصل على رمز حذف. احتفظ به لمسح إعلانك لاحقا.</p>
+<p class="muted" style="margin-top:.6rem" data-i="needLogin">يتطلب النشر تسجيل الدخول وإضافة رقم واتساب في حسابك.</p>
 </div></div>
 </section>
 </main>
@@ -71,18 +87,19 @@ footer{background:#0f172a;color:#94a3b8;text-align:center;padding:2rem 0;margin-
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, getDocs, updateDoc, deleteDoc, writeBatch, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Plan Spark (gratis). La seguridad la ponen las reglas de firestore.rules, no esta config.
 const firebaseConfig = { apiKey: "AIzaSyDASn4yK7WgytFk_zgGHUAjaVwsWz9HG38", authDomain: "rakbin.firebaseapp.com", projectId: "rakbin", storageBucket: "rakbin.firebasestorage.app", messagingSenderId: "483183046870", appId: "1:483183046870:web:aeb5127558ccfa41a81977" };
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 const TRIPS = collection(db, "trips");
 
 var T={
-ar:{t1:"سفر تشاركي بين مدن المغرب",t2:"السائق ينشر رحلته برقم واتساب الخاص به. الراكب يبحث ويتواصل مباشرة. الدفع نقدا بينهما.",search:"بحث",pub:"انشر رحلة",from:"مدينة الانطلاق",to:"مدينة الوصول",date:"التاريخ",time:"الساعة",seats:"المقاعد (1–8)",price:"الثمن (درهم MAD)",wa:"واتساب السائق (212xxxxxxxxx)",waHelp:"يُستعمل فقط ليتواصل معك الركاب. لا يُطلب لا بطاقة هوية ولا صور.",pubBtn:"نشر الرحلة",delHelp:"ستحصل على رمز حذف. احتفظ به لمسح إعلانك لاحقا.",searchBtn:"ابحث",fromPh:"مثال: الدار البيضاء",toPh:"مثال: مراكش",none:"لا توجد رحلات مطابقة حاليا.",contact:"تواصل واتساب",del:"حذف",rep:"تبليغ",askDel:"أدخل رمز الحذف الخاص بهذا الإعلان:",pubOk:"تم نشر رحلتك! رمز الحذف (احفظه):",seatsU:"مقاعد",mad:"درهم",bad:"المرجو ملء كل الحقول بشكل صحيح (مدن، تاريخ مستقبلي، مقاعد 1-8، ثمن > 0، واتساب 212xxxxxxxxx).",repOk:"شكرا، تم تسجيل التبليغ.",delOk:"تم حذف الإعلان.",cash:"الدفع نقدا بين السائق والراكب"},
-fr:{t1:"Covoiturage entre les villes du Maroc",t2:"Le conducteur publie avec son WhatsApp. Le passager cherche et contacte directement. Paiement cash.",search:"Rechercher",pub:"Publier",from:"Ville de départ",to:"Ville d'arrivée",date:"Date",time:"Heure",seats:"Places (1–8)",price:"Prix (MAD)",wa:"WhatsApp conducteur (212xxxxxxxxx)",waHelp:"Uniquement pour être contacté. Ni CIN ni photos.",pubBtn:"Publier",delHelp:"Gardez votre code de suppression.",searchBtn:"Rechercher",fromPh:"Ex : Casablanca",toPh:"Ex : Marrakech",none:"Aucun trajet pour le moment.",contact:"Contacter WhatsApp",del:"Supprimer",rep:"Signaler",askDel:"Votre code de suppression :",pubOk:"Publié ! Code de suppression :",seatsU:"places",mad:"MAD",bad:"Champs invalides (villes, date future, places 1-8, prix > 0, WhatsApp 212xxxxxxxxx).",repOk:"Merci, signalement enregistré.",delOk:"Annonce supprimée.",cash:"Paiement cash entre conducteur et passager"}};
-var lang="ar", cache=[];
+ar:{t1:"سفر تشاركي بين مدن المغرب",t2:"سجّل الدخول بحساب Google، أضف واتساب الخاص بك، انشر رحلتك. الراكب يتواصل معك مباشرة. الدفع نقدا.",search:"بحث",pub:"انشر رحلة",prof:"حسابي",save:"حفظ",from:"مدينة الانطلاق",to:"مدينة الوصول",date:"التاريخ",time:"الساعة",seats:"المقاعد (1–8)",price:"الثمن (درهم MAD)",wa:"واتساب (212xxxxxxxxx)",searchBtn:"ابحث",fromPh:"مثال: الدار البيضاء",toPh:"مثال: مراكش",none:"لا توجد رحلات مطابقة حاليا.",contact:"تواصل واتساب",loginToContact:"سجّل الدخول للتواصل",del:"حذف",rep:"تبليغ",reported:"تم التبليغ",pubBtn:"نشر الرحلة",needLogin:"يتطلب النشر تسجيل الدخول وإضافة رقم واتساب في حسابك.",bad:"حقول غير صالحة (مدن، تاريخ مستقبلي، مقاعد 1-8، ثمن 1-10000).",noWa:"أضف رقم واتساب مغربي في حسابك أولا.",login:"دخول Google",logout:"خروج",pubOk:"تم نشر رحلتك!",delOk:"تم حذف الإعلان.",repOk:"شكرا، تم تسجيل التبليغ.",cash:"الدفع نقدا بين السائق والراكب",banned:"حسابك موقوف."},
+fr:{t1:"Covoiturage entre les villes du Maroc",t2:"Connectez-vous avec Google, ajoutez votre WhatsApp, publiez. Le passager vous contacte directement. Paiement cash.",search:"Rechercher",pub:"Publier",prof:"Mon compte",save:"Enregistrer",from:"Ville de départ",to:"Ville d'arrivée",date:"Date",time:"Heure",seats:"Places (1–8)",price:"Prix (MAD)",wa:"WhatsApp (212xxxxxxxxx)",searchBtn:"Rechercher",fromPh:"Ex : Casablanca",toPh:"Ex : Marrakech",none:"Aucun trajet pour le moment.",contact:"Contacter WhatsApp",loginToContact:"Connectez-vous pour contacter",del:"Supprimer",rep:"Signaler",reported:"Signalé",pubBtn:"Publier",needLogin:"La publication exige connexion + WhatsApp dans votre profil.",bad:"Champs invalides (villes, date future, places 1-8, prix 1-10000).",noWa:"Ajoutez d'abord un WhatsApp marocain dans votre profil.",login:"Connexion Google",logout:"Déconnexion",pubOk:"Trajet publié !",delOk:"Annonce supprimée.",repOk:"Merci, signalement enregistré.",cash:"Paiement cash entre conducteur et passager",banned:"Votre compte est suspendu."}};
+var lang="ar", me=null, myProfile=null, cache=[], repCount={};
 window.setLang=function(l){lang=l;var d=document.documentElement;d.lang=l;d.dir=l==="ar"?"rtl":"ltr";
 document.getElementById("b-ar").classList.toggle("on",l==="ar");document.getElementById("b-fr").classList.toggle("on",l==="fr");
 document.querySelectorAll("[data-i]").forEach(function(e){var k=e.getAttribute("data-i");if(T[l][k])e.textContent=T[l][k]});
@@ -91,41 +108,62 @@ window.tab=function(w){document.getElementById("v-s").style.display=w==="s"?"":"
 document.getElementById("tab-s").classList.toggle("on",w==="s");document.getElementById("tab-p").classList.toggle("on",w==="p");};
 function today(){return new Date().toISOString().slice(0,10)}
 function norm(s){return (s||"").trim().toLowerCase()}
-function valid(f){return f.from.length>=2&&f.from.length<=60&&f.to.length>=2&&f.to.length<=60&&/^\d{4}-\d{2}-\d{2}$/.test(f.date)&&f.date>=today()&&/^\d{2}:\d{2}$/.test(f.time)
-&&Number.isInteger(f.seats)&&f.seats>=1&&f.seats<=8&&f.price>0&&f.price<=10000&&/^212\d{9}$/.test(f.wa)}
-window.publish=async function(){
-var f={from:document.getElementById("f-from").value.trim(),to:document.getElementById("f-to").value.trim(),date:document.getElementById("f-date").value,time:document.getElementById("f-time").value,seats:parseInt(document.getElementById("f-seats").value,10),price:parseFloat(document.getElementById("f-price").value),wa:(function(w){w=w.replace(/\D/g,"");if(w.indexOf("00212")===0)w=w.slice(2);if(/^0[5-7]\d{8}$/.test(w))w="212"+w.slice(1);return w})(document.getElementById("f-wa").value),reports:0,createdAt:serverTimestamp()};
-if(!valid(f)){alert(T[lang].bad);return}
-var code=Math.random().toString(36).slice(2,10);
-try{var ref=doc(TRIPS);var b=writeBatch(db);b.set(ref,f);b.set(doc(db,"secrets",ref.id),{code:code});await b.commit();
-alert(T[lang].pubOk+" "+code);tab("s");await render();}catch(e){alert("Error: "+e.message)}};
-window.render=async function(){
-var s=await getDocs(TRIPS);
-cache=s.docs.map(function(d){var o=d.data();o._id=d.id;return o});draw();};
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+window.login=function(){signInWithPopup(auth,new GoogleAuthProvider()).catch(function(e){alert("Error: "+e.message)})};
+window.logout=function(){signOut(auth)};
+onAuthStateChanged(auth,async function(u){me=u;myProfile=null;
+if(u){try{var s=await getDoc(doc(db,"users",u.uid));if(s.exists()){myProfile=s.data();
+if(myProfile.banned){alert(T[lang].banned)}document.getElementById("p-wa").value=myProfile.wa||"";}
+else{document.getElementById("p-wa").value="";}}catch(e){}
+document.getElementById("profileCard").style.display="";
+document.getElementById("authbox").innerHTML='<img src="'+esc(u.photoURL||"")+'" alt=""><span>'+esc(u.displayName||"")+'</span> <button class="btn btn-o btn-sm" onclick="logout()">'+T[lang].logout+'</button>';}
+else{document.getElementById("profileCard").style.display="none";
+document.getElementById("authbox").innerHTML='<button class="btn btn-p btn-sm" onclick="login()">'+T[lang].login+'</button>';}
+draw();});
+window.saveProfile=async function(){
+if(!me)return;var wa=document.getElementById("p-wa").value.replace(/\D/g,"");if(wa.indexOf("00212")===0)wa=wa.slice(2);if(/^0[5-7]\d{8}$/.test(wa))wa="212"+wa.slice(1);
+if(!/^212\d{9}$/.test(wa)){alert(T[lang].noWa);return}
+try{var r=doc(db,"users",me.uid);var s=await getDoc(r);
+if(s.exists()){await updateDoc(r,{nombre:me.displayName||"",foto:me.photoURL||"",wa:wa});}
+else{await setDoc(r,{nombre:me.displayName||"",foto:me.photoURL||"",wa:wa,banned:false,createdAt:serverTimestamp()});}
+myProfile=(await getDoc(r)).data();document.getElementById("profMsg").textContent="✓";}catch(e){alert("Error: "+e.message)}};
+function valid(f){return f.from.length>=2&&f.from.length<=60&&f.to.length>=2&&f.to.length<=60&&/^\d{4}-\d{2}-\d{2}$/.test(f.date)&&f.date>=today()&&/^\d{2}:\d{2}$/.test(f.time)
+&&Number.isInteger(f.seats)&&f.seats>=1&&f.seats<=8&&f.price>0&&f.price<=10000}
+window.publish=async function(){
+if(!me||!myProfile||!/^212\d{9}$/.test(myProfile.wa||"")){alert(T[lang].noWa);return}
+if(myProfile.banned){alert(T[lang].banned);return}
+var f={from:document.getElementById("f-from").value.trim(),to:document.getElementById("f-to").value.trim(),date:document.getElementById("f-date").value,time:document.getElementById("f-time").value,seats:parseInt(document.getElementById("f-seats").value,10),price:parseFloat(document.getElementById("f-price").value),ownerUid:me.uid,createdAt:serverTimestamp()};
+if(!valid(f)){alert(T[lang].bad);return}
+try{await addDoc(TRIPS,f);alert(T[lang].pubOk);tab("s");await render();}catch(e){alert("Error: "+e.message)}};
+window.render=async function(){
+var s=await getDocs(TRIPS);cache=s.docs.map(function(d){var o=d.data();o._id=d.id;return o});
+try{var r=await getDocs(collection(db,"reports"));repCount={};
+r.docs.forEach(function(d){var t=(d.data()||{}).tripId;if(t)repCount[t]=(repCount[t]||0)+1});}catch(e){repCount={}}
+draw();};
+function waLink(wa,x){var msg=encodeURIComponent(lang==="ar"?("السلام، مهتم برحلة "+x.from+" إلى "+x.to+" بتاريخ "+x.date):("Bonjour, intéressé par "+x.from+" → "+x.to+" le "+x.date));return "https://wa.me/"+wa+"?text="+msg}
 function draw(){
 var qf=norm(document.getElementById("q-from").value),qt=norm(document.getElementById("q-to").value),qd=document.getElementById("q-date").value;
 var t=today();
-var r=cache.filter(function(x){return (x.reports||0)<3&&x.date>=t&&(!qf||norm(x.from).indexOf(qf)>-1)&&(!qt||norm(x.to).indexOf(qt)>-1)&&(!qd||x.date===qd)});
+var r=cache.filter(function(x){return x.ownerUid&&(repCount[x._id]||0)<3&&x.date>=t&&(!qf||norm(x.from).indexOf(qf)>-1)&&(!qt||norm(x.to).indexOf(qt)>-1)&&(!qd||x.date===qd)});
 r.sort(function(a,b){return (a.date+a.time)<(b.date+b.time)?-1:1});
 var box=document.getElementById("list");
 if(!r.length){box.innerHTML='<div class="empty">'+T[lang].none+'</div>';return}
 box.innerHTML=r.map(function(x){
-var msg=encodeURIComponent(lang==="ar"?("السلام، مهتم برحلة "+x.from+" إلى "+x.to+" بتاريخ "+x.date):("Bonjour, intéressé par "+x.from+" → "+x.to+" le "+x.date));
-return '<div class="card trip"><strong>'+esc(x.from)+' → '+esc(x.to)+'</strong><br><span class="muted">'+esc(x.date)+' · '+esc(x.time)+' · '+esc(x.seats)+' '+T[lang].seatsU+' · <strong>'+esc(x.price)+' '+T[lang].mad+'</strong></span>'+
-'<div class="row"><a class="btn btn-wa btn-sm" target="_blank" rel="noopener" href="https://wa.me/'+esc(x.wa)+'?text='+msg+'">'+T[lang].contact+'</a>'+
-'<button class="btn btn-o btn-sm" onclick="delTrip(\''+x._id+'\')">'+T[lang].del+'</button>'+
-'<button class="btn btn-o btn-sm" onclick="repTrip(\''+x._id+'\')">⚠ '+T[lang].rep+'</button></div></div>'}).join("");}
-window.delTrip=async function(id){
-var code=prompt(T[lang].askDel);if(!code)return;
-try{await updateDoc(doc(db,"trips",id),{deleteCode:code.trim()});await deleteDoc(doc(db,"trips",id));alert(T[lang].delOk);await render();}
-catch(e){alert("Error: "+e.message)}};
+var mine=me&&x.ownerUid===me.uid;
+var c=mine?"":(me?'<button class="btn btn-wa btn-sm" onclick="contact(\''+x._id+'\',\''+x.ownerUid+'\')">'+T[lang].contact+'</button>':'<span class="muted">'+T[lang].loginToContact+'</span>');
+var d=mine?'<button class="btn btn-o btn-sm" onclick="delTrip(\''+x._id+'\')">'+T[lang].del+'</button>':"";
+var rp=(me&&!mine)?'<button class="btn btn-o btn-sm" id="rp-'+x._id+'" onclick="repTrip(\''+x._id+'\')">⚠ '+T[lang].rep+'</button>':"";
+return '<div class="card trip"><strong>'+esc(x.from)+' → '+esc(x.to)+'</strong><br><span class="muted">'+esc(x.date)+' · '+esc(x.time)+' · '+esc(x.seats)+' · <strong>'+esc(x.price)+' MAD</strong></span><div class="row">'+c+d+rp+'</div></div>'}).join("");}
+window.contact=async function(tripId,ownerUid){
+try{var s=await getDoc(doc(db,"users",ownerUid));if(!s.exists())return;
+var x=cache.find(function(y){return y._id===tripId});
+location.href=waLink(s.data().wa,x);}catch(e){alert("Error: "+e.message)}};
+window.delTrip=async function(id){try{await deleteDoc(doc(db,"trips",id));alert(T[lang].delOk);await render();}catch(e){alert("Error: "+e.message)}};
 window.repTrip=async function(id){
-try{var k="rakbin_rep";var seen={};try{seen=JSON.parse(localStorage.getItem(k))||{}}catch(e){seen={}}
-if(seen[id]){alert(T[lang].repOk);return}
-await updateDoc(doc(db,"trips",id),{reports:increment(1)});seen[id]=1;
-try{localStorage.setItem(k,JSON.stringify(seen))}catch(e){}alert(T[lang].repOk);await render();}
-catch(e){alert("Error: "+e.message)}};
+if(!me)return;
+try{await setDoc(doc(db,"reports",id+"_"+me.uid),{tripId:id,uid:me.uid,createdAt:serverTimestamp()});
+var b=document.getElementById("rp-"+id);if(b)b.textContent="✓ "+T[lang].reported;
+alert(T[lang].repOk);await render();}catch(e){alert("Error: "+e.message)}};
 setLang("ar");render();
 </script>
 </body>
