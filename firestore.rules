@@ -8,24 +8,36 @@ service cloud.firestore {
     function me(uid) { return request.auth != null && request.auth.uid == uid; }
     function selfiePath(uid) { return /databases/$(database)/documents/selfies/$(uid); }
     function userData(uid) { return get(/databases/$(database)/documents/users/$(uid)).data; }
+    function phoneOf(uid) { return get(/databases/$(database)/documents/phones/$(uid)).data.wa; }
+    function hasPhone(uid) {
+      return exists(/databases/$(database)/documents/phones/$(uid))
+        && phoneOf(uid).matches('^[1-9][0-9]{7,14}$');
+    }
+    function notBanned(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid))
+        && userData(uid).get('banned', false) == false;
+    }
+    function hasSelfie(uid) { return exists(selfiePath(uid)); }
     function validCar(c) {
-      return c is map && c.keys().hasOnly(['brand','model','color'])
+      return c is map && c.keys().hasOnly(['brand','model','color','category'])
         && c.brand is string && c.brand.size() >= 2 && c.brand.size() <= 40
         && c.brand in ['Dacia','Renault','Peugeot','Citroën','Hyundai','Kia','Toyota','Volkswagen','Fiat','Ford','Skoda','Seat','Opel','Nissan','Suzuki','Mercedes-Benz','BMW','Audi','Chevrolet','Mitsubishi','Honda','Mazda','Chery','MG','Autre']
         && c.model is string && c.model.size() >= 1 && c.model.size() <= 40
-        && c.color is string && c.color.size() >= 2 && c.color.size() <= 40;
+        && c.color is string && c.color.size() >= 2 && c.color.size() <= 40
+        && c.category is string && c.category in ['citadine','berline','suv','7places','luxe'];
     }
+    // Profil complet conducteur : selfie + tel + pas banni + voiture
     function profileOk(uid) {
-      return exists(/databases/$(database)/documents/users/$(uid))
-        && exists(selfiePath(uid))
-        && userData(uid).wa.matches('^[1-9][0-9]{7,14}$')
-        && userData(uid).get('banned', false) == false
-        && validCar(userData(uid).car); // v5: voiture obligatoire pour publier
+      return notBanned(uid) && hasSelfie(uid) && hasPhone(uid)
+        && validCar(userData(uid).car);
+    }
+    // Profil passager : pas besoin de voiture
+    function profileOkLight(uid) {
+      return notBanned(uid) && hasSelfie(uid) && hasPhone(uid);
     }
 
-    function isValidTrip(d, uid) {
-      return d.keys().hasOnly(['from','to','date','time','seats','price','ownerUid','createdAt'])
-        && d.from is string && d.from.size() >= 2 && d.from.size() <= 60
+    function basePost(d, uid) {
+      return d.from is string && d.from.size() >= 2 && d.from.size() <= 60
         && d.to is string && d.to.size() >= 2 && d.to.size() <= 60
         && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && d.date >= '2026-01-01'
         && d.time is string && d.time.matches('^[0-9]{2}:[0-9]{2}$')
@@ -34,40 +46,69 @@ service cloud.firestore {
         && d.ownerUid is string && d.ownerUid == uid
         && (!('createdAt' in d) || d.createdAt == request.time);
     }
+    function isValidTrip(d, uid) {
+      return d.keys().hasOnly(['from','to','date','time','seats','price','ownerUid','createdAt'])
+        && basePost(d, uid);
+    }
+    function isValidRequest(d, uid) {
+      return d.keys().hasOnly(['from','to','date','time','seats','price','msg','ownerUid','createdAt'])
+        && basePost(d, uid)
+        && (!('msg' in d) || (d.msg is string && d.msg.size() <= 200));
+    }
 
-    // ---- Perfiles: WhatsApp NO público, solo con sesión ----
+    // ---- Profils (sans numéro ; voir phones) ----
     match /users/{uid} {
-      // get con sesion (ver WhatsApp de un conductor); list solo admin (evita robar todos los numeros)
-      // Para ver el WhatsApp de otro hay que tener selfie (pasajeros tambien)
-      allow get: if me(uid) || isAdmin() || (request.auth != null && exists(selfiePath(request.auth.uid)));
+      allow get: if request.auth != null;
       allow list: if isAdmin();
       allow create: if me(uid)
-        && request.resource.data.keys().hasOnly(['nombre','foto','wa','banned','car','createdAt'])
+        && request.resource.data.keys().hasOnly(['nombre','foto','banned','car','createdAt'])
         && request.resource.data.nombre is string && request.resource.data.nombre.size() >= 2
-        && request.resource.data.wa is string && request.resource.data.wa.matches('^[1-9][0-9]{7,14}$')
         && request.resource.data.banned == false
         && (!('car' in request.resource.data) || validCar(request.resource.data.car))
         && (!('foto' in request.resource.data) || (request.resource.data.foto is string && request.resource.data.foto.size() <= 600))
         && (!('createdAt' in request.resource.data) || request.resource.data.createdAt == request.time);
       allow update: if (me(uid)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre','foto','wa','car'])
-          && request.resource.data.wa.matches('^[1-9][0-9]{7,14}$')
+          && !('wa' in request.resource.data) // migration : suppression définitive de users.wa
           && (!('car' in request.resource.data) || validCar(request.resource.data.car)))
         || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['banned']));
       allow delete: if false;
     }
 
-    // ---- Viajes: lectura pública, sin WhatsApp dentro ----
+    // ---- Numéros WhatsApp privés ----
+    match /phones/{uid} {
+      // Visible : propriétaire, admin, ou contact accepté (link dans un sens ou l'autre)
+      allow get: if me(uid) || isAdmin()
+        || (request.auth != null && (exists(/databases/$(database)/documents/links/$(request.auth.uid + '_' + uid))
+          || exists(/databases/$(database)/documents/links/$(uid + '_' + request.auth.uid))));
+      allow list: if false;
+      allow create, update: if me(uid)
+        && request.resource.data.keys().hasOnly(['wa'])
+        && request.resource.data.wa is string && request.resource.data.wa.matches('^[1-9][0-9]{7,14}$');
+      allow delete: if false;
+    }
+
+    // ---- Trajets proposés (conducteurs) : lecture publique, sans contact direct ----
     match /trips/{tripId} {
       allow read: if true;
       allow create: if request.auth != null && profileOk(request.auth.uid)
         && isValidTrip(request.resource.data, request.auth.uid);
-      allow update: if false; // nada se edita; el borrado va por delete
+      allow update: if false;
       allow delete: if request.auth != null
         && (resource.data.ownerUid == request.auth.uid || isAdmin());
     }
 
-    // ---- Selfies: obligatorio, visible solo para usuarios conectados ----
+    // ---- Demandes de passagers : pas de voiture exigée ----
+    match /requests/{reqId} {
+      allow read: if true;
+      allow create: if request.auth != null && profileOkLight(request.auth.uid)
+        && isValidRequest(request.resource.data, request.auth.uid);
+      allow update: if false;
+      allow delete: if request.auth != null
+        && (resource.data.ownerUid == request.auth.uid || isAdmin());
+    }
+
+    // ---- Selfies : obligatoire, visible solo para usuarios conectados ----
     match /selfies/{uid} {
       allow get: if request.auth != null;
       allow list: if isAdmin();
@@ -80,9 +121,56 @@ service cloud.firestore {
       allow delete: if me(uid) || isAdmin();
     }
 
-    // ---- Denuncias: una por usuario y viaje ----
+    // ---- Contacts privés : « Je suis intéressé » ----
+    match /contacts/{cid} {
+      allow read: if request.auth != null
+        && (resource.data.ownerUid == request.auth.uid
+          || resource.data.fromUid == request.auth.uid || isAdmin());
+      allow create: if request.auth != null
+        && cid == request.resource.data.postId + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['postId','postType','ownerUid','fromUid','message','price','status','createdAt'])
+        && request.resource.data.postType in ['trip','request']
+        && request.resource.data.postId is string
+        && request.resource.data.ownerUid is string && request.resource.data.ownerUid != request.auth.uid
+        // Claude: el ownerUid debe ser el autor real del anuncio
+        && ((request.resource.data.postType == 'trip' && get(/databases/$(database)/documents/trips/$(request.resource.data.postId)).data.ownerUid == request.resource.data.ownerUid)
+          || (request.resource.data.postType == 'request' && get(/databases/$(database)/documents/requests/$(request.resource.data.postId)).data.ownerUid == request.resource.data.ownerUid))
+        && hasSelfie(request.auth.uid) && hasPhone(request.auth.uid) && notBanned(request.auth.uid)
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.message is string && request.resource.data.message.size() <= 200
+        && (!('price' in request.resource.data) || (request.resource.data.price is number && request.resource.data.price > 0 && request.resource.data.price <= 10000))
+        && request.resource.data.status == 'pending'
+        && (!('createdAt' in request.resource.data) || request.resource.data.createdAt == request.time);
+      // Seul le propriétaire accepte/refuse ; si accepté, le link mutuel doit exister après (même batch)
+      allow update: if request.auth != null
+        && resource.data.ownerUid == request.auth.uid
+        && resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['accepted','refused']
+        && (request.resource.data.status == 'refused'
+          || existsAfter(/databases/$(database)/documents/links/$(resource.data.ownerUid + '_' + resource.data.fromUid)));
+      allow delete: if isAdmin()
+        || (request.auth != null && resource.data.fromUid == request.auth.uid && resource.data.status == 'pending');
+    }
+
+    // ---- Liens mutuels créés à l'acceptation (débloquent les numéros) ----
+    match /links/{lid} {
+      allow read: if request.auth != null
+        && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid || isAdmin());
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['a','b','postId','createdAt'])
+        && request.resource.data.a is string && request.resource.data.b is string
+        && request.resource.data.postId is string
+        && request.resource.data.a == request.auth.uid
+        && lid == request.resource.data.a + '_' + request.resource.data.b   // Claude: el id DEBE ser a_b (si no, se podria leer el telefono de cualquiera)
+        && getAfter(/databases/$(database)/documents/contacts/$(request.resource.data.postId + '_' + request.resource.data.b)).data.status == 'accepted'
+        && getAfter(/databases/$(database)/documents/contacts/$(request.resource.data.postId + '_' + request.resource.data.b)).data.ownerUid == request.resource.data.a;
+      allow update, delete: if false;
+    }
+
+    // ---- Denuncias : una por usuario y anuncio (trips o requests) ----
     match /reports/{reportId} {
-      allow read: if true; // para contar y ocultar con 3+
+      allow read: if true;
       allow create: if request.auth != null
         && reportId == request.resource.data.tripId + '_' + request.auth.uid
         && request.resource.data.keys().hasOnly(['tripId','uid','createdAt'])
