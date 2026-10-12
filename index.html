@@ -56,6 +56,17 @@ footer{background:#0f172a;color:#94a3b8;text-align:center;padding:2rem 0;margin-
 <section class="sec">
 <div id="profileCard" class="card" style="display:none">
 <h3 data-i="prof">حسابي</h3>
+<div class="fg" id="selfieBox" style="margin-top:.8rem">
+<label id="sf-title">📸 Selfie</label>
+<div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">
+<img id="sf-img" alt="" style="width:72px;height:72px;border-radius:50%;object-fit:cover;background:#eee;display:none">
+<div>
+<label style="display:flex;gap:.4rem;align-items:flex-start;font-weight:400;font-size:.85rem"><input type="checkbox" id="sf-ok" style="width:auto;margin-top:.2rem"><span id="sf-consent"></span></label>
+<input type="file" id="sf-file" accept="image/*" capture="user" style="display:none">
+<button type="button" class="btn btn-p btn-sm" id="sf-take" style="margin-top:.4rem"></button>
+<button type="button" class="btn btn-o btn-sm" id="sf-del" style="margin-top:.4rem;display:none"></button>
+<div class="muted" id="sf-msg" style="font-size:.8rem;margin-top:.3rem"></div>
+</div></div></div>
 <div class="fg" style="margin-top:.8rem"><label data-i="wa">واتساب مع رمز الدولة (مثال: 212600000000 أو 33612345678)</label><input id="p-wa" placeholder="+212 600 000 000 / +33 6 12 34 56 78" inputmode="tel"></div>
 <button class="btn btn-p btn-sm" onclick="saveProfile()" data-i="save">حفظ</button>
 <span class="muted" id="profMsg"></span>
@@ -166,6 +177,40 @@ try{await setDoc(doc(db,"reports",id+"_"+me.uid),{tripId:id,uid:me.uid,createdAt
 var b=document.getElementById("rp-"+id);if(b)b.textContent="✓ "+T[lang].reported;
 alert(T[lang].repOk);await render();}catch(e){alert("Error: "+e.message)}};
 setLang("ar");render();
+</script>
+<script type="module">
+/* Selfie obligatorio (conductores y pasajeros) — añadido por Claude */
+import { getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const app=getApps()[0], auth=getAuth(app), db=getFirestore(app);
+const L={ar:{consent:"أوافق على أن تكون صورتي مرئية للأعضاء المسجلين فقط.",take:"التقط سيلفي",retake:"تغيير الصورة",del:"حذف صورتي",need:"يجب التقاط سيلفي أولاً (في حسابي).",ok:"✓ تم حفظ الصورة",must:"يرجى الموافقة أولاً.",title:"📸 سيلفي (إجباري)"},
+fr:{consent:"J'accepte que ma photo soit visible uniquement par les membres connectés.",take:"Prendre un selfie",retake:"Changer la photo",del:"Supprimer ma photo",need:"Vous devez d'abord prendre un selfie (Mon compte).",ok:"✓ Photo enregistrée",must:"Veuillez d'abord cocher la case.",title:"📸 Selfie (obligatoire)"}};
+const lg=()=>document.documentElement.lang==="ar"?"ar":"fr";
+const $=id=>document.getElementById(id);
+let mySelfie=null; const cacheImg={};
+function texts(){const t=L[lg()];$("sf-title").textContent=t.title;$("sf-consent").textContent=t.consent;$("sf-take").textContent=mySelfie?t.retake:t.take;$("sf-del").textContent=t.del;$("sf-del").style.display=mySelfie?"":"none";
+const im=$("sf-img");if(mySelfie){im.src=mySelfie;im.style.display="";}else{im.style.display="none";}}
+new MutationObserver(texts).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
+async function loadMine(){mySelfie=null;const u=auth.currentUser;if(u){try{const s=await getDoc(doc(db,"selfies",u.uid));if(s.exists())mySelfie=s.data().img;}catch(e){}}texts();decorate();}
+onAuthStateChanged(auth,loadMine);
+$("sf-take").onclick=function(){if(!$("sf-ok").checked){alert(L[lg()].must);return}$("sf-file").click();};
+$("sf-file").onchange=function(){const f=this.files&&this.files[0];if(!f)return;const r=new FileReader();r.onload=function(){const img=new Image();img.onload=async function(){
+const S=240,c=document.createElement("canvas");c.width=S;c.height=S;const m=Math.min(img.width,img.height);c.getContext("2d").drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);
+let q=0.7,d=c.toDataURL("image/jpeg",q);while(d.length>60000&&q>0.3){q-=0.1;d=c.toDataURL("image/jpeg",q);}
+try{await setDoc(doc(db,"selfies",auth.currentUser.uid),{img:d,createdAt:serverTimestamp()});mySelfie=d;$("sf-msg").textContent=L[lg()].ok;texts();}catch(e){alert("Error: "+e.message)}};img.src=r.result;};r.readAsDataURL(f);this.value="";};
+$("sf-del").onclick=async function(){try{await deleteDoc(doc(db,"selfies",auth.currentUser.uid));mySelfie=null;$("sf-msg").textContent="";texts();}catch(e){alert("Error: "+e.message)}};
+/* Sin selfie: no se puede publicar ni contactar */
+const origPublish=window.publish, origContact=window.contact;
+window.publish=async function(){if(auth.currentUser&&!mySelfie){alert(L[lg()].need);$("profileCard").scrollIntoView({behavior:"smooth"});return}return origPublish.apply(this,arguments)};
+window.contact=async function(){if(auth.currentUser&&!mySelfie){alert(L[lg()].need);$("profileCard").scrollIntoView({behavior:"smooth"});return}return origContact.apply(this,arguments)};
+/* Foto del conductor en cada viaje (solo para usuarios conectados) */
+async function decorate(){if(!auth.currentUser)return;const btns=document.querySelectorAll('#list [onclick^="contact("]');
+for(const b of btns){const card=b.closest(".card");if(!card||card.querySelector(".sf-drv"))continue;const m=(b.getAttribute("onclick")||"").match(/'([^']+)'\s*,\s*'([^']+)'/);if(!m)continue;const uid=m[2];
+if(!(uid in cacheImg)){try{const s=await getDoc(doc(db,"selfies",uid));cacheImg[uid]=s.exists()?s.data().img:null;}catch(e){cacheImg[uid]=null}}
+if(cacheImg[uid]&&!card.querySelector(".sf-drv")){const im=document.createElement("img");im.className="sf-drv";im.src=cacheImg[uid];im.alt="";im.style.cssText="width:44px;height:44px;border-radius:50%;object-fit:cover;float:inline-end;margin-inline-start:.6rem";card.prepend(im);}}}
+new MutationObserver(function(){decorate()}).observe($("list"),{childList:true});
+texts();
 </script>
 </body>
 </html>
