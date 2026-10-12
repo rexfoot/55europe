@@ -48,6 +48,7 @@ footer{background:#0f172a;color:#94a3b8;text-align:center;padding:2rem 0;margin-
 .hero2{background:linear-gradient(135deg,#e8f5ec 0%,#fdeaea 100%)}
 .hero-grid{display:grid;grid-template-columns:1fr;gap:1.2rem;align-items:center;text-align:start}
 .hero-cta{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.2rem}
+.hero-cta .btn.on{background:var(--green);color:#fff;border-color:var(--green)}
 .hero-art img{width:100%;height:auto;display:block;border-radius:18px}
 .searchbar-card{margin-top:-1rem}
 .searchbar{display:grid;grid-template-columns:1fr;gap:.7rem}
@@ -106,15 +107,16 @@ footer.site a{color:#fff;font-weight:600}
 <div class="logo"><span class="lg-ar">راكبين</span> · <span class="lg-fr">Rakbin</span></div>
 <div class="topnav"><button type="button" class="tnav on" id="nav-s" onclick="goTab('s')">🔍 <span data-i="navSearch">بحث</span></button><button type="button" class="tnav" id="nav-p" onclick="goTab('p')">＋ <span data-i="navPub">انشر رحلة</span><button type="button" class="tnav" id="nav-my" onclick="goTab('my')" style="position:relative">📋 <span data-i="myPosts">إعلاناتي</span><span id="myBadge" style="display:none;position:absolute;top:2px;inset-inline-end:6px;background:#c1272d;color:#fff;font-size:.65rem;font-weight:800;border-radius:999px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px"></span></button></div><div class="userbar">
 <div class="lang"><button id="b-ar" class="on" onclick="setLang('ar')" aria-label="العربية" title="العربية"><svg width="28" height="20" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" rx="3" fill="#c1272d"/><path d="M15 4.6L18.17 14.37L9.86 8.33H20.14L11.83 14.37Z" fill="none" stroke="#006233" stroke-width="1.1" stroke-linejoin="miter"/></svg></button><button id="b-fr" onclick="setLang('fr')">FR</button></div>
-<span id="authbox"></span>
+<button id="bellBtn" class="btn btn-o btn-sm" onclick="toggleNotif()" style="margin-inline-end:.4rem">Notifications : OFF</button><span id="authbox"></span>
 </div>
 </div></header>
+<div id="alertBar" style="display:none;background:#16a34a"></div>
 
 <main class="container">
 <section class="hero hero2"><div class="container hero-grid"><div>
 <h1 data-i="t1">سفر تشاركي بين مدن المغرب</h1><p data-i="t2">سجّل الدخول بحساب Google، أضف واتساب الخاص بك، انشر رحلتك. الراكب يتواصل معك مباشرة. الدفع نقدا.</p>
-<div class="hero-cta"><button class="btn btn-p" onclick="goTab('s')" data-i="heroCtaS">ابحث عن رحلة</button><button class="btn btn-o" onclick="goTab('p')" data-i="heroCtaP">انشر رحلتك</button>
-<button class="btn btn-o" onclick="goReq()" data-i="heroCtaR">🙋 أبحث عن سائق</button></div></div>
+<div class="hero-cta"><button id="hb-s" class="btn btn-p on" onclick="goTab('s')" data-i="heroCtaS">ابحث عن رحلة</button><button id="hb-p" class="btn btn-o" onclick="goDrive()" data-i="heroCtaP">انشر رحلتك</button>
+<button id="hb-r" class="btn btn-o" onclick="goReq()" data-i="heroCtaR">🙋 أبحث عن سائق</button></div></div>
 <div class="hero-art"><img src="https://images.unsplash.com/photo-1630107531564-8aef06219c86?auto=format&fit=crop&w=1200&h=672&q=80" alt="Route au Maroc" style="width:100%;height:auto;display:block;border-radius:18px" width="1000" height="560" fetchpriority="high"></div></div>
 <div class="card searchbar-card hero-search"><div class="searchbar">
 <div class="sb"><label data-i="from">مدينة الانطلاق</label><input id="q-from" list="cities" data-ph="fromPh" placeholder="مثال: الدار البيضاء" autocomplete="off"></div>
@@ -142,7 +144,12 @@ footer.site a{color:#fff;font-weight:600}
 <button type="button" class="btn btn-o btn-sm" id="sf-del" style="margin-top:.4rem;display:none"></button>
 <div class="muted" id="sf-msg" style="font-size:.8rem;margin-top:.3rem"></div>
 </div></div></div>
-<div class="fg" style="margin-top:.8rem"><label data-i="wa">واتساب مع رمز الدولة (مثال: 212600000000 أو 33612345678)</label><input id="p-wa" placeholder="+212 600 000 000 / +33 6 12 34 56 78" inputmode="tel"></div>
+<div class="fg" style="margin-top:.8rem"><label data-i="wa">واتساب مع رمز الدولة (مثال: 212600000000 أو 33612345678)</label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+<div><select id="p-cc" onchange="prevPhone()"><option value="212" selected>🇲🇦 Maroc +212</option><option value="33">🇫🇷 France +33</option><option value="34">🇪🇸 España +34</option><option value="32">🇧🇪 Belgique +32</option><option value="31">🇳🇱 Nederland +31</option><option value="39">🇮🇹 Italia +39</option><option value="49">🇩🇪 Deutschland +49</option><option value="44">🇬🇧 UK +44</option><option value="1">🇺🇸/🇨🇦 +1</option><option value="213">🇩🇿 Algérie +213</option><option value="216">🇹🇳 Tunisie +216</option><option value="221">🇸🇳 Sénégal +221</option><option value="other" data-i="ccOther">أخرى (حدد الرمز)</option></select><input id="p-ccx" placeholder="+…" inputmode="numeric" style="display:none;margin-top:.4rem" oninput="prevPhone()"></div>
+<div><input id="p-wa" placeholder="612345678" inputmode="tel" oninput="prevPhone()"></div>
+</div>
+<div class="muted" id="p-prev" style="margin-top:.3rem"></div></div>
 <div class="fg"><label data-i="carT">السيارة (إجبارية للنشر)</label>
 <div class="grid2"><div class="fg"><label data-i="carBrand">الماركة</label><select id="p-brand"><option value="">—</option><option>Dacia</option><option>Renault</option><option>Peugeot</option><option>Citroën</option><option>Hyundai</option><option>Kia</option><option>Toyota</option><option>Volkswagen</option><option>Fiat</option><option>Ford</option><option>Skoda</option><option>Seat</option><option>Opel</option><option>Nissan</option><option>Suzuki</option><option>Mercedes-Benz</option><option>BMW</option><option>Audi</option><option>Chevrolet</option><option>Mitsubishi</option><option>Honda</option><option>Mazda</option><option>Chery</option><option>MG</option><option value="Autre" data-i="other">أخرى</option></select></div>
 <div class="fg"><label data-i="carModel">الموديل</label><input id="p-model" maxlength="40" placeholder="Logan"></div></div>
@@ -154,8 +161,8 @@ footer.site a{color:#fff;font-weight:600}
 
 <div id="v-s">
 <div class="tabs2" style="display:flex;gap:.6rem;margin-bottom:1rem">
-<button type="button" class="tnav on" id="rt-trips" onclick="resTab('trips')" style="flex:1;padding:.7rem;border-radius:10px;border:1px solid var(--bd);background:#fff;font-weight:800;cursor:pointer">🚗 <span data-i="resTrips">الرحلات المقترحة</span></button>
-<button type="button" class="tnav" id="rt-reqs" onclick="resTab('reqs')" style="flex:1;padding:.7rem;border-radius:10px;border:1px solid var(--bd);background:#fff;font-weight:800;cursor:pointer">🙋 <span data-i="resReqs">طلبات الركاب</span></button>
+<button type="button" class="tnav on" id="rt-trips" onclick="resTab('trips')" style="flex:1;padding:.7rem;border-radius:10px;border:1px solid var(--bd);background:#fff;font-weight:800;cursor:pointer">🚗 <span data-i="resTrips">الرحلات المقترحة</span><span id="cnt-trips"></span></button>
+<button type="button" class="tnav" id="rt-reqs" onclick="resTab('reqs')" style="flex:1;padding:.7rem;border-radius:10px;border:1px solid var(--bd);background:#fff;font-weight:800;cursor:pointer">🙋 <span data-i="resReqs">طلبات الركاب</span><span id="cnt-reqs"></span></button>
 </div>
 <div id="list"></div><div id="detail" style="display:none"></div>
 </div>
@@ -247,7 +254,7 @@ try{navigator.clipboard.writeText(URL_);document.getElementById("shareMsg").text
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, writeBatch, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, writeBatch, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyDASn4yK7WgytFk_zgGHUAjaVwsWz9HG38", authDomain: "rakbin.firebaseapp.com", projectId: "rakbin", storageBucket: "rakbin.firebasestorage.app", messagingSenderId: "483183046870", appId: "1:483183046870:web:aeb5127558ccfa41a81977" };
 const app = initializeApp(firebaseConfig);
@@ -258,24 +265,30 @@ const REQS = collection(db, "requests");
 const CN={citadine:"cat1",berline:"cat2",suv:"cat3","7places":"cat4",luxe:"cat5"};
 function catName(c){return (c&&CN[c]&&T[lang][CN[c]])?T[lang][CN[c]]:c}
 function ptype(){var r=document.querySelector('input[name="ptype"]:checked');return r?r.value:"trip"}
-window.ptypeUI=function(){var t=ptype();var m=document.getElementById("f-msgbox");if(m)m.style.display=t==="request"?"":"none";refreshChecklist();};
+window.ptypeUI=function(){var t=ptype();var m=document.getElementById("f-msgbox");if(m)m.style.display=t==="request"?"":"none";refreshChecklist();try{window.syncHero()}catch(e){}};
 window.resTab=function(k){resKind=k;var a=document.getElementById("rt-trips"),b=document.getElementById("rt-reqs");if(a)a.classList.toggle("on",k==="trips");if(b)b.classList.toggle("on",k==="reqs");backToList();draw();};
 
 var T={
-ar:{t1:"سفر تشاركي بين مدن المغرب",t2:"سجّل الدخول بحساب Google، أضف واتساب الخاص بك، انشر رحلتك. الراكب يتواصل معك مباشرة. الدفع نقدا.",search:"بحث",pub:"انشر رحلة",prof:"حسابي",save:"حفظ",from:"مدينة الانطلاق",to:"مدينة الوصول",date:"التاريخ",time:"الساعة",seats:"المقاعد (1–8)",price:"الثمن (درهم MAD)",wa:"واتساب مع رمز الدولة (مثال: 212600000000 أو 33612345678)",searchBtn:"ابحث",fromPh:"مثال: الدار البيضاء",toPh:"مثال: مراكش",none:"لا توجد رحلات مطابقة حاليا.",contact:"تواصل واتساب",loginToContact:"سجّل الدخول للتواصل",del:"حذف",rep:"تبليغ",reported:"تم التبليغ",pubBtn:"نشر الرحلة",needLogin:"يتطلب النشر تسجيل الدخول وواتساب وصورة سيلفي في حسابك.",bad:"حقول غير صالحة (مدن، تاريخ مستقبلي، مقاعد 1-8، ثمن 1-10000).",noWa:"أضف رقم واتساب دولي صالح في حسابك أولا.",login:"دخول Google",logout:"خروج",pubOk:"تم نشر رحلتك!",delOk:"تم حذف الإعلان.",repOk:"شكرا، تم تسجيل التبليغ.",cash:"الدفع نقدا بين السائق والراكب",banned:"حسابك موقوف.",navSearch:"بحث",navPub:"انشر رحلة",heroCtaS:"ابحث عن رحلة",heroCtaP:"انشر رحلتك",heroCtaR:"🙋 أبحث عن سائق",pax:"المسافرون",routes:"طرق رائجة",go:"بحث ←",from2:"ابتداء من",drvT:"عندك سيارة؟ شارك مصاريف رحلتك",drvB:"انشر رحلة",a1t:"متى وأين تريد",a1p:"اختر مدينتك وتاريخك وساعتك",a2t:"أثمنة منخفضة، الدفع نقدا",a2p:"تتفق مع السائق وتدفع في اليد، بدون عمولة",a3t:"سافر بثقة",a3p:"حساب Google، سيلفي إجباري، تبليغ ومراقبة",howT:"كيف يعمل؟",s1t:"ابحث",s1p:"اختر مدينتي الانطلاق والوصول والتاريخ",s2t:"تواصل واتساب",s2p:"اتفق مباشرة مع السائق",s3t:"سافر وادفع يدا بيد",s3p:"ادفع نقدا يوم الرحلة",safeT:"نصائح السلامة",safe1:"لا تدفع أبدا مسبقا",safe2:"التقِ في مكان عام",safe3:"أخبر أحدا برحلتك",seatsFree:"مقاعد حرة",detail:"تفاصيل الرحلة",back:"رجوع",driver:"السائق",footCond:"شروط الاستخدام",footPriv:"الخصوصية",footSafe:"السلامة",footShare:"مشاركة",nocarrier:"Rakbin للتواصل فقط، ليست شركة نقل",needProf:"أكمل حسابك: أضف صورتك السيلفي ورقم الواتساب",warn:"⚠️ لا تدفع أبداً مسبقاً",share:"مشاركة Rakbin",carT:"السيارة (إجبارية للنشر)",carBrand:"الماركة",carModel:"الموديل",carColor:"اللون",other:"أخرى",ckTitle:"قبل النشر، أكمل حسابك",ckS:"السيلفي",ckW:"الواتساب",ckC:"السيارة",ckGo:"إكمال حسابي",pDriver:"أقترح رحلة (سائق)",pPass:"أبحث عن رحلة (راكب)",reqMsg:"رسالة (اختياري، 200 حرف)",resTrips:"الرحلات المقترحة",resReqs:"طلبات الركاب",interest:"مهتم",intTitle:"أبدِ اهتمامك",intMsg:"رسالتك (اختياري)",intPrice:"سعرك المقترح (اختياري، درهم)",intSend:"إرسال",myPosts:"إعلاناتي",mySent:"طلبات التواصل التي أرسلتها",received:"المهتمون",accept:"قبول",refuse:"رفض",stPending:"بانتظار الرد",stAccepted:"مقبول",stRefused:"مرفوض",openWA:"افتح واتساب",catT:"نوع السيارة",catAll:"الكل",cat1:"صغيرة",cat2:"مريحة",cat3:"دفع رباعي",cat4:"7 مقاعد",cat5:"فاخرة",carCat:"الفئة",priceHint:"الثمن المقترح قابل للتفاوض",noneReq:"لا توجد طلبات مطابقة حاليا.",intOk:"تم إرسال اهتمامك!",accOk:"تم القبول. رقم الواتساب ظاهر الآن.",refOk:"تم الرفض.",noPhone:"لا يمكن عرض الرقم.",loginNeed:"سجّل الدخول أولا.",sentEmpty:"لم ترسل أي طلب بعد.",myEmpty:"لم تنشر أي إعلان بعد.",photo:"الصورة: Graphe Tween عبر Unsplash"},
-fr:{t1:"Covoiturage entre les villes du Maroc",t2:"Connectez-vous avec Google, ajoutez votre WhatsApp, publiez. Le passager vous contacte directement. Paiement cash.",search:"Rechercher",pub:"Publier",prof:"Mon compte",save:"Enregistrer",from:"Ville de départ",to:"Ville d'arrivée",date:"Date",time:"Heure",seats:"Places (1–8)",price:"Prix (MAD)",wa:"WhatsApp avec indicatif pays (ex : 212600000000 ou 33612345678)",searchBtn:"Rechercher",fromPh:"Ex : Casablanca",toPh:"Ex : Marrakech",none:"Aucun trajet pour le moment.",contact:"Contacter WhatsApp",loginToContact:"Connectez-vous pour contacter",del:"Supprimer",rep:"Signaler",reported:"Signalé",pubBtn:"Publier",needLogin:"La publication exige connexion + WhatsApp + selfie.",bad:"Champs invalides (villes, date future, places 1-8, prix 1-10000).",noWa:"Ajoutez d'abord un WhatsApp international valide.",login:"Connexion Google",logout:"Déconnexion",pubOk:"Trajet publié !",delOk:"Annonce supprimée.",repOk:"Merci, signalement enregistré.",cash:"Paiement cash entre conducteur et passager",banned:"Votre compte est suspendu.",navSearch:"Rechercher",navPub:"Publier un trajet",heroCtaS:"Chercher un trajet",heroCtaP:"Publier ton trajet",heroCtaR:"🙋 Je cherche un chauffeur",pax:"Passagers",routes:"Itinéraires populaires",go:"Rechercher →",from2:"Dès",drvT:"Tu as une voiture ? Partage tes frais de route",drvB:"Publier un trajet",a1t:"Où et quand tu veux",a1p:"Choisis tes villes, ta date et ton heure",a2t:"Petits prix, paiement cash",a2p:"Prix convenu, payé en main propre, sans commission",a3t:"Voyage en confiance",a3p:"Compte Google, selfie obligatoire, signalements et modération",howT:"Comment ça marche ?",s1t:"Cherche",s1p:"Mets tes villes de départ et d’arrivée et ta date",s2t:"Contacte sur WhatsApp",s2p:"Accorde-toi directement avec le conducteur",s3t:"Voyage et paie cash",s3p:"Paie en espèces le jour du trajet",safeT:"Conseils de sécurité",safe1:"Ne payez jamais à l’avance",safe2:"Retrouve-toi dans un lieu public",safe3:"Préviens un proche de ton voyage",seatsFree:"places libres",detail:"Détails du trajet",back:"Retour",driver:"Conducteur",footCond:"Conditions d’utilisation",footPriv:"Confidentialité",footSafe:"Sécurité",footShare:"Partager",nocarrier:"Rakbin met en contact, ce n’est pas un transporteur",needProf:"Complète ton compte : ajoute ton selfie et ton WhatsApp",warn:"⚠️ Ne payez jamais à l’avance",share:"Partager Rakbin",carT:"Voiture (obligatoire pour publier)",carBrand:"Marque",carModel:"Modèle",carColor:"Couleur",other:"Autre",ckTitle:"Avant de publier, complète ton compte",ckS:"Selfie",ckW:"WhatsApp",ckC:"Voiture",ckGo:"Compléter mon compte",photo:"Photo : Graphe Tween via Unsplash",pDriver:"Je propose un trajet (conducteur)",pPass:"Je cherche un trajet (passager)",reqMsg:"Message (optionnel, 200 caractères)",resTrips:"Trajets proposés",resReqs:"Demandes de passagers",interest:"Je suis intéressé",intTitle:"Manifeste ton intérêt",intMsg:"Ton message (optionnel)",intPrice:"Ton prix proposé (optionnel, MAD)",intSend:"Envoyer",myPosts:"Mes annonces",mySent:"Demandes envoyées",received:"Personnes intéressées",accept:"Accepter",refuse:"Refuser",stPending:"En attente",stAccepted:"Accepté",stRefused:"Refusé",openWA:"Ouvrir WhatsApp",catT:"Type de voiture",catAll:"Tous",cat1:"Citadine (petite)",cat2:"Berline (confort)",cat3:"SUV",cat4:"7 places",cat5:"Luxe",carCat:"Catégorie",priceHint:"Prix proposé, à négocier",noneReq:"Aucune demande pour le moment.",intOk:"Intérêt envoyé !",accOk:"Accepté. Les numéros sont visibles.",refOk:"Refusé.",noPhone:"Numéro indisponible.",loginNeed:"Connecte-toi d’abord.",sentEmpty:"Aucune demande envoyée.",myEmpty:"Aucune annonce publiée."}};
+ar:{t1:"سفر تشاركي بين مدن المغرب",t2:"سجّل الدخول بحساب Google، أضف واتساب الخاص بك، انشر رحلتك. الراكب يتواصل معك مباشرة. الدفع نقدا.",search:"بحث",pub:"انشر رحلة",prof:"حسابي",save:"حفظ",from:"مدينة الانطلاق",to:"مدينة الوصول",date:"التاريخ",time:"الساعة",seats:"المقاعد (1–8)",price:"الثمن (درهم MAD)",wa:"واتساب مع رمز الدولة (مثال: 212600000000 أو 33612345678)",searchBtn:"ابحث",fromPh:"مثال: الدار البيضاء",toPh:"مثال: مراكش",none:"لا توجد رحلات مطابقة حاليا.",contact:"تواصل واتساب",loginToContact:"سجّل الدخول للتواصل",del:"حذف",rep:"تبليغ",reported:"تم التبليغ",pubBtn:"نشر الرحلة",needLogin:"يتطلب النشر تسجيل الدخول وواتساب وصورة سيلفي في حسابك.",bad:"حقول غير صالحة (مدن، تاريخ مستقبلي، مقاعد 1-8، ثمن 1-10000).",noWa:"أضف رقم واتساب دولي صالح في حسابك أولا.",login:"دخول Google",logout:"خروج",pubOk:"تم نشر رحلتك!",delOk:"تم حذف الإعلان.",repOk:"شكرا، تم تسجيل التبليغ.",cash:"الدفع نقدا بين السائق والراكب",banned:"حسابك موقوف.",navSearch:"بحث",navPub:"انشر رحلة",heroCtaS:"ابحث عن رحلة",heroCtaP:"انشر رحلتك",heroCtaR:"🙋 أبحث عن سائق",pax:"المسافرون",routes:"طرق رائجة",go:"بحث ←",from2:"ابتداء من",drvT:"عندك سيارة؟ شارك مصاريف رحلتك",drvB:"انشر رحلة",a1t:"متى وأين تريد",a1p:"اختر مدينتك وتاريخك وساعتك",a2t:"أثمنة منخفضة، الدفع نقدا",a2p:"تتفق مع السائق وتدفع في اليد، بدون عمولة",a3t:"سافر بثقة",a3p:"حساب Google، سيلفي إجباري، تبليغ ومراقبة",howT:"كيف يعمل؟",s1t:"ابحث",s1p:"اختر مدينتي الانطلاق والوصول والتاريخ",s2t:"تواصل واتساب",s2p:"اتفق مباشرة مع السائق",s3t:"سافر وادفع يدا بيد",s3p:"ادفع نقدا يوم الرحلة",safeT:"نصائح السلامة",safe1:"لا تدفع أبدا مسبقا",safe2:"التقِ في مكان عام",safe3:"أخبر أحدا برحلتك",seatsFree:"مقاعد حرة",detail:"تفاصيل الرحلة",back:"رجوع",driver:"السائق",footCond:"شروط الاستخدام",footPriv:"الخصوصية",footSafe:"السلامة",footShare:"مشاركة",nocarrier:"Rakbin للتواصل فقط، ليست شركة نقل",needProf:"أكمل حسابك: أضف صورتك السيلفي ورقم الواتساب",warn:"⚠️ لا تدفع أبداً مسبقاً",share:"مشاركة Rakbin",carT:"السيارة (إجبارية للنشر)",carBrand:"الماركة",carModel:"الموديل",carColor:"اللون",other:"أخرى",ckTitle:"قبل النشر، أكمل حسابك",ckS:"السيلفي",ckW:"الواتساب",ckC:"السيارة",ckGo:"إكمال حسابي",pDriver:"أقترح رحلة (سائق)",pPass:"أبحث عن رحلة (راكب)",reqMsg:"رسالة (اختياري، 200 حرف)",resTrips:"الرحلات المقترحة",resReqs:"طلبات الركاب",interest:"مهتم",intTitle:"أبدِ اهتمامك",intMsg:"رسالتك (اختياري)",intPrice:"سعرك المقترح (اختياري، درهم)",intSend:"إرسال",myPosts:"إعلاناتي",mySent:"طلبات التواصل التي أرسلتها",received:"المهتمون",accept:"قبول",refuse:"رفض",stPending:"بانتظار الرد",stAccepted:"مقبول",stRefused:"مرفوض",openWA:"افتح واتساب",catT:"نوع السيارة",catAll:"الكل",cat1:"صغيرة",cat2:"مريحة",cat3:"دفع رباعي",cat4:"7 مقاعد",cat5:"فاخرة",carCat:"الفئة",priceHint:"الثمن المقترح قابل للتفاوض",noneReq:"لا توجد طلبات مطابقة حاليا.",intOk:"تم إرسال اهتمامك!",accOk:"تم القبول. رقم الواتساب ظاهر الآن.",refOk:"تم الرفض.",noPhone:"لا يمكن عرض الرقم.",loginNeed:"سجّل الدخول أولا.",sentEmpty:"لم ترسل أي طلب بعد.",myEmpty:"لم تنشر أي إعلان بعد.",yourNum:"رقمك",ccOther:"أخرى (حدد الرمز)",otherDates:"تواريخ أخرى متاحة",newsP:"🔔 {n} مهتمون برحلتك ← شاهد",newsA:"✅ تم قبول تواصلك ← شاهد الواتساب",afterPub:"ارجع إلى Rakbin لترى من المهتم. فعّل التنبيهات.",notifOn:"التنبيهات: مفعّلة",notifOff:"التنبيهات: متوقفة",photo:"الصورة: Graphe Tween عبر Unsplash"},
+fr:{t1:"Covoiturage entre les villes du Maroc",t2:"Connectez-vous avec Google, ajoutez votre WhatsApp, publiez. Le passager vous contacte directement. Paiement cash.",search:"Rechercher",pub:"Publier",prof:"Mon compte",save:"Enregistrer",from:"Ville de départ",to:"Ville d'arrivée",date:"Date",time:"Heure",seats:"Places (1–8)",price:"Prix (MAD)",wa:"WhatsApp avec indicatif pays (ex : 212600000000 ou 33612345678)",searchBtn:"Rechercher",fromPh:"Ex : Casablanca",toPh:"Ex : Marrakech",none:"Aucun trajet pour le moment.",contact:"Contacter WhatsApp",loginToContact:"Connectez-vous pour contacter",del:"Supprimer",rep:"Signaler",reported:"Signalé",pubBtn:"Publier",needLogin:"La publication exige connexion + WhatsApp + selfie.",bad:"Champs invalides (villes, date future, places 1-8, prix 1-10000).",noWa:"Ajoutez d'abord un WhatsApp international valide.",login:"Connexion Google",logout:"Déconnexion",pubOk:"Trajet publié !",delOk:"Annonce supprimée.",repOk:"Merci, signalement enregistré.",cash:"Paiement cash entre conducteur et passager",banned:"Votre compte est suspendu.",navSearch:"Rechercher",navPub:"Publier un trajet",heroCtaS:"Chercher un trajet",heroCtaP:"Publier ton trajet",heroCtaR:"🙋 Je cherche un chauffeur",pax:"Passagers",routes:"Itinéraires populaires",go:"Rechercher →",from2:"Dès",drvT:"Tu as une voiture ? Partage tes frais de route",drvB:"Publier un trajet",a1t:"Où et quand tu veux",a1p:"Choisis tes villes, ta date et ton heure",a2t:"Petits prix, paiement cash",a2p:"Prix convenu, payé en main propre, sans commission",a3t:"Voyage en confiance",a3p:"Compte Google, selfie obligatoire, signalements et modération",howT:"Comment ça marche ?",s1t:"Cherche",s1p:"Mets tes villes de départ et d’arrivée et ta date",s2t:"Contacte sur WhatsApp",s2p:"Accorde-toi directement avec le conducteur",s3t:"Voyage et paie cash",s3p:"Paie en espèces le jour du trajet",safeT:"Conseils de sécurité",safe1:"Ne payez jamais à l’avance",safe2:"Retrouve-toi dans un lieu public",safe3:"Préviens un proche de ton voyage",seatsFree:"places libres",detail:"Détails du trajet",back:"Retour",driver:"Conducteur",footCond:"Conditions d’utilisation",footPriv:"Confidentialité",footSafe:"Sécurité",footShare:"Partager",nocarrier:"Rakbin met en contact, ce n’est pas un transporteur",needProf:"Complète ton compte : ajoute ton selfie et ton WhatsApp",warn:"⚠️ Ne payez jamais à l’avance",share:"Partager Rakbin",carT:"Voiture (obligatoire pour publier)",carBrand:"Marque",carModel:"Modèle",carColor:"Couleur",other:"Autre",ckTitle:"Avant de publier, complète ton compte",ckS:"Selfie",ckW:"WhatsApp",ckC:"Voiture",ckGo:"Compléter mon compte",photo:"Photo : Graphe Tween via Unsplash",pDriver:"Je propose un trajet (conducteur)",pPass:"Je cherche un trajet (passager)",reqMsg:"Message (optionnel, 200 caractères)",resTrips:"Trajets proposés",resReqs:"Demandes de passagers",interest:"Je suis intéressé",intTitle:"Manifeste ton intérêt",intMsg:"Ton message (optionnel)",intPrice:"Ton prix proposé (optionnel, MAD)",intSend:"Envoyer",myPosts:"Mes annonces",mySent:"Demandes envoyées",received:"Personnes intéressées",accept:"Accepter",refuse:"Refuser",stPending:"En attente",stAccepted:"Accepté",stRefused:"Refusé",openWA:"Ouvrir WhatsApp",catT:"Type de voiture",catAll:"Tous",cat1:"Citadine (petite)",cat2:"Berline (confort)",cat3:"SUV",cat4:"7 places",cat5:"Luxe",carCat:"Catégorie",priceHint:"Prix proposé, à négocier",noneReq:"Aucune demande pour le moment.",intOk:"Intérêt envoyé !",accOk:"Accepté. Les numéros sont visibles.",refOk:"Refusé.",noPhone:"Numéro indisponible.",loginNeed:"Connecte-toi d’abord.",sentEmpty:"Aucune demande envoyée.",myEmpty:"Aucune annonce publiée.",yourNum:"Ton numéro",ccOther:"Autre (préciser)",otherDates:"Autres dates disponibles",newsP:"🔔 {n} personnes intéressées → Voir",newsA:"✅ Ton contact a été accepté → Voir le WhatsApp",afterPub:"Reviens sur Rakbin pour voir qui est intéressé. Active les notifications.",notifOn:"Notifications : ON",notifOff:"Notifications : OFF"}};
 var lang="ar", me=null, myProfile=null, cache=[], reqCache=[], repCount={}, ownerCache={}, myHasSelfie=false, myPhone=null, resKind="trips";
 window.setLang=function(l){lang=l;var d=document.documentElement;d.lang=l;d.dir=l==="ar"?"rtl":"ltr";
 document.getElementById("b-ar").classList.toggle("on",l==="ar");document.getElementById("b-fr").classList.toggle("on",l==="fr");
 document.querySelectorAll("[data-i]").forEach(function(e){var k=e.getAttribute("data-i");if(T[l][k])e.textContent=T[l][k]});
-document.querySelectorAll("[data-ph]").forEach(function(e){var k=e.getAttribute("data-ph");if(T[l][k])e.placeholder=T[l][k]});draw();};
+document.querySelectorAll("[data-ph]").forEach(function(e){var k=e.getAttribute("data-ph");if(T[l][k])e.placeholder=T[l][k]});try{bellUI()}catch(e){}draw();};
 window.tab=function(w){document.getElementById("v-s").style.display=w==="s"?"":"none";document.getElementById("v-p").style.display=w==="p"?"":"none";document.getElementById("v-my").style.display=w==="my"?"":"none";
 var ts=document.getElementById("tab-s"),tp=document.getElementById("tab-p");if(ts)ts.classList.toggle("on",w==="s");if(tp)tp.classList.toggle("on",w==="p");
-var ns=document.getElementById("nav-s"),np=document.getElementById("nav-p"),nm=document.getElementById("nav-my");if(ns)ns.classList.toggle("on",w==="s");if(np)np.classList.toggle("on",w==="p");if(nm)nm.classList.toggle("on",w==="my");};
+var ns=document.getElementById("nav-s"),np=document.getElementById("nav-p"),nm=document.getElementById("nav-my");if(ns)ns.classList.toggle("on",w==="s");if(np)np.classList.toggle("on",w==="p");if(nm)nm.classList.toggle("on",w==="my");try{window.syncHero()}catch(e){}};
 window.goTab=function(w){tab(w);if(w==="p")ptypeUI();if(w==="my")renderMy();window.scrollTo(0,0)};
 window.toggleProfile=function(){var p=document.getElementById("profileCard");p.style.display=(p.style.display==="none"?"":"none");};
 function today(){return new Date().toISOString().slice(0,10)}
 function norm(s){return (s||"").trim().toLowerCase()}
+function normKey(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\u0600-\u06ff]+/g," ").trim().replace(/\s+/g," ")}
+var CITYSET=null;
+function citySet(){if(CITYSET)return CITYSET;CITYSET={};var os=document.querySelectorAll("#cities option");for(var i=0;i<os.length;i++){var ps=os[i].value.split("·");var canon=normKey(ps[0]);for(var j=0;j<ps.length;j++){var k=normKey(ps[j]);if(k)CITYSET[k]=canon}}return CITYSET}
+function cityKey(txt){var parts=String(txt||"").split("·");var set=citySet();for(var i=0;i<parts.length;i++){var p=normKey(parts[i]);if(p&&set[p])return set[p]}return normKey(txt)}
+function postKey(x,f){return x[f+"Key"]||cityKey(x[f]||"")}
+function cityMatch(input,stored,storedKey){var q=norm(input);if(!q)return true;var k=cityKey(input);if(k&&citySet()[k])return (storedKey||cityKey(stored))===k;return norm(stored).indexOf(q)>-1}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 window.login=function(){signInWithPopup(auth,new GoogleAuthProvider()).catch(function(e){alert("Error: "+e.message)})};
 window.logout=function(){signOut(auth)};
@@ -293,18 +306,40 @@ myProfile=(await getDoc(doc(db,"users",u.uid))).data();
 }
 var ph=await getDoc(doc(db,"phones",u.uid));if(ph.exists())myPhone=ph.data().wa||null;
 }catch(e){}
-if(myProfile){document.getElementById("p-wa").value=myPhone||"";
+if(myProfile){fillPhone(myPhone||"");
 if(myProfile.car){document.getElementById("p-brand").value=myProfile.car.brand||"";document.getElementById("p-model").value=myProfile.car.model||"";document.getElementById("p-color").value=myProfile.car.color||"";document.getElementById("p-cat").value=myProfile.car.category||"";}}
-else{document.getElementById("p-wa").value="";}
+else{fillPhone("");}
 var hasSelfie=false;try{var sf0=await getDoc(doc(db,"selfies",u.uid));hasSelfie=sf0.exists();}catch(e){}
 myHasSelfie=hasSelfie;
 document.getElementById("authbox").innerHTML='<span onclick="toggleProfile()" style="cursor:pointer;display:inline-flex;align-items:center;gap:.4rem"><img src="'+esc(u.photoURL||"")+'" alt=""><span>'+esc(u.displayName||"")+'</span></span> <button class="btn btn-o btn-sm" onclick="logout()">'+T[lang].logout+'</button>';
 if(!myProfile||!myPhone||!hasSelfie){document.getElementById("profileCard").style.display="";document.getElementById("profMsg").textContent=T[lang].needProf;}}
 else{document.getElementById("profileCard").style.display="none";
 document.getElementById("authbox").innerHTML='<button class="btn btn-p btn-sm" onclick="login()">'+T[lang].login+'</button>';}
-refreshChecklist();draw();if(me)updateBadge();});
+refreshChecklist();draw();if(me){updateBadge();startSnap()}else{stopSnap()}});
+var CC=["212","213","216","221","33","34","32","31","39","49","44","1"];
+function selPrefix(){var s=document.getElementById("p-cc");if(!s)return "212";if(s.value==="other")return (document.getElementById("p-ccx").value||"").replace(/\D/g,"");return s.value}
+function buildPhone(){
+var pre=selPrefix();
+var l=(document.getElementById("p-wa").value||"").replace(/[\s\-().]/g,"").replace(/^\+/,"").replace(/^00/,"");
+if(pre&&l.indexOf(pre)===0)l=l.slice(pre.length);
+l=l.replace(/^0+/,"");
+return (pre+l).replace(/\D/g,"")}
+window.prevPhone=function(){
+var cx=document.getElementById("p-ccx");if(cx)cx.style.display=document.getElementById("p-cc").value==="other"?"":"none";
+var full=buildPhone();var el=document.getElementById("p-prev");if(!el)return;
+var ok=/^[1-9][0-9]{7,14}$/.test(full);
+el.textContent=T[lang].yourNum+" : +"+full+(full?(ok?" ✓":" …"):"")};
+function fillPhone(full){
+full=String(full||"").replace(/\D/g,"");
+var s=document.getElementById("p-cc");
+if(!full){s.value="212";document.getElementById("p-wa").value="";prevPhone();return}
+var all=CC.slice().sort(function(a,b){return b.length-a.length});
+var pre="",rest=full;
+for(var i=0;i<all.length;i++){if(full.indexOf(all[i])===0){pre=all[i];rest=full.slice(pre.length);break}}
+if(pre){s.value=pre}else{s.value="other";document.getElementById("p-ccx").value=""}
+document.getElementById("p-wa").value=rest;prevPhone();}
 window.saveProfile=async function(){
-if(!me)return;var wa=document.getElementById("p-wa").value.replace(/\D/g,"");if(wa.indexOf("00")===0)wa=wa.slice(2);if(/^0[5-7]\d{8}$/.test(wa))wa="212"+wa.slice(1);
+if(!me)return;var wa=buildPhone();
 if(!/^[1-9]\d{7,14}$/.test(wa)){alert(T[lang].noWa);return}
 var brand=document.getElementById("p-brand").value,model=document.getElementById("p-model").value.trim().slice(0,40),color=document.getElementById("p-color").value.trim().slice(0,40),cat=document.getElementById("p-cat").value;
 var car=(brand&&model&&color&&cat)?{brand:brand,model:model,color:color,category:cat}:null;
@@ -334,10 +369,11 @@ if(!myProfile||!myPhone){refreshChecklist();document.getElementById("checklist")
 if(t==="trip"&&!hasCar()){refreshChecklist();document.getElementById("checklist").scrollIntoView({behavior:"smooth",block:"nearest"});return}
 var f={from:document.getElementById("f-from").value.trim(),to:document.getElementById("f-to").value.trim(),date:document.getElementById("f-date").value,time:document.getElementById("f-time").value,seats:parseInt(document.getElementById("f-seats").value,10),price:parseFloat(document.getElementById("f-price").value),ownerUid:me.uid,createdAt:serverTimestamp()};
 if(!valid(f)){alert(T[lang].bad);return}
+f.fromKey=cityKey(f.from);f.toKey=cityKey(f.to);
 try{
 if(t==="trip"){await addDoc(TRIPS,f)}
 else{f.msg=document.getElementById("f-msg").value.trim().slice(0,200);await addDoc(REQS,f)}
-alert(T[lang].pubOk);tab("s");await render();}catch(e){alert("Error: "+e.message)}};
+alert(T[lang].pubOk+"\n"+T[lang].afterPub);tab("s");await render();}catch(e){alert("Error: "+e.message)}};
 window.render=async function(){
 var s=await getDocs(TRIPS);cache=s.docs.map(function(d){var o=d.data();o._id=d.id;o._kind="trips";return o});
 try{var rq=await getDocs(REQS);reqCache=rq.docs.map(function(d){var o=d.data();o._id=d.id;o._kind="reqs";return o});}catch(e){reqCache=[]}
@@ -351,23 +387,44 @@ var dt=document.getElementById("detail"),ls=document.getElementById("list");if(d
 draw();};
 function waLink(wa,x){var msg=encodeURIComponent(lang==="ar"?("السلام، مهتم برحلة "+x.from+" إلى "+x.to+" بتاريخ "+x.date):("Bonjour, intéressé par "+x.from+" → "+x.to+" le "+x.date));return "https://wa.me/"+wa+"?text="+msg}
 function carCatOf(x){var o=ownerCache[x.ownerUid];return (o&&o.car&&o.car.category)?o.car.category:""}
+function matchPost(x,qfi,qti,qd,qp,qc,kind){
+if(!x.ownerUid||(repCount[x._id]||0)>=3||x.date<today()||x.seats<qp)return false;
+if(qc&&kind==="trips"&&carCatOf(x)!==qc)return false;
+if(!cityMatch(qfi,x.from,x.fromKey))return false;
+if(!cityMatch(qti,x.to,x.toKey))return false;
+if(qd&&x.date!==qd)return false;
+return true}
 function draw(){
-var qf=norm(document.getElementById("q-from").value),qt=norm(document.getElementById("q-to").value),qd=document.getElementById("q-date").value;
+var qfi=document.getElementById("q-from").value,qti=document.getElementById("q-to").value,qd=document.getElementById("q-date").value;
 var qp=parseInt((document.getElementById("q-seats")||{value:"1"}).value,10)||1;
 var qc=(document.getElementById("q-cat")||{value:""}).value||"";
-var t=today();
 var src=(resKind==="reqs")?reqCache:cache;
-var r=src.filter(function(x){return x.ownerUid&&(repCount[x._id]||0)<3&&x.date>=t&&x.seats>=qp&&(!qc||resKind==="reqs"||carCatOf(x)===qc)&&(!qf||norm(x.from).indexOf(qf)>-1)&&(!qt||norm(x.to).indexOf(qt)>-1)&&(!qd||x.date===qd)});
+var r=src.filter(function(x){return matchPost(x,qfi,qti,qd,qp,qc,resKind)});
 r.sort(function(a,b){return (a.date+a.time)<(b.date+b.time)?-1:1});
 var box=document.getElementById("list");
-if(!r.length){box.innerHTML='<div class="empty">'+(resKind==="reqs"?T[lang].noneReq:T[lang].none)+'</div>';fillRoutes();return}
-box.innerHTML=r.map(function(x){
+updCounts();
+if(!r.length){
+var html='<div class="empty">'+(resKind==="reqs"?T[lang].noneReq:T[lang].none)+'</div>';
+if(qd){var loose=src.filter(function(x){return matchPost(x,qfi,qti,"",qp,qc,resKind)});
+loose.sort(function(a,b){return (a.date+a.time)<(b.date+b.time)?-1:1});
+if(loose.length){html+='<h3 style="margin:1rem 0 .6rem">'+T[lang].otherDates+'</h3>'+loose.map(cardHtml).join("")}}
+box.innerHTML=html;fillRoutes();return}
+function updCounts(){
+var qfi=document.getElementById("q-from").value,qti=document.getElementById("q-to").value,qd=document.getElementById("q-date").value;
+var qp=parseInt((document.getElementById("q-seats")||{value:"1"}).value,10)||1;
+var qc=(document.getElementById("q-cat")||{value:""}).value||"";
+var n1=cache.filter(function(x){return matchPost(x,qfi,qti,qd,qp,qc,"trips")}).length;
+var n2=reqCache.filter(function(x){return matchPost(x,qfi,qti,qd,qp,qc,"reqs")}).length;
+var a=document.getElementById("cnt-trips"),b=document.getElementById("cnt-reqs");
+if(a)a.textContent=n1>0?" ("+n1+")":"";if(b)b.textContent=n2>0?" ("+n2+")":"";}
+function cardHtml(x){
 var mine=me&&x.ownerUid===me.uid;
 var c=mine?"":(me?'<button class="btn btn-wa btn-sm" onclick="contact(\''+x._id+'\',\''+x.ownerUid+'\',\''+resKind+'\')">'+T[lang].interest+'</button>':'<span class="muted">'+T[lang].loginToContact+'</span>');
 var d=mine?'<button class="btn btn-o btn-sm" onclick="delPost(\''+x._id+'\',\''+resKind+'\')">'+T[lang].del+'</button>':"";
 var rp=(me&&!mine)?'<button class="btn btn-o btn-sm" id="rp-'+x._id+'" onclick="repTrip(\''+x._id+'\')">⚠ '+T[lang].rep+'</button>':"";
 var extra=(resKind==="reqs")?((x.msg?'<br>'+esc(x.msg):"")+'<br><span>'+T[lang].priceHint+'</span>'):(carStr(x.ownerUid)?'<br>'+esc(carStr(x.ownerUid)):"");
-return '<article class="card trip" onclick="showDetail(\''+x._id+'\',\''+resKind+'\')"><div class="tt">'+esc(x.time)+'<small>'+esc(x.date)+'</small></div><div class="tm"><strong>'+esc(x.from)+' → '+esc(x.to)+'</strong><div class="muted">'+esc(x.seats)+' '+T[lang].seatsFree+extra+'</div><div class="row" onclick="event.stopPropagation()">'+c+d+rp+'</div></div><div class="tp">'+esc(x.price)+' MAD</div></article>'}).join("");
+return '<article class="card trip" onclick="showDetail(\''+x._id+'\',\''+resKind+'\')"><div class="tt">'+esc(x.time)+'<small>'+esc(x.date)+'</small></div><div class="tm"><strong>'+esc(x.from)+' → '+esc(x.to)+'</strong><div class="muted">'+esc(x.seats)+' '+T[lang].seatsFree+extra+'</div><div class="row" onclick="event.stopPropagation()">'+c+d+rp+'</div></div><div class="tp">'+esc(x.price)+' MAD</div></article>'}
+box.innerHTML=r.map(cardHtml).join("");
 fillRoutes();}
 window.contact=function(postId,ownerUid,kind){openInterest(postId,ownerUid,kind||resKind)};
 async function getPhone(uid){try{var s=await getDoc(doc(db,"phones",uid));if(s.exists())return s.data().wa||null}catch(e){}return null}
@@ -397,14 +454,44 @@ await b.commit();alert(T[lang].accOk);renderMy();}catch(e){alert("Error: "+e.mes
 window.refuseContact=async function(cid){
 try{await updateDoc(doc(db,"contacts",cid),{status:"refused"});alert(T[lang].refOk);renderMy();}catch(e){alert("Error: "+e.message)}};
 window.openWA=function(wa){window.open("https://wa.me/"+wa,"_blank","noopener")};
-window.updateBadge=async function(){var b=document.getElementById("myBadge");if(!b)return;
-if(!me){b.style.display="none";return}
-try{var n=0;
+var newsP=0,newsA=0,unsubs=[];
+function newsTotal(){return newsP+newsA}
+function stopSnap(){unsubs.forEach(function(u){try{u()}catch(e){}});unsubs=[]}
+function startSnap(){
+stopSnap();if(!me||typeof onSnapshot==="undefined")return;
+var skip1=true,skip2=true;
+try{
+unsubs.push(onSnapshot(query(collection(db,"contacts"),where("ownerUid","==",me.uid)),function(){if(skip1){skip1=false;return}onNews()}));
+unsubs.push(onSnapshot(query(collection(db,"contacts"),where("fromUid","==",me.uid)),function(){if(skip2){skip2=false;return}onNews()}));
+}catch(e){}}
+async function onNews(){
+await updateBadge();
+if(document.getElementById("v-my").style.display!=="none")renderMy();
+if(notifWanted()&&newsTotal()>0){
+var msg=newsP>0?T[lang].newsP.replace("{n}",newsP):T[lang].newsA;
+try{new Notification("Rakbin · راكبين",{body:msg})}catch(e){}}}
+function notifWanted(){try{return ("Notification" in window)&&Notification.permission==="granted"&&localStorage.getItem("rb_notif")!=="off"}catch(e){return false}}
+window.toggleNotif=async function(){
+if(!("Notification" in window))return;
+if(Notification.permission==="granted"){try{localStorage.setItem("rb_notif","off")}catch(e){}bellUI();return}
+try{var p=await Notification.requestPermission();try{if(p==="granted")localStorage.removeItem("rb_notif");else localStorage.setItem("rb_notif","off")}catch(e){}}catch(e){}
+bellUI();};
+function bellUI(){var b=document.getElementById("bellBtn");if(!b)return;var on=notifWanted();b.textContent=(on?T[lang].notifOn:T[lang].notifOff);}
+window.updateBadge=async function(){var b=document.getElementById("myBadge");var bar=document.getElementById("alertBar");
+if(!me){if(b)b.style.display="none";if(bar){bar.style.display="none";bar.innerHTML=""}document.title="Rakbin · راكبين";return}
+try{var pend=0,acc=0;
 var q1=await getDocs(query(collection(db,"contacts"),where("ownerUid","==",me.uid)));
-q1.forEach(function(d){if(d.data().status==="pending")n++});
+q1.forEach(function(d){if(d.data().status==="pending")pend++});
 var q2=await getDocs(query(collection(db,"contacts"),where("fromUid","==",me.uid)));
-q2.forEach(function(d){if(d.data().status==="accepted")n++});
-b.style.display=n>0?"":"none";b.textContent=n>99?"99+":n;}catch(e){}};
+q2.forEach(function(d){if(d.data().status==="accepted")acc++});
+newsP=pend;newsA=acc;var n=pend+acc;
+if(b){b.style.display=n>0?"":"none";b.textContent=n>99?"99+":n}
+document.title=n>0?("("+n+") Rakbin · راكبين"):"Rakbin · راكبين";
+if(bar){
+if(pend>0){bar.style.display="";bar.innerHTML='<div class="container" style="padding:.6rem 1.2rem"><button class="btn btn-p" style="width:100%" onclick="goTab(\'my\')">'+T[lang].newsP.replace("{n}",pend)+'</button></div>'}
+else if(acc>0){bar.style.display="";bar.innerHTML='<div class="container" style="padding:.6rem 1.2rem"><button class="btn btn-p" style="width:100%" onclick="goTab(\'my\')">'+T[lang].newsA+'</button></div>'}
+else{bar.style.display="none";bar.innerHTML=""}}
+bellUI();}catch(e){}};
 window.delPost=async function(id,kind){try{await deleteDoc(doc(db,(kind==="reqs")?"requests":"trips",id));alert(T[lang].delOk);await render();if(document.getElementById("v-my").style.display!=="none")renderMy();}catch(e){alert("Error: "+e.message)}};
 window.repTrip=async function(id){
 if(!me)return;
@@ -525,7 +612,14 @@ texts();
 </script>
 <script>
 /* Claude: atajo pasajero -> formulario "Je cherche un trajet" */
-window.goReq=function(){goTab("p");var r=document.querySelector('[name=ptype][value=request]');if(r){r.checked=true;try{ptypeUI()}catch(e){}}};
+window.goDrive=function(){goTab("p");var r=document.querySelector('[name=ptype][value=trip]');if(r){r.checked=true;try{ptypeUI()}catch(e){}}};
+window.syncHero=function(){var s=document.getElementById("v-s"),p=document.getElementById("v-p");var inS=s&&s.style.display!=="none",inP=p&&p.style.display!=="none";var t="trip";try{t=window.ptype?window.ptype():"trip"}catch(e){}
+var a=document.getElementById("hb-s"),b=document.getElementById("hb-p"),c=document.getElementById("hb-r");
+if(a)a.classList.toggle("on",!!inS);if(b)b.classList.toggle("on",!!(inP&&t==="trip"));if(c)c.classList.toggle("on",!!(inP&&t==="request"));}
+</script>
+<script>
+/* Claude: atajo pasajero -> formulario "Je cherche un trajet" */
+window.goReq=window.goReq||function(){goTab("p");var r=document.querySelector('[name=ptype][value=request]');if(r){r.checked=true;try{ptypeUI()}catch(e){}}};
 </script>
 </body>
 </html>
