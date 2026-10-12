@@ -197,7 +197,7 @@ service cloud.firestore {
 
     // ---- Moto ahora : courses immédiates ----
     function isValidRide(d, uid) {
-      return d.keys().hasOnly(['ownerUid','city','cityKey','fromLabel','toLabel','fromLat','fromLng','toLat','toLng','price','comment','status','createdAt','expiresAt'])
+      return d.keys().hasOnly(['ownerUid','city','cityKey','fromLabel','toLabel','fromLat','fromLng','toLat','toLng','price','comment','status','targetDriver','targetUntil','tried','createdAt','expiresAt'])
         && d.ownerUid is string && d.ownerUid == uid
         && d.city is string && d.city.size() >= 2 && d.city.size() <= 60
         && d.cityKey is string && d.cityKey.size() >= 1 && d.cityKey.size() <= 60
@@ -233,7 +233,17 @@ service cloud.firestore {
             && resource.data.status == 'open'
             && request.resource.data.status == 'matched'
             && exists(/databases/$(database)/documents/rides/$(rideId)/offers/$(request.resource.data.driverUid))
-            && existsAfter(/databases/$(database)/documents/links/$(resource.data.ownerUid + '_' + request.resource.data.driverUid))));
+            && existsAfter(/databases/$(database)/documents/links/$(resource.data.ownerUid + '_' + request.resource.data.driverUid)))
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['targetDriver','targetUntil','tried'])
+              && resource.data.status == 'open' && resource.data.expiresAt > request.time
+              && (!('targetDriver' in request.resource.data) || (
+                exists(/databases/$(database)/documents/drivers/$(request.resource.data.targetDriver))
+                && get(/databases/$(database)/documents/drivers/$(request.resource.data.targetDriver)).data.online == true))
+              && (!('targetUntil' in request.resource.data) || (request.resource.data.targetUntil is timestamp
+                && request.resource.data.targetUntil > request.time
+                && request.resource.data.targetUntil < request.time + duration.value(60, 's')))
+              && (!('tried' in request.resource.data) || (request.resource.data.tried is list
+                && request.resource.data.tried.size() <= 10))));
       allow delete: if request.auth != null
         && (resource.data.ownerUid == request.auth.uid || isAdmin());
     }
@@ -284,6 +294,17 @@ service cloud.firestore {
         && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 300
         && !request.resource.data.text.matches('(?s).*([0-9]{8,}|0[5-7]([ .-]?[0-9]){8}|[+]?212[ .-]?[5-7]).*') /* Claude: sin números de teléfono en el chat */
         && exists(/databases/$(database)/documents/rides/$(rideId)/offers/$(driverUid)) /* Claude: solo motoristas que han hecho oferta */
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+    match /rides/{rideId}/declines/{driverUid} {
+      allow read: if request.auth != null
+        && (get(/databases/$(database)/documents/rides/$(rideId)).data.ownerUid == request.auth.uid
+          || driverUid == request.auth.uid || isAdmin());
+      allow create: if request.auth != null && driverUid == request.auth.uid
+        && profileOkMoto(request.auth.uid)
+        && request.resource.data.keys().hasOnly(['driverUid','createdAt'])
+        && request.resource.data.driverUid == request.auth.uid
         && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
