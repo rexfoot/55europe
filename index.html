@@ -136,6 +136,8 @@ footer.site a{color:#fff;font-weight:600}
 <label style="display:flex;gap:.4rem;align-items:flex-start;font-weight:400;font-size:.85rem"><input type="checkbox" id="sf-ok" style="width:auto;margin-top:.2rem"><span id="sf-consent"></span></label>
 <input type="file" id="sf-file" accept="image/*" capture="user" style="display:none">
 <button type="button" class="btn btn-p btn-sm" id="sf-take" style="margin-top:.4rem"></button>
+<input type="file" id="sf-file2" accept="image/*" style="display:none">
+<button type="button" class="btn btn-o btn-sm" id="sf-pick" style="margin-top:.4rem"></button>
 <button type="button" class="btn btn-o btn-sm" id="sf-del" style="margin-top:.4rem;display:none"></button>
 <div class="muted" id="sf-msg" style="font-size:.8rem;margin-top:.3rem"></div>
 </div></div></div>
@@ -490,17 +492,19 @@ import { getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=getApps()[0], auth=getAuth(app), db=getFirestore(app);
-const L={ar:{consent:"أوافق على أن تكون صورتي مرئية للأعضاء المسجلين فقط.",take:"التقط سيلفي",retake:"تغيير الصورة",del:"حذف صورتي",need:"يجب التقاط سيلفي أولاً (في حسابي).",ok:"✓ تم حفظ الصورة",must:"يرجى الموافقة أولاً.",title:"📸 سيلفي (إجباري)"},
-fr:{consent:"J'accepte que ma photo soit visible uniquement par les membres connectés.",take:"Prendre un selfie",retake:"Changer la photo",del:"Supprimer ma photo",need:"Vous devez d'abord prendre un selfie (Mon compte).",ok:"✓ Photo enregistrée",must:"Veuillez d'abord cocher la case.",title:"📸 Selfie (obligatoire)"}};
+const L={ar:{consent:"أوافق على أن تكون صورتي مرئية للأعضاء المسجلين فقط.",take:"التقط سيلفي",retake:"تغيير الصورة",del:"حذف صورتي",need:"يجب التقاط سيلفي أولاً (في حسابي).",ok:"✓ تم حفظ الصورة",must:"يرجى الموافقة أولاً.",title:"📸 سيلفي (إجباري)",pick:"🖼️ اختر صورة من الهاتف/الحاسوب"},
+fr:{consent:"J'accepte que ma photo soit visible uniquement par les membres connectés.",take:"Prendre un selfie",retake:"Changer la photo",del:"Supprimer ma photo",need:"Vous devez d'abord prendre un selfie (Mon compte).",ok:"✓ Photo enregistrée",must:"Veuillez d'abord cocher la case.",title:"📸 Selfie (obligatoire)",pick:"🖼️ Choisir une photo (galerie / PC)"}};
 const lg=()=>document.documentElement.lang==="ar"?"ar":"fr";
 const $=id=>document.getElementById(id);
 let mySelfie=null; const cacheImg={};
-function texts(){const t=L[lg()];$("sf-title").textContent=t.title;$("sf-consent").textContent=t.consent;$("sf-take").textContent=mySelfie?t.retake:t.take;$("sf-del").textContent=t.del;$("sf-del").style.display=mySelfie?"":"none";
+function texts(){const t=L[lg()];$("sf-title").textContent=t.title;$("sf-consent").textContent=t.consent;$("sf-take").textContent=mySelfie?t.retake:t.take;$("sf-del").textContent=t.del;$("sf-pick").textContent=t.pick;$("sf-del").style.display=mySelfie?"":"none";
 const im=$("sf-img");if(mySelfie){im.src=mySelfie;im.style.display="";}else{im.style.display="none";}}
 new MutationObserver(texts).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
 async function loadMine(){mySelfie=null;const u=auth.currentUser;if(u){try{const s=await getDoc(doc(db,"selfies",u.uid));if(s.exists())mySelfie=s.data().img;}catch(e){}}texts();decorate();}
 onAuthStateChanged(auth,loadMine);
 $("sf-take").onclick=function(){if(!$("sf-ok").checked){alert(L[lg()].must);return}$("sf-file").click();};
+$("sf-pick").onclick=function(){if(!$("sf-ok").checked){alert(L[lg()].must);return}$("sf-file2").click();};
+$("sf-file2").onchange=function(){$("sf-file").onchange.call(this);};
 $("sf-file").onchange=function(){const f=this.files&&this.files[0];if(!f)return;const r=new FileReader();r.onload=function(){const img=new Image();img.onload=async function(){
 const S=240,c=document.createElement("canvas");c.width=S;c.height=S;const m=Math.min(img.width,img.height);c.getContext("2d").drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);
 let q=0.7,d=c.toDataURL("image/jpeg",q);while(d.length>60000&&q>0.3){q-=0.1;d=c.toDataURL("image/jpeg",q);}
