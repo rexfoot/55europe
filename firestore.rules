@@ -47,11 +47,15 @@ service cloud.firestore {
         && (!('createdAt' in d) || d.createdAt == request.time);
     }
     function isValidTrip(d, uid) {
-      return d.keys().hasOnly(['from','to','date','time','seats','price','ownerUid','createdAt'])
+      return d.keys().hasOnly(['from','to','fromKey','toKey','date','time','seats','price','ownerUid','createdAt'])
+        && d.fromKey is string && d.fromKey.size() >= 1 && d.fromKey.size() <= 60
+        && d.toKey is string && d.toKey.size() >= 1 && d.toKey.size() <= 60
         && basePost(d, uid);
     }
     function isValidRequest(d, uid) {
-      return d.keys().hasOnly(['from','to','date','time','seats','price','msg','ownerUid','createdAt'])
+      return d.keys().hasOnly(['from','to','fromKey','toKey','date','time','seats','price','msg','ownerUid','createdAt'])
+        && d.fromKey is string && d.fromKey.size() >= 1 && d.fromKey.size() <= 60
+        && d.toKey is string && d.toKey.size() >= 1 && d.toKey.size() <= 60
         && basePost(d, uid)
         && (!('msg' in d) || (d.msg is string && d.msg.size() <= 200));
     }
