@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>55Europe - Viaja entre ciudades de forma simple y compartida</title>
+<meta name="description" content="55Europe: transporte de personas, envíos y viajes en moto entre ciudades. Perfiles verificados, pago en efectivo y contacto directo por WhatsApp.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--primary:#2563eb;--primary-dark:#1d4ed8;--secondary:#16a34a;--bg:#f8fafc;--text:#1e293b;--muted:#64748b;--card:#fff;--border:#e2e8f0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 1.5rem}
+header{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:72px;gap:1rem}
+.logo{font-size:1.6rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:.5rem;cursor:pointer}
+.logo span{color:var(--secondary)}
+nav{display:flex;gap:1.5rem;align-items:center}
+nav button{font-weight:500;color:var(--muted);background:none;border:none;cursor:pointer;font-size:1rem}
+nav button:hover{color:var(--primary)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;border:none;transition:.2s;font-size:.95rem}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark)}
+.btn-secondary{background:var(--secondary);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-whatsapp{background:#25d366;color:#fff}
+.hero{background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);padding:4rem 0 3rem}
+.hero h1{font-size:2.6rem;font-weight:800;line-height:1.2;margin-bottom:1rem}
+.hero h1 span{color:var(--primary)}
+.search-box{background:#fff;border-radius:16px;padding:1.2rem;box-shadow:0 10px 30px rgba(0,0,0,.08);display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:1rem;max-width:900px}
+.search-box input,.form-group input,.form-group select,.form-group textarea{padding:.9rem 1rem;border:1px solid var(--border);border-radius:8px;font-size:1rem;width:100%}
+.form-group{margin-bottom:1.2rem}.form-group label{display:block;font-weight:600;margin-bottom:.4rem}
+.card{background:var(--card);border-radius:16px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.05);border:1px solid var(--border);margin-bottom:1.5rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
+.section{padding:3rem 0}
+.ride-card{display:grid;grid-template-columns:80px 1fr auto;gap:1rem;align-items:center;padding:1.2rem 0;border-bottom:1px solid var(--border)}
+.ride-card:last-child{border-bottom:none}
+.avatar{width:70px;height:70px;border-radius:50%;object-fit:cover;background:#e2e8f0}
+.badge{display:inline-block;background:#dcfce7;color:#15803d;font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:999px}
+.rating{color:#f59e0b;font-weight:600}
+.upload-box{border:2px dashed var(--border);border-radius:12px;padding:1.5rem;text-align:center;background:#f8fafc}
+.page{display:none}.page.active{display:block}
+footer{background:#0f172a;color:#94a3b8;padding:3rem 0 2rem;margin-top:3rem;text-align:center}
+@media(max-width:768px){.search-box{grid-template-columns:1fr}.hero h1{font-size:2rem}nav{display:none}.ride-card{grid-template-columns:60px 1fr}.ride-card .actions{grid-column:1/-1;margin-top:.5rem}}
+</style>
+</head>
+<body>
+<header>
+<div class="container header-inner">
+<div class="logo" onclick="showPage('home')"><i class="fa-solid fa-route"></i>55<span>Europe</span></div>
+<nav>
+<button onclick="showPage('home')">Inicio</button>
+<button onclick="showPage('resultados')">Viajes</button>
+<button onclick="showPage('envios')">Envíos</button>
+<button onclick="showPage('motos')">Motos</button>
+<button onclick="showPage('como')">Cómo funciona</button>
+</nav>
+<div>
+<button class="btn btn-outline" onclick="showPage('login')" style="margin-right:.5rem">Iniciar sesión</button>
+<button class="btn btn-primary" onclick="showPage('registro-pasajero')">Regístrate</button>
+</div>
+</div>
+</header>
+
+<div id="home" class="page active">
+<section class="hero"><div class="container">
+<h1>Viaja entre ciudades <span>de forma simple y compartida</span></h1>
+<p>Conecta con personas y transporta mercancías. Gratis, seguro y con pago en efectivo. Contacta por WhatsApp o llamada.</p>
+<div class="search-box" style="margin-top:1.5rem">
+<input type="text" id="origen" placeholder="Origen">
+<input type="text" id="destino" placeholder="Destino">
+<input type="date" id="fecha">
+<button class="btn btn-primary" onclick="buscarViajes()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+</div>
+<p style="margin-top:1rem;color:#16a34a;font-weight:500"><i class="fa-solid fa-shield-check"></i> Perfiles verificados · Pago en efectivo · Contacto directo</p>
+</div></section>
+<section class="section"><div class="container">
+<h2 style="text-align:center">¿Qué quieres hacer?</h2>
+<div class="cards" style="margin-top:2rem">
+<div class="card" style="text-align:center"><div style="font-size:2.5rem;color:#2563eb"><i class="fa-solid fa-users"></i></div><h3>Transporte de personas</h3><p>Viaja entre ciudades con conductores verificados.</p><button class="btn btn-primary" onclick="showPage('resultados')" style="margin-top:1rem">Buscar viaje</button></div>
+<div class="card" style="text-align:center"><div style="font-size:2.5rem;color:#16a34a"><i class="fa-solid fa-box"></i></div><h3>Envíos y mercancías</h3><p>Envía paquetes o carga. Pago en efectivo.</p><button class="btn btn-secondary" onclick="showPage('envios')" style="margin-top:1rem">Enviar ahora</button></div>
+<div class="card" style="text-align:center"><div style="font-size:2.5rem;color:#d97706"><i class="fa-solid fa-motorcycle"></i></div><h3>Viajes en moto</h3><p>Sección profesional de motos interciudades.</p><button class="btn btn-primary" onclick="showPage('motos')" style="margin-top:1rem">Ver motos</button></div>
+</div></div></section>
+<section class="section" style="background:#fff"><div class="container"><div class="cards">
+<div class="card" style="text-align:center"><i class="fa-solid fa-id-card" style="font-size:2rem;color:var(--primary)"></i><h3>Verificación fuerte</h3><p>Pasajeros: móvil + Gmail + foto.<br>Conductores: selfie + ID frente y dorso.</p></div>
+<div class="card" style="text-align:center"><i class="fa-solid fa-money-bill-wave" style="font-size:2rem;color:var(--secondary)"></i><h3>Pago en efectivo</h3><p>Acuerdas el precio y pagas directamente. Sin comisiones.</p></div>
+<div class="card" style="text-align:center"><i class="fa-brands fa-whatsapp" style="font-size:2rem;color:#25d366"></i><h3>Contacto directo</h3><p>WhatsApp o llamada normal.</p></div>
+<div class="card" style="text-align:center"><i class="fa-solid fa-share-nodes" style="font-size:2rem;color:var(--primary)"></i><h3>Comparte fácil</h3><p>Botón para compartir viajes y la plataforma.</p></div>
+</div></div></section>
+<section class="section" style="text-align:center"><div class="container">
+<h2>¿Listo para empezar?</h2>
+<div style="margin-top:1rem"><button class="btn btn-primary" onclick="showPage('registro-pasajero')" style="margin-right:.5rem">Soy pasajero</button><button class="btn btn-secondary" onclick="showPage('registro-conductor')">Soy conductor</button></div>
+</div></section>
+</div>
+
+<div id="registro-pasajero" class="page"><section class="section"><div class="container" style="max-width:600px">
+<h1>Registro de Pasajero</h1><p style="color:var(--muted);margin-bottom:1.5rem">Número de móvil + Gmail + foto tuya.</p>
+<form class="card" onsubmit="alert('Registro de pasajero simulado correctamente.');showPage('home');return false">
+<div class="form-group"><label>Nombre completo</label><input type="text" required></div>
+<div class="form-group"><label>Gmail</label><input type="email" required placeholder="tuemail@gmail.com"></div>
+<div class="form-group"><label>Número de móvil</label><input type="tel" required placeholder="+34 600 000 000"></div>
+<div class="form-group"><label>Foto de perfil</label><div class="upload-box"><i class="fa-solid fa-camera" style="font-size:1.8rem"></i><p>Sube una foto clara de tu rostro</p><input type="file" accept="image/*" required style="margin-top:.5rem"></div></div>
+<div class="form-group"><label><input type="checkbox" required> Acepto los términos</label></div>
+<button type="submit" class="btn btn-primary" style="width:100%">Crear cuenta de pasajero</button>
+</form>
+<p style="text-align:center;margin-top:1rem">¿Eres conductor? <a href="#" onclick="showPage('registro-conductor');return false" style="color:var(--primary);font-weight:600">Regístrate aquí</a></p>
+</div></section></div>
+
+<div id="registro-conductor" class="page"><section class="section"><div class="container" style="max-width:700px">
+<h1>Registro de Conductor</h1><p style="color:var(--muted);margin-bottom:1.5rem">Selfie + ID frente y dorso + número de móvil para activación.</p>
+<form class="card" onsubmit="alert('Solicitud de conductor enviada (simulado). Se revisará el ID.');showPage('home');return false">
+<div class="form-group"><label>Nombre completo</label><input type="text" required></div>
+<div class="form-group"><label>Número de móvil</label><input type="tel" required></div>
+<div class="form-group"><label>Gmail</label><input type="email" required></div>
+<div class="form-group"><label>Foto Selfie</label><div class="upload-box"><i class="fa-solid fa-user"></i><p>Selfie clara (rostro visible)</p><input type="file" accept="image/*" required></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+<div class="form-group"><label>ID - Frente</label><div class="upload-box"><i class="fa-solid fa-id-card"></i><p>Foto recta del frente</p><input type="file" accept="image/*" required></div></div>
+<div class="form-group"><label>ID - Dorso</label><div class="upload-box"><i class="fa-solid fa-id-card"></i><p>Foto recta del dorso</p><input type="file" accept="image/*" required></div></div>
+</div>
+<div class="form-group"><label>Tipo de vehículo</label><select required><option value="">Selecciona</option><option>Coche</option><option>Furgoneta</option><option>Moto</option><option>Camión / Carga</option></select></div>
+<div class="form-group"><label><input type="checkbox" required> Confirmo que los documentos son auténticos</label></div>
+<button type="submit" class="btn btn-secondary" style="width:100%">Enviar solicitud de conductor</button>
+</form></div></section></div>
+
+<div id="resultados" class="page"><section class="section"><div class="container">
+<h1>Viajes disponibles</h1><p style="color:var(--muted);margin-bottom:1.5rem">Ejemplo: Madrid → Barcelona</p>
+<div class="card">
+<div class="ride-card"><img src="https://i.pravatar.cc/150?img=11" class="avatar" alt=""><div><strong>Carlos M.</strong> <span class="badge">Verificado</span><br><span class="rating">★ 4.9 (128 viajes)</span><br><small>Coche · 3 asientos · Salida 08:00</small><br><strong style="color:var(--primary)">25 €</strong></div><div class="actions"><button class="btn btn-outline" onclick="showPage('perfil')" style="margin-bottom:.4rem">Ver perfil</button><br><a href="https://wa.me/34600000000?text=Hola%20desde%2055Europe" class="btn btn-whatsapp" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a></div></div>
+<div class="ride-card"><img src="https://i.pravatar.cc/150?img=32" class="avatar" alt=""><div><strong>Ana L.</strong> <span class="badge">Verificado</span><br><span class="rating">★ 5.0 (87 viajes)</span><br><small>Coche · 2 asientos · Salida 10:30</small><br><strong style="color:var(--primary)">28 €</strong></div><div class="actions"><button class="btn btn-outline" onclick="showPage('perfil')" style="margin-bottom:.4rem">Ver perfil</button><br><a href="https://wa.me/34600000001" class="btn btn-whatsapp" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a></div></div>
+<div class="ride-card"><img src="https://i.pravatar.cc/150?img=15" class="avatar" alt=""><div><strong>Miguel R.</strong> <span class="badge">Verificado</span><br><span class="rating">★ 4.7 (210 viajes)</span><br><small>Furgoneta · 4 asientos</small><br><strong style="color:var(--primary)">22 €</strong></div><div class="actions"><a href="tel:+34600000002" class="btn btn-outline"><i class="fa-solid fa-phone"></i> Llamar</a></div></div>
+</div>
+<div style="text-align:center;margin-top:1.5rem"><button class="btn btn-secondary" onclick="showPage('publicar')">¿Eres conductor? Publica tu viaje</button></div>
+</div></section></div>
+
+<div id="perfil" class="page"><section class="section"><div class="container" style="max-width:800px">
+<div class="card" style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap"><img src="https://i.pravatar.cc/200?img=11" style="width:140px;height:140px;border-radius:50%;object-fit:cover" alt=""><div><h1>Carlos Martínez</h1><span class="badge">Conductor Verificado</span><p class="rating" style="font-size:1.2rem;margin:.5rem 0">★ 4.9 · 128 viajes</p><p>Coche: Toyota Corolla · 3 asientos</p></div></div>
+<div class="card"><h3>Viaje</h3><p><strong>Madrid → Barcelona</strong> · 08:00</p><p>Precio propuesto: <strong>25 €</strong> (pago en efectivo)</p><p>Punto de recogida: Estación de Atocha</p></div>
+<div style="display:flex;gap:1rem;flex-wrap:wrap"><a href="https://wa.me/34600000000?text=Hola%20desde%2055Europe" class="btn btn-whatsapp" target="_blank" rel="noopener" style="flex:1"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a><a href="tel:+34600000000" class="btn btn-outline" style="flex:1"><i class="fa-solid fa-phone"></i> Llamar</a><button class="btn btn-outline" onclick="compartir()"><i class="fa-solid fa-share-nodes"></i> Compartir</button></div>
+<button class="btn btn-outline" onclick="showPage('resultados')" style="margin-top:1rem">← Volver a resultados</button>
+</div></section></div>
+
+<div id="publicar" class="page"><section class="section"><div class="container" style="max-width:650px">
+<h1>Publicar un viaje</h1>
+<form class="card" onsubmit="alert('Viaje publicado (simulado).');showPage('resultados');return false">
+<div class="form-group"><label>Origen</label><input type="text" required></div>
+<div class="form-group"><label>Destino</label><input type="text" required></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem"><div class="form-group"><label>Fecha</label><input type="date" required></div><div class="form-group"><label>Hora</label><input type="time" required></div></div>
+<div class="form-group"><label>Asientos disponibles</label><input type="number" min="1" value="3" required></div>
+<div class="form-group"><label>Precio propuesto por persona (€)</label><input type="number" required></div>
+<div class="form-group"><label>Notas</label><textarea rows="3" placeholder="Punto de recogida, etc."></textarea></div>
+<button type="submit" class="btn btn-secondary" style="width:100%">Publicar viaje</button>
+</form></div></section></div>
+
+<div id="motos" class="page">
+<section class="hero" style="background:#0f172a;color:#fff"><div class="container"><h1 style="color:#fff">Viajes en <span style="color:#fbbf24">Moto</span></h1><p style="color:#cbd5e1">Sección profesional. Conductores verificados y motos con baúl.</p></div></section>
+<section class="section"><div class="container"><div class="card">
+<div class="ride-card"><img src="https://i.pravatar.cc/150?img=47" class="avatar" alt=""><div><strong>Laura G.</strong> <span class="badge">Moto Verificada</span><br><span class="rating">★ 4.8</span> · Yamaha MT-07 con baúl<br><strong>18 €</strong></div><a href="https://wa.me/34600000003" class="btn btn-whatsapp" target="_blank" rel="noopener">WhatsApp</a></div>
+<div class="ride-card"><img src="https://i.pravatar.cc/150?img=52" class="avatar" alt=""><div><strong>Javier P.</strong> <span class="badge">Moto Verificada</span><br><span class="rating">★ 4.9</span> · Honda NC750X<br><strong>22 €</strong></div><a href="tel:+34600000004" class="btn btn-outline">Llamar</a></div>
+</div></div></section>
+</div>
+
+<div id="envios" class="page"><section class="section"><div class="container">
+<h1>Envíos y mercancías</h1><p style="color:var(--muted);margin-bottom:1.5rem">Describe la carga, propone precio y contacta. Pago en efectivo.</p>
+<div class="cards">
+<div class="card"><h3>Publicar un envío</h3><form onsubmit="alert('Envío publicado (simulado)');return false" style="margin-top:1rem">
+<div class="form-group"><label>Origen</label><input type="text" required></div>
+<div class="form-group"><label>Destino</label><input type="text" required></div>
+<div class="form-group"><label>Descripción</label><textarea rows="3" required placeholder="Qué envías, peso, tamaño..."></textarea></div>
+<div class="form-group"><label>Precio propuesto (€)</label><input type="number" required></div>
+<button type="submit" class="btn btn-secondary">Publicar envío</button></form></div>
+<div class="card"><h3>Conductores para carga</h3><div style="margin-top:1rem">
+<p><strong>Pedro S.</strong> · Furgoneta · ★ 4.8</p>
+<div style="display:flex;gap:.5rem;margin:.5rem 0 1.5rem"><a href="https://wa.me/34600000005" class="btn btn-whatsapp" target="_blank" rel="noopener">WhatsApp</a><a href="tel:+34600000005" class="btn btn-outline">Llamar</a></div>
+<p><strong>Lucía F.</strong> · Camión · ★ 5.0</p>
+<div style="display:flex;gap:.5rem;margin:.5rem 0"><a href="https://wa.me/34600000006" class="btn btn-whatsapp" target="_blank" rel="noopener">WhatsApp</a><a href="tel:+34600000006" class="btn btn-outline">Llamar</a></div>
+</div></div>
+</div></div></section></div>
+
+<div id="login" class="page"><section class="section"><div class="container" style="max-width:500px">
+<h1>Iniciar sesión</h1>
+<form class="card" onsubmit="alert('Inicio de sesión simulado.');showPage('home');return false" style="margin-top:1rem">
+<div class="form-group"><label>Gmail</label><input type="email" required></div>
+<div class="form-group"><label>Contraseña</label><input type="password" required></div>
+<button type="submit" class="btn btn-primary" style="width:100%">Entrar</button>
+</form>
+<p style="text-align:center;margin-top:1rem">¿No tienes cuenta? <a href="#" onclick="showPage('registro-pasajero');return false" style="color:var(--primary);font-weight:600">Regístrate</a></p>
+</div></section></div>
+
+<div id="como" class="page"><section class="section"><div class="container" style="max-width:700px">
+<h1>Cómo funciona</h1>
+<div class="card" style="margin-top:1rem"><h3>1. Regístrate gratis</h3><p>Pasajero con móvil + Gmail + foto. Conductor con selfie + ID.</p></div>
+<div class="card"><h3>2. Busca o publica</h3><p>Busca viajes o envíos, o publica los tuyos sin comisión.</p></div>
+<div class="card"><h3>3. Contacta y paga en efectivo</h3><p>WhatsApp o llamada, acuerdas el precio y pagas en mano.</p></div>
+</div></section></div>
+
+<footer><div class="container">
+<p><strong style="color:#fff">55Europe</strong> · Viajes compartidos, envíos y motos</p>
+<p style="margin-top:.5rem">Contacto directo por WhatsApp · Pago en efectivo · Sin comisiones</p>
+<p style="margin-top:.5rem;font-size:.85rem">© 2026 55europe.com</p>
+</div></footer>
+
+<script>
+function showPage(id){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});var el=document.getElementById(id);if(el){el.classList.add('active');window.scrollTo(0,0)}}
+function buscarViajes(){showPage('resultados')}
+function compartir(){var url=location.href;if(navigator.share){navigator.share({title:'55Europe',url:url}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){alert('Enlace copiado')})}else{alert(url)}}
+</script>
+</body>
+</html>
