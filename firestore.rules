@@ -2,49 +2,68 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function tripPath(id) { return /databases/$(database)/documents/trips/$(id); }
-    function secretPath(id) { return /databases/$(database)/documents/secrets/$(id); }
+    // ⚠️ Hicham: sustituye por tu uid (Firebase Console → Authentication → Users → UID).
+    function adminUid() { return 'PEGA-UID-HICHAM'; }
+    function isAdmin() { return request.auth != null && request.auth.uid == adminUid(); }
+    function me(uid) { return request.auth != null && request.auth.uid == uid; }
+    function profileOk(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid))
+        && get(/databases/$(database)/documents/users/$(uid)).data.wa.matches('^212[0-9]{9}$')
+        && get(/databases/$(database)/documents/users/$(uid)).data.get('banned', false) == false;
+    }
 
-    function isValidTrip(d) {
-      return d.keys().hasOnly(['from','to','date','time','seats','price','wa','reports','createdAt'])
-        && d.keys().hasAll(['from','to','date','time','seats','price','wa','reports'])
+    function isValidTrip(d, uid) {
+      return d.keys().hasOnly(['from','to','date','time','seats','price','ownerUid','createdAt'])
         && d.from is string && d.from.size() >= 2 && d.from.size() <= 60
         && d.to is string && d.to.size() >= 2 && d.to.size() <= 60
         && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && d.date >= '2026-01-01'
         && d.time is string && d.time.matches('^[0-9]{2}:[0-9]{2}$')
         && d.seats is int && d.seats >= 1 && d.seats <= 8
         && d.price is number && d.price > 0 && d.price <= 10000
-        && d.wa is string && d.wa.matches('^212[0-9]{9}$')
-        && d.reports == 0
+        && d.ownerUid is string && d.ownerUid == uid
         && (!('createdAt' in d) || d.createdAt == request.time);
     }
 
-    match /trips/{tripId} {
-      allow read: if true;
-      // El viaje y su secreto se crean juntos en el mismo writeBatch.
-      allow create: if isValidTrip(request.resource.data)
-        && existsAfter(secretPath(tripId));
-      // Solo cambian deleteCode (peticion de borrado) o reports (+1 por denuncia).
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleteCode','reports'])
-        && (
-          request.resource.data.reports == resource.data.get('reports', 0)
-          || request.resource.data.reports == resource.data.get('reports', 0) + 1
-        )
-        && (!('deleteCode' in request.resource.data) || (request.resource.data.deleteCode is string && request.resource.data.deleteCode.size() <= 64));
-      // Borrado solo si deleteCode coincide con secrets/{tripId}.code
-      allow delete: if exists(secretPath(tripId))
-        && resource.data.get('deleteCode', '') == get(secretPath(tripId)).data.code;
+    // ---- Perfiles: WhatsApp NO público, solo con sesión ----
+    match /users/{uid} {
+      // get con sesion (ver WhatsApp de un conductor); list solo admin (evita robar todos los numeros)
+      allow get: if request.auth != null;
+      allow list: if isAdmin();
+      allow create: if me(uid)
+        && request.resource.data.keys().hasOnly(['nombre','foto','wa','banned','createdAt'])
+        && request.resource.data.nombre is string && request.resource.data.nombre.size() >= 2
+        && request.resource.data.wa is string && request.resource.data.wa.matches('^212[0-9]{9}$')
+        && request.resource.data.banned == false
+        && (!('foto' in request.resource.data) || (request.resource.data.foto is string && request.resource.data.foto.size() <= 600))
+        && (!('createdAt' in request.resource.data) || request.resource.data.createdAt == request.time);
+      allow update: if (me(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre','foto','wa'])
+          && request.resource.data.wa.matches('^212[0-9]{9}$'))
+        || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['banned']));
+      allow delete: if false;
     }
 
-    match /secrets/{tripId} {
-      allow read: if false;
-      // Solo se puede crear junto con un viaje NUEVO (mismo batch): nadie puede adueñarse de un viaje ajeno.
-      allow create: if request.resource.data.keys().hasOnly(['code'])
-        && request.resource.data.code is string
-        && request.resource.data.code.size() >= 4 && request.resource.data.code.size() <= 64
-        && !exists(tripPath(tripId))
-        && existsAfter(tripPath(tripId));
-      allow update, delete: if false;
+    // ---- Viajes: lectura pública, sin WhatsApp dentro ----
+    match /trips/{tripId} {
+      allow read: if true;
+      allow create: if request.auth != null && profileOk(request.auth.uid)
+        && isValidTrip(request.resource.data, request.auth.uid);
+      allow update: if false; // nada se edita; el borrado va por delete
+      allow delete: if request.auth != null
+        && (resource.data.ownerUid == request.auth.uid || isAdmin());
+    }
+
+    // ---- Denuncias: una por usuario y viaje ----
+    match /reports/{reportId} {
+      allow read: if true; // para contar y ocultar con 3+
+      allow create: if request.auth != null
+        && reportId == request.resource.data.tripId + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['tripId','uid','createdAt'])
+        && request.resource.data.tripId is string
+        && request.resource.data.uid == request.auth.uid
+        && (!('createdAt' in request.resource.data) || request.resource.data.createdAt == request.time);
+      allow update: if false;
+      allow delete: if isAdmin();
     }
   }
 }
