@@ -18,13 +18,19 @@ service cloud.firestore {
         && userData(uid).get('banned', false) == false;
     }
     function hasSelfie(uid) { return exists(selfiePath(uid)); }
+    function motoVeh(c) {
+      return (('type' in c) && c.type == 'moto') || (('category' in c) && c.category == 'moto');
+    }
     function validCar(c) {
-      return c is map && c.keys().hasOnly(['brand','model','color','category'])
+      return c is map && c.keys().hasOnly(['type','brand','model','color','category'])
+        && (!('type' in c) || c.type in ['car','moto'])
         && c.brand is string && c.brand.size() >= 2 && c.brand.size() <= 40
-        && c.brand in ['Dacia','Renault','Peugeot','Citroën','Hyundai','Kia','Toyota','Volkswagen','Fiat','Ford','Skoda','Seat','Opel','Nissan','Suzuki','Mercedes-Benz','BMW','Audi','Chevrolet','Mitsubishi','Honda','Mazda','Chery','MG','Autre']
         && c.model is string && c.model.size() >= 1 && c.model.size() <= 40
         && c.color is string && c.color.size() >= 2 && c.color.size() <= 40
-        && c.category is string && c.category in ['citadine','berline','suv','7places','luxe'];
+        && ((motoVeh(c) && c.category == 'moto'
+          && c.brand in ['Yamaha','Honda','Suzuki','Kymco','SYM','Peugeot','Piaggio/Vespa','Docker','Benelli','Autre'])
+        || (!motoVeh(c) && c.category in ['citadine','berline','suv','7places','luxe']
+          && c.brand in ['Dacia','Renault','Peugeot','Citroën','Hyundai','Kia','Toyota','Volkswagen','Fiat','Ford','Skoda','Seat','Opel','Nissan','Suzuki','Mercedes-Benz','BMW','Audi','Chevrolet','Mitsubishi','Honda','Mazda','Chery','MG','Autre']));
     }
     // Profil complet conducteur : selfie + tel + pas banni + voiture
     function profileOk(uid) {
@@ -34,6 +40,11 @@ service cloud.firestore {
     // Profil passager : pas besoin de voiture
     function profileOkLight(uid) {
       return notBanned(uid) && hasSelfie(uid) && hasPhone(uid);
+    }
+    // Profil motard : selfie + tel + pas banni + moto
+    function profileOkMoto(uid) {
+      return notBanned(uid) && hasSelfie(uid) && hasPhone(uid)
+        && motoVeh(userData(uid).car) && validCar(userData(uid).car);
     }
 
     function basePost(d, uid) {
@@ -47,15 +58,20 @@ service cloud.firestore {
         && (!('createdAt' in d) || d.createdAt == request.time);
     }
     function isValidTrip(d, uid) {
-      return d.keys().hasOnly(['from','to','fromKey','toKey','date','time','seats','price','ownerUid','createdAt'])
+      return d.keys().hasOnly(['from','to','fromKey','toKey','scope','vkind','date','time','seats','price','ownerUid','createdAt'])
         && d.fromKey is string && d.fromKey.size() >= 1 && d.fromKey.size() <= 60
         && d.toKey is string && d.toKey.size() >= 1 && d.toKey.size() <= 60
+        && (!('scope' in d) || d.scope in ['city','intercity'])
+        && (!('vkind' in d) || d.vkind in ['car','moto'])
+        && (!('vkind' in d) || d.vkind != 'moto' || d.seats == 1)
         && basePost(d, uid);
     }
     function isValidRequest(d, uid) {
-      return d.keys().hasOnly(['from','to','fromKey','toKey','date','time','seats','price','msg','ownerUid','createdAt'])
+      return d.keys().hasOnly(['from','to','fromKey','toKey','scope','wanted','date','time','seats','price','msg','ownerUid','createdAt'])
         && d.fromKey is string && d.fromKey.size() >= 1 && d.fromKey.size() <= 60
         && d.toKey is string && d.toKey.size() >= 1 && d.toKey.size() <= 60
+        && (!('scope' in d) || d.scope in ['city','intercity'])
+        && (!('wanted' in d) || d.wanted in ['car','moto','any'])
         && basePost(d, uid)
         && (!('msg' in d) || (d.msg is string && d.msg.size() <= 200));
     }
@@ -95,8 +111,10 @@ service cloud.firestore {
     // ---- Trajets proposés (conducteurs) : lecture publique, sans contact direct ----
     match /trips/{tripId} {
       allow read: if true;
-      allow create: if request.auth != null && profileOk(request.auth.uid)
-        && isValidTrip(request.resource.data, request.auth.uid);
+      allow create: if request.auth != null
+        && isValidTrip(request.resource.data, request.auth.uid)
+        && ((request.resource.data.get('vkind', 'car') == 'moto' && profileOkMoto(request.auth.uid))
+          || (request.resource.data.get('vkind', 'car') == 'car' && profileOk(request.auth.uid) && !motoVeh(userData(request.auth.uid).car)));
       allow update: if false;
       allow delete: if request.auth != null
         && (resource.data.ownerUid == request.auth.uid || isAdmin());
