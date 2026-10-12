@@ -6,8 +6,10 @@ service cloud.firestore {
     function adminUid() { return 'tLbWtywFlBQ7zIUGMg3gbAGxdLZ2'; }
     function isAdmin() { return request.auth != null && request.auth.uid == adminUid(); }
     function me(uid) { return request.auth != null && request.auth.uid == uid; }
+    function selfiePath(uid) { return /databases/$(database)/documents/selfies/$(uid); }
     function profileOk(uid) {
       return exists(/databases/$(database)/documents/users/$(uid))
+        && exists(selfiePath(uid))
         && get(/databases/$(database)/documents/users/$(uid)).data.wa.matches('^[1-9][0-9]{7,14}$')
         && get(/databases/$(database)/documents/users/$(uid)).data.get('banned', false) == false;
     }
@@ -27,7 +29,8 @@ service cloud.firestore {
     // ---- Perfiles: WhatsApp NO público, solo con sesión ----
     match /users/{uid} {
       // get con sesion (ver WhatsApp de un conductor); list solo admin (evita robar todos los numeros)
-      allow get: if request.auth != null;
+      // Para ver el WhatsApp de otro hay que tener selfie (pasajeros tambien)
+      allow get: if me(uid) || isAdmin() || (request.auth != null && exists(selfiePath(request.auth.uid)));
       allow list: if isAdmin();
       allow create: if me(uid)
         && request.resource.data.keys().hasOnly(['nombre','foto','wa','banned','createdAt'])
@@ -51,6 +54,19 @@ service cloud.firestore {
       allow update: if false; // nada se edita; el borrado va por delete
       allow delete: if request.auth != null
         && (resource.data.ownerUid == request.auth.uid || isAdmin());
+    }
+
+    // ---- Selfies: obligatorio, visible solo para usuarios conectados ----
+    match /selfies/{uid} {
+      allow get: if request.auth != null;
+      allow list: if isAdmin();
+      allow create, update: if me(uid)
+        && request.resource.data.keys().hasOnly(['img','createdAt'])
+        && request.resource.data.img is string
+        && request.resource.data.img.size() < 80000
+        && request.resource.data.img.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+')
+        && request.resource.data.createdAt == request.time;
+      allow delete: if me(uid) || isAdmin();
     }
 
     // ---- Denuncias: una por usuario y viaje ----
