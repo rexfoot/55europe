@@ -285,8 +285,8 @@ function today(){return new Date().toISOString().slice(0,10)}
 function norm(s){return (s||"").trim().toLowerCase()}
 function normKey(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\u0600-\u06ff]+/g," ").trim().replace(/\s+/g," ")}
 var CITYSET=null;
-function citySet(){if(CITYSET)return CITYSET;CITYSET={};var os=document.querySelectorAll("#cities option");for(var i=0;i<os.length;i++){var ps=os[i].value.split("·");for(var j=0;j<ps.length;j++){var k=normKey(ps[j]);if(k)CITYSET[k]=1}}return CITYSET}
-function cityKey(txt){var parts=String(txt||"").split("·");var set=citySet();for(var i=0;i<parts.length;i++){var p=normKey(parts[i]);if(p&&set[p])return p}return normKey(txt)}
+function citySet(){if(CITYSET)return CITYSET;CITYSET={};var os=document.querySelectorAll("#cities option");for(var i=0;i<os.length;i++){var ps=os[i].value.split("·");var canon=normKey(ps[0]);for(var j=0;j<ps.length;j++){var k=normKey(ps[j]);if(k)CITYSET[k]=canon}}return CITYSET}
+function cityKey(txt){var parts=String(txt||"").split("·");var set=citySet();for(var i=0;i<parts.length;i++){var p=normKey(parts[i]);if(p&&set[p])return set[p]}return normKey(txt)}
 function postKey(x,f){return x[f+"Key"]||cityKey(x[f]||"")}
 function cityMatch(input,stored,storedKey){var q=norm(input);if(!q)return true;var k=cityKey(input);if(k&&citySet()[k])return (storedKey||cityKey(stored))===k;return norm(stored).indexOf(q)>-1}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
