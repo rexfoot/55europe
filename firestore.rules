@@ -8,7 +8,7 @@ service cloud.firestore {
     function me(uid) { return request.auth != null && request.auth.uid == uid; }
     function profileOk(uid) {
       return exists(/databases/$(database)/documents/users/$(uid))
-        && get(/databases/$(database)/documents/users/$(uid)).data.wa.matches('^212[0-9]{9}$')
+        && get(/databases/$(database)/documents/users/$(uid)).data.wa.matches('^[1-9][0-9]{7,14}$')
         && get(/databases/$(database)/documents/users/$(uid)).data.get('banned', false) == false;
     }
 
@@ -32,13 +32,13 @@ service cloud.firestore {
       allow create: if me(uid)
         && request.resource.data.keys().hasOnly(['nombre','foto','wa','banned','createdAt'])
         && request.resource.data.nombre is string && request.resource.data.nombre.size() >= 2
-        && request.resource.data.wa is string && request.resource.data.wa.matches('^212[0-9]{9}$')
+        && request.resource.data.wa is string && request.resource.data.wa.matches('^[1-9][0-9]{7,14}$')
         && request.resource.data.banned == false
         && (!('foto' in request.resource.data) || (request.resource.data.foto is string && request.resource.data.foto.size() <= 600))
         && (!('createdAt' in request.resource.data) || request.resource.data.createdAt == request.time);
       allow update: if (me(uid)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre','foto','wa'])
-          && request.resource.data.wa.matches('^212[0-9]{9}$'))
+          && request.resource.data.wa.matches('^[1-9][0-9]{7,14}$'))
         || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['banned']));
       allow delete: if false;
     }
