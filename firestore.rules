@@ -259,8 +259,35 @@ service cloud.firestore {
         && request.resource.data.eta is int && request.resource.data.eta >= 1 && request.resource.data.eta <= 60;
       allow delete: if false;
     }
-    // ---- Notes après course : les 2 participants, une fois chacun ----
-    match /ratings/{rid} {
+    // ---- Position des motoristas en ligne (arrondie ~100 m côté client) ----
+    match /drivers/{uid} {
+      allow read: if request.auth != null && hasSelfie(request.auth.uid);
+      allow create, update: if me(uid) && profileOkMoto(uid)
+        && request.resource.data.keys().hasOnly(['lat','lng','cityKey','online','updatedAt'])
+        && request.resource.data.lat is number && request.resource.data.lat >= -90 && request.resource.data.lat <= 90
+        && request.resource.data.lng is number && request.resource.data.lng >= -180 && request.resource.data.lng <= 180
+        && request.resource.data.cityKey is string && request.resource.data.cityKey.size() >= 1 && request.resource.data.cityKey.size() <= 60
+        && request.resource.data.online is bool
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+    // ---- Chat passager <-> motorista por oferta ----
+    match /rides/{rideId}/chats/{driverUid}/messages/{msgId} {
+      allow read: if request.auth != null
+        && (get(/databases/$(database)/documents/rides/$(rideId)).data.ownerUid == request.auth.uid
+          || driverUid == request.auth.uid || isAdmin());
+      allow create: if request.auth != null
+        && (get(/databases/$(database)/documents/rides/$(rideId)).data.ownerUid == request.auth.uid
+          || driverUid == request.auth.uid)
+        && request.resource.data.keys().hasOnly(['from','text','createdAt'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 300
+        && !request.resource.data.text.matches('(?s).*([0-9]{8,}|0[5-7]([ .-]?[0-9]){8}|[+]?212[ .-]?[5-7]).*') /* Claude: sin números de teléfono en el chat */
+        && exists(/databases/$(database)/documents/rides/$(rideId)/offers/$(driverUid)) /* Claude: solo motoristas que han hecho oferta */
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+    // ---- Notes après course : les 2 participants, une fois chacun ----    match /ratings/{rid} {
       allow read: if request.auth != null;
       allow create: if request.auth != null
         && rid == request.resource.data.rideId + '_' + request.auth.uid
