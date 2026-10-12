@@ -2,8 +2,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ⚠️ Hicham: sustituye por tu uid (Firebase Console → Authentication → Users → UID).
-    function adminUid() { return 'PEGA-UID-HICHAM'; }
+    // Admin: Hicham (footrexofficial@gmail.com)
+    function adminUid() { return 'tLbWtywFlBQ7zIUGMg3gbAGxdLZ2'; }
     function isAdmin() { return request.auth != null && request.auth.uid == adminUid(); }
     function me(uid) { return request.auth != null && request.auth.uid == uid; }
     function profileOk(uid) {
