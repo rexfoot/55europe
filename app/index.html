@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#C1272D">
+<title>Rakbin · راكبين — Covoiturage et moto au Maroc</title>
+<meta name="description" content="Rakbin · راكبين : voiture, moto et covoiturage ville à ville au Maroc. Vous proposez votre prix, les conducteurs répondent.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23C1272D'/><text x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'>R</text></svg>">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--red:#C1272D;--green:#006233;--green2:#e7f3ec;--bg:#fff;--fg:#111827;--muted:#6b7280;--card:#f4f5f7;--line:#e5e7eb;--shadow:0 2px 10px rgba(0,0,0,.18)}
+body.dark{--bg:#121417;--fg:#f3f4f6;--muted:#9ca3af;--card:#1d2127;--line:#2c323a;--green2:#12301f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button{font:inherit;cursor:pointer}
+#map{position:fixed;inset:0;z-index:0}
+.leaflet-control-attribution{font-size:10px}
+.topbar{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;z-index:10;display:flex;gap:8px;align-items:center}
+.round{width:46px;height:46px;border-radius:50%;border:0;background:#fff;color:#111;font-size:20px;box-shadow:var(--shadow);flex-shrink:0}
+.from{flex:1;background:#fff;color:#111;border-radius:14px;padding:8px 12px;box-shadow:var(--shadow);min-width:0}
+.from small{display:block;color:#6b7280;font-size:11px}
+.from b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#locBtn{position:fixed;right:12px;z-index:10;bottom:calc(var(--sheetH,300px) + 12px)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bg);border-radius:22px 22px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.22);padding:6px 16px calc(16px + env(safe-area-inset-bottom));max-height:70vh;overflow:auto;max-width:640px;margin:0 auto}
+.grip{width:44px;height:5px;border-radius:99px;background:#d1d5db;margin:4px auto 8px}
+.logo{font-weight:800;font-size:20px;letter-spacing:.2px}.logo .r{color:var(--red)}.logo .a{color:var(--green)}
+.services{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none}
+.svc{min-width:92px;border:2px solid transparent;border-radius:14px;padding:8px 6px;text-align:center;font-size:12.5px;background:var(--card);color:var(--fg);flex-shrink:0;font-weight:600}
+.svc .i{font-size:26px;line-height:1.2}
+.svc.active{border-color:var(--green);background:var(--green2)}
+.field{position:relative;margin-top:8px}
+input,select,textarea{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--line);font-size:16px;background:var(--card);color:var(--fg);outline:none}
+input:focus,select:focus{border-color:var(--green)}
+.sugg{background:var(--bg);border:1px solid var(--line);border-radius:12px;margin-top:4px;overflow:hidden}
+.sugg:empty{display:none}
+.sug{padding:10px 12px;font-size:14px;border-bottom:1px solid var(--line)}
+.sug:last-child{border-bottom:0}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{flex:1}
+.hint{font-size:13px;color:var(--muted);margin:6px 2px 0}
+.hint b{color:var(--green)}
+.cta{width:100%;background:var(--green);color:#fff;border:0;border-radius:14px;padding:15px;font-size:17px;font-weight:700;margin-top:10px}
+.cta:disabled{opacity:.5}
+.cta.red{background:var(--red)}
+.cta.dark{background:#111827}
+.ghost{width:100%;background:var(--card);color:var(--fg);border:0;border-radius:14px;padding:13px;margin-top:8px;font-weight:600}
+.wa{background:#25D366}
+.muted{color:var(--muted)}
+.hide{display:none!important}
+.card{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px;background:var(--card)}
+.person{display:flex;gap:10px;align-items:center}
+.av{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#d1d5db;flex-shrink:0}
+.person .info{flex:1;min-width:0}
+.person .info b{display:block}
+.price{font-size:20px;font-weight:800;color:var(--green);white-space:nowrap}
+.small{font-size:12.5px;color:var(--muted)}
+.route{font-size:14px;margin:8px 0 2px}
+.btns{display:flex;gap:8px;margin-top:8px}
+.btns>*{flex:1;margin-top:0}
+.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin:8px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:49;display:none}
+.drawer-bg.open{display:block}
+.drawer{position:fixed;top:0;bottom:0;left:-310px;width:300px;max-width:85vw;background:var(--bg);z-index:50;transition:left .25s;padding:16px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:4px 0 20px rgba(0,0,0,.2);overflow:auto;display:flex;flex-direction:column}
+.drawer.open{left:0}
+.drawer .head{display:flex;gap:12px;align-items:center;padding:8px 0 14px;border-bottom:1px solid var(--line)}
+.drawer .head .av{width:58px;height:58px}
+.stars{color:#f5b301}
+.drawer a{display:flex;gap:14px;align-items:center;padding:13px 4px;text-decoration:none;color:var(--fg);font-size:16px}
+.drawer .grow{flex:1}
+.screen{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;display:none;padding:0 0 40px}
+.screen.show{display:block}
+.screen header{position:sticky;top:0;background:var(--bg);display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 12px 12px;border-bottom:1px solid var(--line);z-index:2}
+.screen header h2{margin:0;font-size:20px}
+.screen header .round{box-shadow:none;background:var(--card);color:var(--fg)}
+.screen .body{padding:4px 16px;max-width:640px;margin:0 auto}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px}
+.chip{border:0;background:var(--card);color:var(--fg);border-radius:99px;padding:8px 14px;font-size:14px;white-space:nowrap}
+.chip.active{background:var(--fg);color:var(--bg)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.tile{background:var(--card);border-radius:16px;padding:14px;min-height:90px;font-weight:600}
+.tile span{display:block;font-size:26px;margin-bottom:6px}
+.sos{display:block;width:100%;text-align:center;text-decoration:none;background:var(--red);color:#fff;border-radius:14px;padding:15px;font-size:17px;font-weight:800;margin-top:10px}
+.sos.blk{background:#111827}
+details{background:var(--card);border-radius:14px;padding:12px 14px;margin-top:10px}
+summary{font-weight:600;cursor:pointer}
+label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
+.check{display:flex;gap:10px;align-items:center;margin-top:12px;font-weight:600}
+.check input{width:22px;height:22px}
+.selfie{width:110px;height:110px;border-radius:50%;object-fit:cover;background:var(--card);display:block;margin:10px auto;border:3px solid var(--green)}
+.empty{text-align:center;padding:40px 10px;color:var(--muted)}
+.empty .big{font-size:56px}
+.toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);background:#111827;color:#fff;padding:11px 16px;border-radius:12px;z-index:100;font-size:14px;max-width:90vw;box-shadow:var(--shadow);display:none}
+.badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700}
+.online{background:var(--green);color:#fff;border-radius:12px;padding:10px 12px;text-align:center;font-weight:700;margin-top:6px}
+.pin{font-size:26px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+[dir=rtl] .drawer{left:auto;right:-310px;transition:right .25s}
+[dir=rtl] .drawer.open{right:0}
+[dir=rtl] #locBtn{right:auto;left:12px}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="topbar">
+  <button class="round" onclick="openDrawer(true)" aria-label="Menu">☰</button>
+  <div class="from"><small data-i18n="from">D'où</small><b id="fromLabel">…</b></div>
+</div>
+<button class="round" id="locBtn" onclick="locate(true)" aria-label="Me localiser">◎</button>
+
+<!-- ===== Panneau du bas ===== -->
+<div class="sheet" id="sheet">
+  <div class="grip"></div>
+
+  <!-- Accueil passager -->
+  <div id="pHome">
+    <div class="logo"><span class="r">Rakbin</span> · <span class="a">راكبين</span></div>
+    <div class="services">
+      <button class="svc" data-s="car" onclick="pickService('car')"><div class="i">🚗</div><span data-i18n="svcCar">Voiture</span></button>
+      <button class="svc active" data-s="moto" onclick="pickService('moto')"><div class="i">🏍️</div><span data-i18n="svcMoto">Moto</span></button>
+      <button class="svc" data-s="inter" onclick="pickService('inter')"><div class="i">🛣️</div><span data-i18n="svcInter">Ville à Ville</span></button>
+    </div>
+    <div class="field">
+      <input id="dest" autocomplete="off" data-i18n-ph="destPh" placeholder="🔍 Où allez-vous ?">
+      <div class="sugg" id="sugg"></div>
+    </div>
+    <div id="interFields" class="row hide" style="margin-top:8px">
+      <input id="when" type="datetime-local">
+      <select id="seats" style="max-width:120px">
+        <option value="1">1 👤</option><option value="2">2 👤</option><option value="3">3 👤</option><option value="4">4 👤</option>
+      </select>
+    </div>
+    <div class="field">
+      <input id="price" type="number" inputmode="numeric" min="1" data-i18n-ph="pricePh" placeholder="Votre prix (MAD)">
+    </div>
+    <p class="hint" id="suggest"></p>
+    <button class="cta" onclick="requestRide()" data-i18n="order">Trouver un conducteur</button>
+  </div>
+
+  <!-- Attente des offres -->
+  <div id="pWait" class="hide">
+    <div class="spinner"></div>
+    <p style="text-align:center;margin:4px 0;font-weight:700" data-i18n="waiting">Recherche de conducteurs proches…</p>
+    <p class="small" style="text-align:center" id="waitInfo"></p>
+    <div id="offers"></div>
+    <button class="ghost" onclick="cancelMyRide()" data-i18n="cancel">Annuler la demande</button>
+  </div>
+
+  <!-- Course acceptée (passager) -->
+  <div id="pRide" class="hide">
+    <span class="badge" data-i18n="confirmed">Course confirmée</span>
+    <div id="rideCard"></div>
+    <button class="cta wa" id="waDriver" data-i18n="waDriver">💬 WhatsApp du conducteur</button>
+    <button class="ghost" onclick="shareTrip()" data-i18n="share">📤 Partager mon trajet</button>
+    <div class="btns">
+      <button class="ghost" onclick="finishMyRide()" data-i18n="finish">✅ Arrivé</button>
+      <button class="ghost" onclick="cancelMyRide()" data-i18n="cancelShort">Annuler</button>
+    </div>
+  </div>
+
+  <!-- Mode conducteur -->
+  <div id="pDriver" class="hide">
+    <div class="row" style="align-items:center">
+      <div class="logo" style="flex:2"><span class="r">Rakbin</span> · <span data-i18n="driverTitle">Conducteur</span></div>
+      <button class="ghost" style="margin:0" onclick="setDriverMode(false)" data-i18n="exitDriver">Quitter</button>
+    </div>
+    <div class="online" data-i18n="online">🟢 En ligne — les passagers vous voient</div>
+    <div id="requests"></div>
+  </div>
+
+  <!-- Course acceptée (conducteur) -->
+  <div id="pDriverRide" class="hide">
+    <span class="badge" data-i18n="chosen">Le passager vous a choisi !</span>
+    <div id="driverRideCard"></div>
+    <button class="cta wa" id="waPassenger" data-i18n="waPassenger">💬 WhatsApp du passager</button>
+    <button class="ghost" id="navBtn" data-i18n="navigate">🧭 Itinéraire vers le passager</button>
+    <div class="btns">
+      <button class="ghost" onclick="driverEnd('done')" data-i18n="finishRide">✅ Course terminée</button>
+      <button class="ghost" onclick="driverEnd('cancelled')" data-i18n="cancelShort">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Menu latéral ===== -->
+<div class="drawer-bg" id="drawerBg" onclick="openDrawer(false)"></div>
+<nav class="drawer" id="drawer">
+  <div class="head" onclick="openScreen('sProfile')">
+    <img class="av" id="dAv" alt="">
+    <div style="flex:1;min-width:0">
+      <b id="dName" style="font-size:18px">—</b><br>
+      <span class="stars">★★★★★</span> <span id="dRating" class="small">5.00</span>
+    </div>
+    <span>›</span>
+  </div>
+  <a href="#" onclick="goHome('car');return false">🚗 <span data-i18n="svcCar">Voiture</span></a>
+  <a href="#" onclick="goHome('moto');return false">🏍️ <span data-i18n="svcMoto">Moto</span></a>
+  <a href="#" onclick="goHome('inter');return false">🛣️ <span data-i18n="svcInter">Ville à Ville</span></a>
+  <a href="#" onclick="openScreen('sHistory');return false">🕘 <span data-i18n="history">Historique des courses</span></a>
+  <a href="#" onclick="openScreen('sNotif');return false">🔔 <span data-i18n="notifs">Notifications</span></a>
+  <a href="#" onclick="openScreen('sSecu');return false">🛡️ <span data-i18n="safety">Sécurité</span></a>
+  <a href="#" onclick="openScreen('sParam');return false">⚙️ <span data-i18n="settings">Paramètres</span></a>
+  <a href="#" onclick="openScreen('sAide');return false">❓ <span data-i18n="help">Aide</span></a>
+  <div class="grow"></div>
+  <button class="cta" id="driverBtn" onclick="setDriverMode(!driverMode)" style="background:#b8f000;color:#111" data-i18n="driverMode">Mode conducteur</button>
+  <p class="small" style="text-align:center;margin-top:12px">Contact : footrexofficial@gmail.com</p>
+</nav>
+
+<!-- ===== Écrans ===== -->
+<section class="screen" id="sProfile">
+  <header><button class="round" onclick="closeScreens()">←</button><h2 data-i18n="profile">Mon profil</h2></header>
+  <div class="body">
+    <div id="loginBox" class="hide">
+      <p data-i18n="loginWhy">Pour éviter les arnaques, chaque passager et conducteur doit avoir un compte avec selfie.</p>
+      <button class="cta dark" onclick="googleLogin()" data-i18n="google">Continuer avec Google</button>
+    </div>
+    <div id="profileBox" class="hide">
+      <img class="selfie" id="selfiePrev" alt="">
+      <label class="lbl" data-i18n="selfie">Selfie (obligatoire)</label>
+      <input id="selfieIn" type="file" accept="image/*" capture="user">
+      <label class="lbl" data-i18n="name">Prénom</label>
+      <input id="nameIn" maxlength="40">
+      <label class="lbl" data-i18n="phone">Numéro WhatsApp (avec indicatif)</label>
+      <input id="phoneIn" type="tel" placeholder="+212 6 12 34 56 78">
+      <p class="small" data-i18n="phoneHint">Tous les pays acceptés (+212, +33, +34…). Visible seulement après acceptation d'une course.</p>
+      <label class="check"><input type="checkbox" id="isDriverIn" onchange="$('vehBox').classList.toggle('hide',!this.checked)"> <span data-i18n="iDrive">Je suis aussi conducteur</span></label>
+      <div id="vehBox" class="hide">
+        <label class="lbl" data-i18n="vehType">Type de véhicule</label>
+        <select id="vehTypeIn"><option value="car" data-i18n="optCar">🚗 Voiture (ville + ville à ville)</option><option value="moto" data-i18n="optMoto">🏍️ Moto (en ville)</option></select>
+        <label class="lbl" data-i18n="vehDesc">Véhicule (marque, couleur)</label>
+        <input id="vehIn" maxlength="50" placeholder="Dacia Logan blanche">
+      </div>
+      <button class="cta" id="saveBtn" onclick="saveProfile()" data-i18n="save">Enregistrer</button>
+      <button class="ghost" onclick="logout()" data-i18n="logout">Se déconnecter</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="sHistory">
+  <header><button class="round" onclick="closeScreens()">←</button><h2 data-i18n="history">Historique des courses</h2></header>
+  <div class="body">
+    <div class="chips" id="histChips">
+      <button class="chip active" data-f="all" data-i18n="all">Tout</button>
+      <button class="chip" data-f="car" data-i18n="svcCar">Voiture</button>
+      <button class="chip" data-f="moto" data-i18n="svcMoto">Moto</button>
+      <button class="chip" data-f="inter" data-i18n="svcInter">Ville à Ville</button>
+    </div>
+    <div id="histList"></div>
+  </div>
+</section>
+
+<section class="screen" id="sNotif">
+  <header><button class="round" onclick="closeScreens()">←</button><h2 data-i18n="notifs">Notifications</h2></header>
+  <div class="body" id="notifList"></div>
+</section>
+
+<section class="screen" id="sSecu">
+  <header><button class="round" onclick="closeScreens()">←</button><h2 data-i18n="safety">Sécurité</h2></header>
+  <div class="body">
+    <a class="sos" href="tel:19">🚨 <span data-i18n="police">Police</span> 19</a>
+    <a class="sos blk" href="tel:177">🚓 <span data-i18n="gendarmerie">Gendarmerie</span> 177</a>
+    <a class="sos blk" href="tel:15">🚑 <span data-i18n="ambulance">Ambulance / Pompiers</span> 15</a>
+    <h3 data-i18n="howProtect">Comment Rakbin vous protège</h3>
+    <div class="grid2">
+      <div class="tile"><span>🤳</span><span data-i18n="t1" style="font-size:15px">Selfie obligatoire pour tous</span></div>
+      <div class="tile"><span>🔒</span><span data-i18n="t2" style="font-size:15px">Numéro visible seulement après acceptation</span></div>
+      <div class="tile"><span>📤</span><span data-i18n="t3" style="font-size:15px">Partagez votre trajet avec un proche</span></div>
+      <div class="tile"><span>🔍</span><span data-i18n="t4" style="font-size:15px">Vérifiez la photo et le véhicule avant de monter</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="sParam">
+  <header><button class="round" onclick="closeScreens()">←</button><h2 data-i18n="settings">Paramètres</h2></header>
+  <div class="body">
+    <label class="lbl" data-i18n="appearance">Apparence</label>
+    <select id="themeSel" onchange="setTheme(this.value)"><option value="light" data-i18n="light">Clair</option><option value="dark" data-i18n="dark">Sombre</option></select>
+    <label class="lbl" data-i18n="language">Langue</label>
+    <select id="langSel" onchange="setLang(this.value)"><option value="fr">Français</option><option value="ar">العربية</option></select>
+    <label class="lbl" data-i18n="units">Unités de distance</label>
+    <select disabled><option>km</option></select>
+    <details><summary data-i18n="legal">Documents juridiques</summary><p class="small" data-i18n="legalTxt">Rakbin met en relation passagers et conducteurs. Le prix est fixé librement entre eux et payé directement au conducteur. Rakbin ne prend aucune commission et n'est pas responsable des trajets. Vos données (prénom, selfie, numéro) servent uniquement à la mise en relation.</p></details>
+    <p class="small">Version 1.0.0</p>
+    <button class="ghost" style="color:var(--red)" onclick="deleteAccount()" data-i18n="deleteAcc">Supprimer le compte</button>
+  </div>
+</section>
+
+<section class="screen" id="sAide">
+  <header><button class="round" onclick="closeScreens()">←</button><h2 data-i18n="help">Aide</h2></header>
+  <div class="body">
+    <details><summary data-i18n="h1q">Comment commander ?</summary><p data-i18n="h1a">Choisissez Voiture, Moto ou Ville à Ville, tapez votre destination et proposez votre prix. Les conducteurs proches acceptent ou proposent un autre prix. Vous choisissez, puis vous les contactez sur WhatsApp.</p></details>
+    <details><summary data-i18n="h2q">Comment devenir conducteur ?</summary><p data-i18n="h2a">Dans Mon profil, cochez « Je suis aussi conducteur », indiquez votre véhicule, puis touchez « Mode conducteur » dans le menu.</p></details>
+    <details><summary data-i18n="h3q">Comment payer ?</summary><p data-i18n="h3a">Vous payez directement le conducteur, en espèces, au prix convenu. Rakbin est gratuit.</p></details>
+    <details><summary data-i18n="h4q">La carte ne trouve pas ma position</summary><p data-i18n="h4a">Activez la localisation (GPS) du téléphone et autorisez-la pour ce site, puis touchez ◎.</p></details>
+    <details><summary data-i18n="h5q">À propos de Rakbin</summary><p data-i18n="h5a">Rakbin · راكبين est un service gratuit de covoiturage et de moto au Maroc. Contact : footrexofficial@gmail.com</p></details>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+/* ================= Firebase ================= */
+firebase.initializeApp({
+  apiKey: "AIzaSyDASn4yK7WgytFk_zgGHUAjaVwsWz9HG38",
+  authDomain: "rakbin.firebaseapp.com",
+  projectId: "rakbin",
+  storageBucket: "rakbin.firebasestorage.app",
+  messagingSenderId: "483183046870",
+  appId: "1:483183046870:web:aeb5127558ccfa41a81977"
+});
+const auth = firebase.auth(), db = firebase.firestore();
+const TS = () => firebase.firestore.FieldValue.serverTimestamp();
+
+/* ================= Textes FR / AR ================= */
+const T = {
+ fr:{from:"D'où",svcCar:"Voiture",svcMoto:"Moto",svcInter:"Ville à Ville",destPh:"🔍 Où allez-vous ?",pricePh:"Votre prix (MAD)",order:"Trouver un conducteur",
+  waiting:"Recherche de conducteurs proches…",cancel:"Annuler la demande",confirmed:"Course confirmée",waDriver:"💬 WhatsApp du conducteur",share:"📤 Partager mon trajet",
+  finish:"✅ Arrivé",cancelShort:"Annuler",driverTitle:"Conducteur",exitDriver:"Quitter",online:"🟢 En ligne — les passagers vous voient",chosen:"Le passager vous a choisi !",
+  waPassenger:"💬 WhatsApp du passager",navigate:"🧭 Itinéraire vers le passager",finishRide:"✅ Course terminée",history:"Historique des courses",notifs:"Notifications",
+  safety:"Sécurité",settings:"Paramètres",help:"Aide",driverMode:"Mode conducteur",passengerMode:"Mode passager",profile:"Mon profil",
+  loginWhy:"Pour éviter les arnaques, chaque passager et conducteur doit avoir un compte avec selfie.",google:"Continuer avec Google",selfie:"Selfie (obligatoire)",
+  name:"Prénom",phone:"Numéro WhatsApp (avec indicatif)",phoneHint:"Tous les pays acceptés (+212, +33, +34…). Visible seulement après acceptation d'une course.",
+  iDrive:"Je suis aussi conducteur",vehType:"Type de véhicule",optCar:"🚗 Voiture (ville + ville à ville)",optMoto:"🏍️ Moto (en ville)",vehDesc:"Véhicule (marque, couleur)",
+  save:"Enregistrer",logout:"Se déconnecter",all:"Tout",police:"Police",gendarmerie:"Gendarmerie",ambulance:"Ambulance / Pompiers",howProtect:"Comment Rakbin vous protège",
+  t1:"Selfie obligatoire pour tous",t2:"Numéro visible seulement après acceptation",t3:"Partagez votre trajet avec un proche",t4:"Vérifiez la photo et le véhicule avant de monter",
+  appearance:"Apparence",light:"Clair",dark:"Sombre",language:"Langue",units:"Unités de distance",legal:"Documents juridiques",
+  legalTxt:"Rakbin met en relation passagers et conducteurs. Le prix est fixé librement entre eux et payé directement au conducteur. Rakbin ne prend aucune commission et n'est pas responsable des trajets. Vos données (prénom, selfie, numéro) servent uniquement à la mise en relation.",
+  deleteAcc:"Supprimer le compte",h1q:"Comment commander ?",h1a:"Choisissez Voiture, Moto ou Ville à Ville, tapez votre destination et proposez votre prix. Les conducteurs proches acceptent ou proposent un autre prix. Vous choisissez, puis vous les contactez sur WhatsApp.",
+  h2q:"Comment devenir conducteur ?",h2a:"Dans Mon profil, cochez « Je suis aussi conducteur », indiquez votre véhicule, puis touchez « Mode conducteur » dans le menu.",
+  h3q:"Comment payer ?",h3a:"Vous payez directement le conducteur, en espèces, au prix convenu. Rakbin est gratuit.",
+  h4q:"La carte ne trouve pas ma position",h4a:"Activez la localisation (GPS) du téléphone et autorisez-la pour ce site, puis touchez ◎.",
+  h5q:"À propos de Rakbin",h5a:"Rakbin · راكبين est un service gratuit de covoiturage et de moto au Maroc. Contact : footrexofficial@gmail.com",
+  locating:"Localisation…",geoOff:"Activez la localisation",guest:"Invité",tapLogin:"Touchez pour vous connecter",noResult:"Aucun résultat",
+  suggested:"Prix conseillé",needLogin:"Connectez-vous d'abord",needProfile:"Complétez votre profil avec selfie",needGeo:"Activez la localisation",needDest:"Choisissez une destination dans la liste",
+  needPrice:"Indiquez votre prix",sent:"Demande envoyée aux conducteurs proches ✓",noOffers:"Aucune offre pour l'instant…",choose:"Choisir",accept:"Accepter",counter:"Proposer",
+  offerSent:"Offre envoyée ✓",noRequests:"Aucune demande pour l'instant. Restez en ligne…",needDriver:"Cochez « Je suis aussi conducteur » dans votre profil",
+  saved:"Profil enregistré ✓",badPhone:"Numéro invalide. Exemple : +212612345678",needSelfie:"Le selfie est obligatoire",needName:"Indiquez votre prénom",
+  minAgo:"min",away:"de vous",seats:"place(s)",noHistory:"Vos courses apparaîtront ici",start:"Commencer",upToDate:"Vous êtes à jour",upToDate2:"Aucune nouvelle notification",
+  newOffer:"Nouvelle offre",accepted:"Course acceptée",cancelled:"Course annulée",done:"Terminée",pending:"En attente",confirmDel:"Supprimer définitivement votre compte ?",
+  cancelledMsg:"La course a été annulée",offerFrom:"propose",yourPrice:"Prix du passager",asDriver:"Conducteur",asPassenger:"Passager",shareTxt:"Je suis en course Rakbin",
+  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre"},
+ ar:{from:"من أين",svcCar:"سيارة",svcMoto:"دراجة نارية",svcInter:"بين المدن",destPh:"🔍 إلى أين؟",pricePh:"ثمنك (درهم)",order:"ابحث عن سائق",
+  waiting:"جاري البحث عن سائقين قريبين…",cancel:"إلغاء الطلب",confirmed:"تم تأكيد الرحلة",waDriver:"💬 واتساب السائق",share:"📤 شارك رحلتي",
+  finish:"✅ وصلت",cancelShort:"إلغاء",driverTitle:"سائق",exitDriver:"خروج",online:"🟢 متصل — الركاب يرونك",chosen:"اختارك الراكب!",
+  waPassenger:"💬 واتساب الراكب",navigate:"🧭 الطريق إلى الراكب",finishRide:"✅ انتهت الرحلة",history:"سجل الرحلات",notifs:"الإشعارات",
+  safety:"الأمان",settings:"الإعدادات",help:"مساعدة",driverMode:"وضع السائق",passengerMode:"وضع الراكب",profile:"حسابي",
+  loginWhy:"لتجنب الاحتيال، يجب أن يكون لكل راكب وسائق حساب مع صورة سيلفي.",google:"المتابعة مع Google",selfie:"صورة سيلفي (إجباري)",
+  name:"الاسم",phone:"رقم واتساب (مع رمز الدولة)",phoneHint:"جميع الدول مقبولة (+212، +33، +34…). يظهر فقط بعد قبول الرحلة.",
+  iDrive:"أنا أيضاً سائق",vehType:"نوع المركبة",optCar:"🚗 سيارة (داخل المدينة + بين المدن)",optMoto:"🏍️ دراجة نارية (داخل المدينة)",vehDesc:"المركبة (النوع، اللون)",
+  save:"حفظ",logout:"تسجيل الخروج",all:"الكل",police:"الشرطة",gendarmerie:"الدرك",ambulance:"الإسعاف / الوقاية المدنية",howProtect:"كيف يحميك راكبين",
+  t1:"سيلفي إجباري للجميع",t2:"الرقم يظهر فقط بعد القبول",t3:"شارك رحلتك مع شخص قريب",t4:"تحقق من الصورة والمركبة قبل الركوب",
+  appearance:"المظهر",light:"فاتح",dark:"داكن",language:"اللغة",units:"وحدة المسافة",legal:"الوثائق القانونية",
+  legalTxt:"راكبين يربط بين الركاب والسائقين. الثمن يُتفق عليه بحرية ويُدفع مباشرة للسائق. راكبين لا يأخذ أي عمولة وليس مسؤولاً عن الرحلات. بياناتك (الاسم، السيلفي، الرقم) تُستعمل فقط للربط.",
+  deleteAcc:"حذف الحساب",h1q:"كيف أطلب رحلة؟",h1a:"اختر سيارة أو دراجة نارية أو بين المدن، اكتب وجهتك واقترح ثمنك. السائقون القريبون يقبلون أو يقترحون ثمناً آخر. تختار ثم تتواصل معهم عبر واتساب.",
+  h2q:"كيف أصبح سائقاً؟",h2a:"في حسابي، اختر «أنا أيضاً سائق»، أدخل مركبتك، ثم اضغط «وضع السائق» في القائمة.",
+  h3q:"كيف أدفع؟",h3a:"تدفع مباشرة للسائق نقداً بالثمن المتفق عليه. راكبين مجاني.",
+  h4q:"الخريطة لا تجد موقعي",h4a:"فعّل تحديد الموقع (GPS) في الهاتف واسمح به لهذا الموقع، ثم اضغط ◎.",
+  h5q:"حول راكبين",h5a:"راكبين · Rakbin خدمة مجانية للنقل المشترك والدراجات النارية في المغرب. للتواصل: footrexofficial@gmail.com",
+  locating:"تحديد الموقع…",geoOff:"فعّل تحديد الموقع",guest:"زائر",tapLogin:"اضغط لتسجيل الدخول",noResult:"لا توجد نتائج",
+  suggested:"الثمن المقترح",needLogin:"سجّل الدخول أولاً",needProfile:"أكمل حسابك مع السيلفي",needGeo:"فعّل تحديد الموقع",needDest:"اختر وجهة من القائمة",
+  needPrice:"أدخل ثمنك",sent:"تم إرسال الطلب للسائقين القريبين ✓",noOffers:"لا توجد عروض حالياً…",choose:"اختيار",accept:"قبول",counter:"اقتراح",
+  offerSent:"تم إرسال العرض ✓",noRequests:"لا توجد طلبات حالياً. ابقَ متصلاً…",needDriver:"اختر «أنا أيضاً سائق» في حسابك",
+  saved:"تم حفظ الحساب ✓",badPhone:"رقم غير صحيح. مثال: ‎+212612345678",needSelfie:"السيلفي إجباري",needName:"أدخل اسمك",
+  minAgo:"د",away:"منك",seats:"مقعد",noHistory:"ستظهر رحلاتك هنا",start:"ابدأ",upToDate:"لا جديد",upToDate2:"لا توجد إشعارات جديدة",
+  newOffer:"عرض جديد",accepted:"تم قبول الرحلة",cancelled:"ملغاة",done:"منتهية",pending:"في الانتظار",confirmDel:"حذف حسابك نهائياً؟",
+  cancelledMsg:"تم إلغاء الرحلة",offerFrom:"يقترح",yourPrice:"ثمن الراكب",asDriver:"سائق",asPassenger:"راكب",shareTxt:"أنا في رحلة مع راكبين",
+  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك"}
+};
+let lang = 'fr';
+try { lang = localStorage.getItem('rk_lang') || ((navigator.language||'').startsWith('ar') ? 'ar' : 'fr'); } catch(e){}
+const t = k => (T[lang] && T[lang][k]) || T.fr[k] || k;
+function applyLang(){
+  document.documentElement.lang = lang; document.documentElement.dir = lang==='ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(e => e.placeholder = t(e.dataset.i18nPh));
+  $('langSel').value = lang; refreshDrawer(); updatePrice(false);
+}
+function setLang(v){ lang=v; try{localStorage.setItem('rk_lang',v)}catch(e){} applyLang(); if(driverMode) renderRequests(); }
+function setTheme(v){ document.body.classList.toggle('dark', v==='dark'); try{localStorage.setItem('rk_theme',v)}catch(e){} }
+
+/* ================= Utilitaires ================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let toastTimer;
+function toast(m){ const e=$('toast'); e.textContent=m; e.style.display='block'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>e.style.display='none',3200); }
+function km(a,b){ const R=6371,r=x=>x*Math.PI/180; const dLa=r(b.lat-a.lat), dLo=r(b.lng-a.lng);
+  const h=Math.sin(dLa/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+const ICON = {car:'🚗', moto:'🏍️', inter:'🛣️'};
+const RATES = {moto:{km:2,min:10}, car:{km:3.5,min:15}, inter:{km:0.5,min:30}};
+const DEFAULT_AV = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23d1d5db'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%239ca3af'/%3E%3Cpath d='M10 60c3-14 13-20 22-20s19 6 22 20z' fill='%239ca3af'/%3E%3C/svg%3E";
+function normPhone(p){ p=String(p||'').replace(/[\s\-().]/g,''); if(p.startsWith('00')) p='+'+p.slice(2);
+  if(/^0[5-7]\d{8}$/.test(p)) p='+212'+p.slice(1); return /^\+\d{8,15}$/.test(p) ? p : null; }
+function waLink(phone,msg){ return 'https://wa.me/'+String(phone).replace(/\D/g,'')+'?text='+encodeURIComponent(msg||''); }
+function ago(ms){ const m=Math.max(0,Math.round((Date.now()-ms)/60000)); return m+' '+t('minAgo'); }
+const userCache = {};
+async function getUser(uid){ if(userCache[uid]) return userCache[uid];
+  try{ const d=await db.collection('users').doc(uid).get(); userCache[uid]=d.exists?d.data():{name:'?',photo:''}; }catch(e){ userCache[uid]={name:'?',photo:''}; }
+  return userCache[uid]; }
+const notifs = [];
+function notify(txt){ notifs.unshift({txt,ms:Date.now()}); if(navigator.vibrate) try{navigator.vibrate(200)}catch(e){} }
+
+/* ================= Carte ================= */
+const map = L.map('map',{zoomControl:false, attributionControl:true}).setView([31.79,-7.09],6);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
+const pinIcon = e => L.divIcon({html:'<div class="pin">'+e+'</div>', className:'', iconSize:[30,30], iconAnchor:[15,26]});
+let myPos=null, meMarker=null, destPos=null, destLabel='', destMarker=null, fromLabel='', routeLine=null, lastKm=0;
+let geoAsked=false;
+function locate(center){
+  if(!navigator.geolocation){ $('fromLabel').textContent=t('geoOff'); return; }
+  $('fromLabel').textContent=t('locating');
+  navigator.geolocation.getCurrentPosition(p=>setMyPos(p.coords.latitude,p.coords.longitude,center!==false),
+    ()=>{ $('fromLabel').textContent=t('geoOff'); }, {enableHighAccuracy:true, timeout:12000, maximumAge:30000});
+}
+function setMyPos(lat,lng,center){
+  myPos={lat,lng};
+  if(!meMarker) meMarker=L.circleMarker([lat,lng],{radius:9,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).addTo(map);
+  else meMarker.setLatLng([lat,lng]);
+  if(center) map.setView([lat,lng],15);
+  reverseGeo(lat,lng); updatePrice(false); drawRoute();
+}
+let lastRev=0;
+async function reverseGeo(lat,lng){
+  if(Date.now()-lastRev<5000) return; lastRev=Date.now();
+  fromLabel=lat.toFixed(4)+', '+lng.toFixed(4); $('fromLabel').textContent=fromLabel;
+  try{ const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=17&accept-language='+lang+'&lat='+lat+'&lon='+lng);
+    const j=await r.json(); const a=j.address||{};
+    const parts=[a.road||a.neighbourhood||a.suburb, a.house_number, a.city||a.town||a.village].filter(Boolean);
+    if(parts.length){ fromLabel=parts.join(' '); $('fromLabel').textContent=fromLabel; } }catch(e){}
+}
+function drawRoute(){
+  if(routeLine){ map.removeLayer(routeLine); routeLine=null; }
+  if(myPos && destPos){ routeLine=L.polyline([[myPos.lat,myPos.lng],[destPos.lat,destPos.lng]],{color:'#006233',weight:4,dashArray:'6 8'}).addTo(map); }
+}
+function fitRoute(){ if(myPos&&destPos) map.fitBounds([[myPos.lat,myPos.lng],[destPos.lat,destPos.lng]],{padding:[60,60],paddingBottomRight:[0,$('sheet').offsetHeight]}); else if(destPos) map.setView([destPos.lat,destPos.lng],13); }
+
+/* Hauteur du panneau → position du bouton ◎ */
+new ResizeObserver(()=>document.documentElement.style.setProperty('--sheetH',$('sheet').offsetHeight+'px')).observe($('sheet'));
+
+/* ================= Destination (Nominatim gratuit) ================= */
+let sTimer;
+$('dest').addEventListener('input',()=>{
+  clearTimeout(sTimer); destPos=null; updatePrice(false);
+  const q=$('dest').value.trim(); if(q.length<3){ $('sugg').innerHTML=''; return; }
+  sTimer=setTimeout(()=>searchPlace(q),700);
+});
+async function searchPlace(q){
+  let u='https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=ma&accept-language='+lang+'&q='+encodeURIComponent(q);
+  if(myPos && service!=='inter') u+='&viewbox='+(myPos.lng-0.5)+','+(myPos.lat+0.5)+','+(myPos.lng+0.5)+','+(myPos.lat-0.5);
+  try{ const a=await (await fetch(u)).json(); const box=$('sugg'); box.innerHTML='';
+    if(!a.length){ box.innerHTML='<div class="sug muted">'+t('noResult')+'</div>'; return; }
+    a.forEach(x=>{ const d=document.createElement('div'); d.className='sug'; d.textContent='📍 '+x.display_name;
+      d.onclick=()=>pickDest(+x.lat,+x.lon,x.display_name); box.appendChild(d); });
+  }catch(e){}
+}
+function pickDest(lat,lng,label){
+  destPos={lat,lng}; destLabel=label.split(',').slice(0,3).join(',').trim();
+  $('dest').value=destLabel; $('sugg').innerHTML=''; $('dest').blur();
+  if(destMarker) destMarker.setLatLng([lat,lng]); else destMarker=L.marker([lat,lng],{icon:pinIcon('🏁')}).addTo(map);
+  drawRoute(); fitRoute(); $('price').value=''; updatePrice(true);
+}
+
+/* ================= Services & prix ================= */
+let service='moto';
+function pickService(s){
+  service=s; document.querySelectorAll('.svc').forEach(b=>b.classList.toggle('active',b.dataset.s===s));
+  $('interFields').classList.toggle('hide', s!=='inter'); $('price').value=''; updatePrice(true);
+}
+function updatePrice(fill){
+  if(!$('suggest')) return;
+  if(!myPos || !destPos){ $('suggest').textContent=''; return; }
+  lastKm=Math.round(km(myPos,destPos)*1.3*10)/10;
+  const r=RATES[service], p=Math.max(r.min, Math.round(lastKm*r.km/5)*5);
+  $('suggest').innerHTML=lastKm+' km · '+t('suggested')+' : <b>'+p+' MAD</b>'+(service==='inter'?' / '+t('seats'):'');
+  if(fill && !$('price').value) $('price').value=p;
+}
+
+/* ================= Navigation UI ================= */
+function openDrawer(o){ $('drawer').classList.toggle('open',o); $('drawerBg').classList.toggle('open',o); }
+function openScreen(id){ openDrawer(false);
+  if(id!=='sProfile' && id!=='sSecu' && id!=='sAide' && id!=='sParam' && !me){ id='sProfile'; }
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show')); $(id).classList.add('show');
+  if(id==='sProfile') fillProfile(); if(id==='sHistory') loadHistory(); if(id==='sNotif') renderNotifs(); }
+function closeScreens(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show')); }
+function goHome(s){ openDrawer(false); closeScreens(); if(driverMode) setDriverMode(false); pickService(s); }
+function panel(id){ ['pHome','pWait','pRide','pDriver','pDriverRide'].forEach(p=>$(p).classList.toggle('hide',p!==id)); }
+
+/* ================= Compte & profil ================= */
+let me=null, profile=null, myPhone='';
+auth.getRedirectResult().catch(()=>{});
+auth.onAuthStateChanged(async u=>{
+  me=u; profile=null; myPhone='';
+  if(u){
+    try{ const d=await db.collection('users').doc(u.uid).get(); if(d.exists){ profile=d.data(); userCache[u.uid]=profile; } }catch(e){}
+    try{ const c=await db.collection('users').doc(u.uid).collection('private').doc('contact').get(); if(c.exists) myPhone=c.data().phone||''; }catch(e){}
+    watchDrivers(); resumeRide();
+  }
+  refreshDrawer(); if($('sProfile').classList.contains('show')) fillProfile();
+});
+function refreshDrawer(){
+  $('dAv').src=(profile&&profile.photo)||DEFAULT_AV;
+  $('dName').textContent=profile?profile.name:(me?(me.displayName||t('guest')):t('guest'));
+  $('dRating').textContent=me?((profile&&profile.rating)||5).toFixed(2):t('tapLogin');
+  $('driverBtn').textContent=driverMode?t('passengerMode'):t('driverMode');
+}
+async function googleLogin(){
+  const prov=new firebase.auth.GoogleAuthProvider();
+  try{ await auth.signInWithPopup(prov); }
+  catch(e){ if(e && (e.code==='auth/popup-blocked'||e.code==='auth/operation-not-supported-in-this-environment')){ try{ await auth.signInWithRedirect(prov);}catch(_){toast(t('loginErr'));} }
+    else if(e && e.code!=='auth/popup-closed-by-user' && e.code!=='auth/cancelled-popup-request') toast(t('loginErr')); }
+}
+async function logout(){ if(driverMode) await setDriverMode(false); await auth.signOut(); closeScreens(); toast('👋'); }
+let newSelfie=null;
+function fillProfile(){
+  $('loginBox').classList.toggle('hide',!!me); $('profileBox').classList.toggle('hide',!me);
+  if(!me) return;
+  newSelfie=null; $('selfieIn').value='';
+  $('selfiePrev').src=(profile&&profile.photo)||DEFAULT_AV;
+  $('nameIn').value=profile?profile.name:((me.displayName||'').split(' ')[0]||'');
+  $('phoneIn').value=myPhone||'';
+  $('isDriverIn').checked=!!(profile&&profile.isDriver); $('vehBox').classList.toggle('hide',!$('isDriverIn').checked);
+  $('vehTypeIn').value=(profile&&profile.vehicleType)||'car'; $('vehIn').value=(profile&&profile.vehicle)||'';
+}
+$('selfieIn').addEventListener('change',async e=>{ const f=e.target.files[0]; if(!f) return;
+  try{ newSelfie=await compressSelfie(f); $('selfiePrev').src=newSelfie; }catch(_){ toast(t('error')); } });
+function compressSelfie(file){ return new Promise((res,rej)=>{ const img=new Image();
+  img.onload=()=>{ const s=360, c=document.createElement('canvas'), m=Math.min(img.width,img.height);
+    c.width=s; c.height=s; c.getContext('2d').drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,s,s);
+    let q=0.7, url=c.toDataURL('image/jpeg',q); while(url.length>250000 && q>0.3){ q-=0.1; url=c.toDataURL('image/jpeg',q); }
+    URL.revokeObjectURL(img.src); res(url); };
+  img.onerror=rej; img.src=URL.createObjectURL(file); }); }
+async function saveProfile(){
+  const name=$('nameIn').value.trim(), phone=normPhone($('phoneIn').value), photo=newSelfie||(profile&&profile.photo);
+  if(!photo) return toast(t('needSelfie')); if(!name) return toast(t('needName')); if(!phone) return toast(t('badPhone'));
+  const isDriver=$('isDriverIn').checked;
+  const data={name, photo, isDriver, vehicleType:isDriver?$('vehTypeIn').value:'', vehicle:isDriver?$('vehIn').value.trim():'',
+    rating:(profile&&profile.rating)||5, updatedAt:TS()};
+  $('saveBtn').disabled=true;
+  try{ await db.collection('users').doc(me.uid).set(data,{merge:true});
+    await db.collection('users').doc(me.uid).collection('private').doc('contact').set({phone});
+    profile=Object.assign({},profile,data); userCache[me.uid]=profile; myPhone=phone; refreshDrawer(); toast(t('saved')); closeScreens();
+  }catch(e){ console.error(e); toast(t('error')); }
+  $('saveBtn').disabled=false;
+}
+async function deleteAccount(){
+  if(!me) return; if(!confirm(t('confirmDel'))) return;
+  try{ if(driverMode) await setDriverMode(false);
+    await db.collection('users').doc(me.uid).collection('private').doc('contact').delete();
+    await db.collection('users').doc(me.uid).delete();
+    await me.delete(); closeScreens(); toast('✓');
+  }catch(e){ if(e.code==='auth/requires-recent-login'){ await googleLogin(); toast(t('error')); } else toast(t('error')); }
+}
+
+/* ================= Passager : commander ================= */
+let myRideId=null, rideUnsub=null, offersUnsub=null, myRide=null, chosenDriverPhone='';
+async function requestRide(){
+  if(!me){ toast(t('needLogin')); return openScreen('sProfile'); }
+  if(!profile||!profile.photo||!myPhone){ toast(t('needProfile')); return openScreen('sProfile'); }
+  if(!myPos){ toast(t('needGeo')); return locate(true); }
+  if(!destPos) return toast(t('needDest'));
+  const price=parseInt($('price').value,10); if(!(price>0)) return toast(t('needPrice'));
+  const ride={service, passengerId:me.uid, passengerName:profile.name, fromLat:myPos.lat, fromLng:myPos.lng, fromLabel,
+    dest:destLabel, destLat:destPos.lat, destLng:destPos.lng, km:lastKm, price, status:'pending', createdAt:TS(), createdMs:Date.now()};
+  if(service==='inter'){ ride.when=$('when').value||''; ride.seats=parseInt($('seats').value,10)||1; }
+  try{ const ref=await db.collection('courses').add(ride);
+    await ref.collection('contacts').doc(me.uid).set({phone:myPhone});
+    toast(t('sent')); watchMyRide(ref.id);
+  }catch(e){ console.error(e); toast(t('error')); }
+}
+async function resumeRide(){
+  try{ const s=await db.collection('courses').where('passengerId','==',me.uid).where('status','in',['pending','accepted']).limit(5).get();
+    const r=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>Date.now()-(x.createdMs||0)<6*3600e3).sort((a,b)=>b.createdMs-a.createdMs)[0];
+    if(r) watchMyRide(r.id);
+  }catch(e){ console.warn(e); }
+}
+function stopMyRide(){ if(rideUnsub) rideUnsub(); if(offersUnsub) offersUnsub(); rideUnsub=offersUnsub=null; myRideId=null; myRide=null; watchChosenDriver(null); panel('pHome'); }
+let seenOffers={};
+function watchMyRide(id){
+  if(rideUnsub) rideUnsub(); myRideId=id; seenOffers={};
+  rideUnsub=db.collection('courses').doc(id).onSnapshot(async snap=>{
+    if(!snap.exists){ stopMyRide(); return; }
+    myRide={id,...snap.data()};
+    if(myRide.status==='pending'){
+      panel('pWait'); $('waitInfo').textContent=ICON[myRide.service]+' '+myRide.dest+' · '+myRide.price+' MAD';
+      if(!offersUnsub) offersUnsub=db.collection('courses').doc(id).collection('offers').onSnapshot(renderOffers, e=>console.warn(e));
+    } else if(myRide.status==='accepted'){
+      if(offersUnsub){ offersUnsub(); offersUnsub=null; }
+      panel('pRide'); await showChosenDriver();
+    } else {
+      if(myRide.status==='cancelled' && snap.metadata && !snap.metadata.hasPendingWrites) toast(t('cancelledMsg'));
+      stopMyRide();
+    }
+  }, e=>console.warn(e));
+}
+async function renderOffers(s){
+  const list=s.docs.map(d=>d.data()).sort((a,b)=>a.price-b.price);
+  list.forEach(o=>{ if(!seenOffers[o.driverId]){ seenOffers[o.driverId]=1; notify(t('newOffer')+' : '+(o.name||'')+' — '+o.price+' MAD'); } });
+  const box=$('offers');
+  if(!list.length){ box.innerHTML='<p class="small" style="text-align:center">'+t('noOffers')+'</p>'; return; }
+  const html=await Promise.all(list.map(async o=>{ const u=await getUser(o.driverId);
+    const dist=(myPos&&o.lat)?' · '+km(myPos,{lat:o.lat,lng:o.lng}).toFixed(1)+' km':'';
+    return '<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b><span class="small">'+ICON[u.vehicleType||'car']+' '+esc(u.vehicle||'')+dist+'</span><br><span class="stars">★</span> <span class="small">'+((u.rating||5).toFixed(1))+'</span></div><div class="price">'+o.price+' MAD</div></div>'+
+      '<button class="cta" onclick="chooseOffer(\''+esc(o.driverId)+'\','+Number(o.price)+')">'+t('choose')+'</button></div>'; }));
+  box.innerHTML=html.join('');
+}
+async function chooseOffer(driverId,price){
+  try{ await db.collection('courses').doc(myRideId).update({status:'accepted', driverId, finalPrice:price, acceptedAt:TS()}); }
+  catch(e){ console.error(e); toast(t('error')); }
+}
+async function showChosenDriver(){
+  const u=await getUser(myRide.driverId);
+  $('rideCard').innerHTML='<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b><span class="small">'+ICON[u.vehicleType||'car']+' '+esc(u.vehicle||'')+'</span></div><div class="price">'+(myRide.finalPrice||myRide.price)+' MAD</div></div><p class="route">📍 '+esc(myRide.fromLabel)+'<br>🏁 '+esc(myRide.dest)+'</p></div>';
+  chosenDriverPhone='';
+  try{ const c=await db.collection('courses').doc(myRide.id).collection('contacts').doc(myRide.driverId).get(); if(c.exists) chosenDriverPhone=c.data().phone; }catch(e){ console.warn(e); }
+  $('waDriver').onclick=()=>{ if(chosenDriverPhone) window.open(waLink(chosenDriverPhone,'Salam, Rakbin : '+myRide.fromLabel+' → '+myRide.dest+' ('+(myRide.finalPrice||myRide.price)+' MAD)'),'_blank'); else toast(t('error')); };
+  watchChosenDriver(myRide.driverId);
+}
+async function cancelMyRide(){ if(!myRideId) return panel('pHome');
+  try{ await db.collection('courses').doc(myRideId).update({status:'cancelled', endedAt:TS()}); }catch(e){ toast(t('error')); } }
+async function finishMyRide(){ if(!myRideId) return;
+  try{ await db.collection('courses').doc(myRideId).update({status:'done', endedAt:TS()}); }catch(e){ toast(t('error')); } }
+function shareTrip(){ if(!myRide) return; const u=userCache[myRide.driverId]||{};
+  const txt=t('shareTxt')+' : '+myRide.fromLabel+' → '+myRide.dest+' · '+t('driver')+' : '+(u.name||'')+' ('+(u.vehicle||'')+')'+(myPos?' · https://maps.google.com/?q='+myPos.lat.toFixed(5)+','+myPos.lng.toFixed(5):'');
+  if(navigator.share) navigator.share({text:txt}).catch(()=>{}); else window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank'); }
+
+/* ================= Conducteurs sur la carte ================= */
+let driversUnsub=null, driverMarkers={}, chosenDriverId=null;
+function watchDrivers(){
+  if(driversUnsub) driversUnsub();
+  driversUnsub=db.collection('driverPositions').limit(200).onSnapshot(s=>{
+    const keep={};
+    s.docs.forEach(d=>{ const p=d.data(); if(!me || d.id===me.uid) return;
+      const fresh=Date.now()-(p.updatedMs||0)<3*60e3;
+      const show=chosenDriverId ? d.id===chosenDriverId : (fresh && (!myPos || km(myPos,p)<30));
+      if(!show) return; keep[d.id]=1;
+      if(!driverMarkers[d.id]) driverMarkers[d.id]=L.marker([p.lat,p.lng],{icon:pinIcon(ICON[p.vehicleType]||'🚗')}).addTo(map);
+      else driverMarkers[d.id].setLatLng([p.lat,p.lng]); });
+    Object.keys(driverMarkers).forEach(id=>{ if(!keep[id]){ map.removeLayer(driverMarkers[id]); delete driverMarkers[id]; } });
+  }, e=>console.warn(e));
+}
+function watchChosenDriver(id){ chosenDriverId=id; if(me) watchDrivers(); }
+
+/* ================= Mode conducteur ================= */
+let driverMode=false, watchId=null, lastPush=0, reqUnsub=null, myDrRideUnsub=null, pendingRides=[], myOffers={}, activeDriverRide=null;
+async function setDriverMode(on){
+  openDrawer(false);
+  if(on){
+    if(!me){ toast(t('needLogin')); return openScreen('sProfile'); }
+    if(!profile||!profile.photo||!myPhone){ toast(t('needProfile')); return openScreen('sProfile'); }
+    if(!profile.isDriver){ toast(t('needDriver')); return openScreen('sProfile'); }
+    if(myRideId){ toast(t('cancel')); return; }
+    driverMode=true; panel('pDriver'); closeScreens();
+    if(navigator.geolocation) watchId=navigator.geolocation.watchPosition(p=>{ setMyPos(p.coords.latitude,p.coords.longitude,!lastPush); pushPos(); },
+      ()=>toast(t('needGeo')),{enableHighAccuracy:true, maximumAge:10000});
+    reqUnsub=db.collection('courses').where('status','==','pending').limit(100).onSnapshot(s=>{ pendingRides=s.docs.map(d=>({id:d.id,...d.data()})); renderRequests(); }, e=>console.warn(e));
+    myDrRideUnsub=db.collection('courses').where('driverId','==',me.uid).where('status','==','accepted').limit(3).onSnapshot(s=>{
+      const r=s.docs.map(d=>({id:d.id,...d.data()}))[0];
+      if(r){ if(!activeDriverRide||activeDriverRide.id!==r.id){ notify(t('accepted')); } activeDriverRide=r; showDriverRide(); }
+      else { activeDriverRide=null; if(driverMode) panel('pDriver'); }
+    }, e=>console.warn(e));
+  } else {
+    driverMode=false; if(watchId!=null) navigator.geolocation.clearWatch(watchId); watchId=null; lastPush=0;
+    if(reqUnsub) reqUnsub(); if(myDrRideUnsub) myDrRideUnsub(); reqUnsub=myDrRideUnsub=null; activeDriverRide=null;
+    try{ await db.collection('driverPositions').doc(me.uid).delete(); }catch(e){}
+    panel(myRideId?'pWait':'pHome'); if(myRideId) watchMyRide(myRideId);
+  }
+  refreshDrawer();
+}
+async function pushPos(){
+  if(!driverMode||!myPos||Date.now()-lastPush<10000) return; lastPush=Date.now();
+  try{ await db.collection('driverPositions').doc(me.uid).set({lat:myPos.lat,lng:myPos.lng,vehicleType:profile.vehicleType||'car',updatedMs:Date.now(),updatedAt:TS()}); }catch(e){ console.warn(e); }
+}
+window.addEventListener('beforeunload',()=>{ if(driverMode&&me) db.collection('driverPositions').doc(me.uid).delete(); });
+function canServe(r){ const v=profile.vehicleType||'car'; return v==='moto' ? r.service==='moto' : (r.service==='car'||r.service==='inter'); }
+async function renderRequests(){
+  if(!driverMode) return;
+  const list=pendingRides.filter(r=>r.passengerId!==me.uid && canServe(r) && Date.now()-(r.createdMs||0)<45*60e3)
+    .map(r=>Object.assign(r,{dist:myPos?km(myPos,{lat:r.fromLat,lng:r.fromLng}):0}))
+    .filter(r=>r.service==='inter' || !myPos || r.dist<20)
+    .sort((a,b)=>a.dist-b.dist).slice(0,25);
+  const box=$('requests');
+  if(!list.length){ box.innerHTML='<div class="empty"><div class="big">📭</div>'+t('noRequests')+'</div>'; return; }
+  const html=await Promise.all(list.map(async r=>{ const u=await getUser(r.passengerId); const off=myOffers[r.id];
+    return '<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||r.passengerName)+'</b><span class="small">'+ICON[r.service]+' · '+ago(r.createdMs)+(myPos?' · '+r.dist.toFixed(1)+' km '+t('away'):'')+'</span></div><div class="price">'+r.price+' MAD</div></div>'+
+      '<p class="route">📍 '+esc(r.fromLabel)+'<br>🏁 '+esc(r.dest)+' <span class="small">('+r.km+' km'+(r.service==='inter'?' · '+(r.seats||1)+' '+t('seats')+(r.when?' · '+esc(r.when.replace('T',' ')):''):'')+')</span></p>'+
+      (off?'<p class="badge">'+t('offerSent')+' — '+off+' MAD</p>':'')+
+      '<div class="btns"><button class="cta" onclick="sendOffer(\''+r.id+'\','+Number(r.price)+')">'+t('accept')+' '+r.price+'</button>'+
+      '<input type="number" inputmode="numeric" id="cp_'+r.id+'" placeholder="MAD" style="max-width:90px"><button class="ghost" onclick="sendOffer(\''+r.id+'\',parseInt($(\'cp_'+r.id+'\').value,10))">'+t('counter')+'</button></div></div>'; }));
+  box.innerHTML=html.join('');
+}
+async function sendOffer(rideId,price){
+  if(!(price>0)) return toast(t('needPrice'));
+  try{ const ref=db.collection('courses').doc(rideId);
+    await ref.collection('contacts').doc(me.uid).set({phone:myPhone});
+    await ref.collection('offers').doc(me.uid).set({driverId:me.uid, name:profile.name, vehicle:profile.vehicle||'', vehicleType:profile.vehicleType||'car', price,
+      lat:myPos?myPos.lat:null, lng:myPos?myPos.lng:null, createdAt:TS(), createdMs:Date.now()});
+    myOffers[rideId]=price; toast(t('offerSent')); renderRequests();
+  }catch(e){ console.error(e); toast(t('error')); }
+}
+let pickupMarker=null;
+async function showDriverRide(){
+  const r=activeDriverRide; panel('pDriverRide'); const u=await getUser(r.passengerId);
+  $('driverRideCard').innerHTML='<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b><span class="small">'+ICON[r.service]+' '+r.km+' km</span></div><div class="price">'+(r.finalPrice||r.price)+' MAD</div></div><p class="route">📍 '+esc(r.fromLabel)+'<br>🏁 '+esc(r.dest)+'</p></div>';
+  if(pickupMarker) map.removeLayer(pickupMarker); pickupMarker=L.marker([r.fromLat,r.fromLng],{icon:pinIcon('🙋')}).addTo(map);
+  let phone=''; try{ const c=await db.collection('courses').doc(r.id).collection('contacts').doc(r.passengerId).get(); if(c.exists) phone=c.data().phone; }catch(e){ console.warn(e); }
+  $('waPassenger').onclick=()=>{ if(phone) window.open(waLink(phone,'Salam, Rakbin : '+t('driver')+' '+profile.name+' ('+(profile.vehicle||'')+')'),'_blank'); else toast(t('error')); };
+  $('navBtn').onclick=()=>window.open('https://www.google.com/maps/dir/?api=1&destination='+r.fromLat+','+r.fromLng,'_blank');
+}
+async function driverEnd(status){ if(!activeDriverRide) return;
+  try{ await db.collection('courses').doc(activeDriverRide.id).update({status, endedAt:TS()});
+    if(pickupMarker){ map.removeLayer(pickupMarker); pickupMarker=null; } }catch(e){ console.error(e); toast(t('error')); } }
+
+/* ================= Historique & notifications ================= */
+let histAll=[], histFilter='all';
+document.querySelectorAll('#histChips .chip').forEach(c=>c.onclick=()=>{ histFilter=c.dataset.f;
+  document.querySelectorAll('#histChips .chip').forEach(x=>x.classList.toggle('active',x===c)); renderHistory(); });
+async function loadHistory(){
+  $('histList').innerHTML='<div class="spinner"></div>';
+  try{ const [a,b]=await Promise.all([
+      db.collection('courses').where('passengerId','==',me.uid).limit(50).get(),
+      db.collection('courses').where('driverId','==',me.uid).limit(50).get()]);
+    histAll=[...a.docs.map(d=>({id:d.id,role:'p',...d.data()})), ...b.docs.map(d=>({id:d.id,role:'d',...d.data()}))].sort((x,y)=>(y.createdMs||0)-(x.createdMs||0));
+  }catch(e){ console.warn(e); histAll=[]; }
+  renderHistory();
+}
+function renderHistory(){
+  const l=histAll.filter(r=>histFilter==='all'||r.service===histFilter);
+  if(!l.length){ $('histList').innerHTML='<div class="empty"><div class="big">🚗</div><p>'+t('noHistory')+'</p><button class="cta" onclick="closeScreens()">'+t('start')+'</button></div>'; return; }
+  $('histList').innerHTML=l.map(r=>'<div class="card"><div class="row"><b>'+ICON[r.service]+' '+(r.role==='d'?t('asDriver'):t('asPassenger'))+'</b><span class="price" style="font-size:16px;flex:0">'+(r.finalPrice||r.price)+' MAD</span></div><p class="route">📍 '+esc(r.fromLabel)+'<br>🏁 '+esc(r.dest)+'</p><span class="small">'+new Date(r.createdMs||0).toLocaleString(lang==='ar'?'ar-MA':'fr-FR')+' · '+t(r.status)+'</span></div>').join('');
+}
+function renderNotifs(){
+  $('notifList').innerHTML=notifs.length?notifs.map(n=>'<div class="card">'+esc(n.txt)+'<br><span class="small">'+ago(n.ms)+'</span></div>').join('')
+    :'<div class="empty"><div class="big">🛸</div><h3>'+t('upToDate')+'</h3><p>'+t('upToDate2')+'</p></div>';
+}
+
+/* ================= Démarrage ================= */
+try{ setTheme(localStorage.getItem('rk_theme')||'light'); $('themeSel').value=localStorage.getItem('rk_theme')||'light'; }catch(e){}
+applyLang();
+locate(true);
+</script>
+</body>
+</html>
