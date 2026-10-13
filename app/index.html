@@ -706,6 +706,7 @@ function setMyPos(lat,lng,center){
   else meMarker.setLatLng([lat,lng]);
   if(center) map.setView([lat,lng],15);
   reverseGeo(lat,lng); updatePrice(false); drawRoute();
+  if(me && typeof watchDrivers==='function') watchDrivers();
 }
 let lastRev=0;
 async function reverseGeo(lat,lng){
@@ -912,7 +913,7 @@ async function requestRide(){
   if(!destPos) return toast(t('needDest'));
   const price=parseInt($('price').value,10); if(!(price>0)) return toast(t('needPrice'));
   const ride={service, passengerId:me.uid, passengerName:profile.name, fromLat:o.lat, fromLng:o.lng, fromLabel:originLabel(),
-    dest:destLabel, destLat:destPos.lat, destLng:destPos.lng, km:lastKm, price, status:'pending', createdAt:TS(), createdMs:Date.now()};
+    dest:destLabel, destLat:destPos.lat, destLng:destPos.lng, km:lastKm, price, status:'pending', cell:cellOf(o.lat,o.lng), createdAt:TS(), createdMs:Date.now()};
   if(service==='inter'){ ride.when=$('when').value||''; ride.seats=parseInt($('seats').value,10)||1; }
   try{ const ref=await db.collection('courses').add(ride);
     await ref.collection('contacts').doc(me.uid).set({phone:myPhone});
@@ -981,9 +982,16 @@ function shareTrip(){ if(!myRide) return; const u=userCache[myRide.driverId]||{}
 
 /* ================= Conducteurs sur la carte ================= */
 let driversUnsub=null, driverMarkers={}, chosenDriverId=null;
-function watchDrivers(){
-  if(driversUnsub) driversUnsub();
-  driversUnsub=db.collection('driverPositions').limit(200).onSnapshot(s=>{
+let drvKey='';
+function watchDrivers(force){
+  if(document.hidden) return;
+  const key=chosenDriverId?('d:'+chosenDriverId):(myPos?('c:'+cellOf(myPos.lat,myPos.lng)):'none');
+  if(!force && key===drvKey && driversUnsub) return; drvKey=key;
+  if(driversUnsub) driversUnsub(); driversUnsub=null;
+  if(key==='none') return;
+  const q=chosenDriverId ? db.collection('driverPositions').where(firebase.firestore.FieldPath.documentId(),'==',chosenDriverId)
+                         : db.collection('driverPositions').where('cell','in',nearCells(myPos.lat,myPos.lng)).limit(60);
+  driversUnsub=q.onSnapshot(s=>{
     const keep={};
     s.docs.forEach(d=>{ const p=d.data(); if(!me || d.id===me.uid) return;
       const fresh=Date.now()-(p.updatedMs||0)<3*60e3;
@@ -997,7 +1005,7 @@ function watchDrivers(){
     nc.textContent = n ? '🟢 '+n+' '+t('driversOnline') : t('noDriversOnline'); nc.className='status'+(n?' ok':'');
   }, e=>console.warn(e));
 }
-function watchChosenDriver(id){ chosenDriverId=id; if(!id && etaLine){ map.removeLayer(etaLine); etaLine=null; } if(me) watchDrivers(); }
+function watchChosenDriver(id){ chosenDriverId=id; if(!id && etaLine){ map.removeLayer(etaLine); etaLine=null; } if(me) watchDrivers(true); }
 /* ===== Itinéraire du conducteur vers le passager (ETA) ===== */
 let etaLine=null, lastRouteMs=0, etaStartKm=null, lastEta=null;
 async function updateEta(p){
@@ -1034,23 +1042,39 @@ async function setDriverMode(on){
     if(navigator.geolocation) watchId=navigator.geolocation.watchPosition(p=>{ setMyPos(p.coords.latitude,p.coords.longitude,!lastPush); pushPos();
         $('gpsStatus').textContent='📍 '+t('gpsOk'); $('gpsStatus').className='status ok'; },
       e=>{ $('gpsStatus').textContent='⚠️ '+t('gpsOff'); $('gpsStatus').className='status warn'; toast(t('needGeo')); },{enableHighAccuracy:true, maximumAge:10000, timeout:20000});
-    reqUnsub=db.collection('courses').where('status','==','pending').limit(100).onSnapshot(s=>{ pendingRides=s.docs.map(d=>({id:d.id,...d.data()})); renderRequests(); }, e=>console.warn(e));
+    reqCellKey=''; subscribeRequests(true);
     myDrRideUnsub=db.collection('courses').where('driverId','==',me.uid).where('status','==','accepted').limit(3).onSnapshot(s=>{
       const r=s.docs.map(d=>({id:d.id,...d.data()}))[0];
       if(r){ if(!activeDriverRide||activeDriverRide.id!==r.id){ notify(t('accepted')); } activeDriverRide=r; showDriverRide(); }
       else { activeDriverRide=null; if(driverMode) panel('pDriver'); }
     }, e=>console.warn(e));
   } else {
-    driverMode=false; if(watchId!=null) navigator.geolocation.clearWatch(watchId); watchId=null; lastPush=0;
+    driverMode=false; if(watchId!=null) navigator.geolocation.clearWatch(watchId); watchId=null; lastPush=0; lastPushPos=null; reqCellKey='';
     if(reqUnsub) reqUnsub(); if(myDrRideUnsub) myDrRideUnsub(); reqUnsub=myDrRideUnsub=null; activeDriverRide=null;
     try{ await db.collection('driverPositions').doc(me.uid).delete(); }catch(e){}
     panel(myRideId?'pWait':'pHome'); if(myRideId) watchMyRide(myRideId);
   }
   refreshDrawer();
 }
-async function pushPos(){
-  if(!driverMode||!myPos||Date.now()-lastPush<10000) return; lastPush=Date.now();
-  try{ await db.collection('driverPositions').doc(me.uid).set({lat:myPos.lat,lng:myPos.lng,vehicleType:profile.vehicleType||'car',updatedMs:Date.now(),updatedAt:TS()}); }catch(e){ console.warn(e); }
+let lastPushPos=null;
+async function pushPos(force){
+  if(!driverMode||!myPos||document.hidden) return;
+  const moved=lastPushPos?km(lastPushPos,myPos):1, age=Date.now()-lastPush;
+  if(!force && !(age>90000 || (age>30000 && moved>0.06))) return;
+  lastPush=Date.now(); lastPushPos={...myPos};
+  try{ await db.collection('driverPositions').doc(me.uid).set({lat:myPos.lat,lng:myPos.lng,cell:cellOf(myPos.lat,myPos.lng),vehicleType:profile.vehicleType||'car',updatedMs:Date.now(),updatedAt:TS()}); }catch(e){ console.warn(e); }
+  subscribeRequests();
+}
+/* Zones (~50 km) : chacun n'écoute que sa région → beaucoup moins de lectures Firebase */
+function cellOf(lat,lng){ return Math.floor(lat*2)+'_'+Math.floor(lng*2); }
+function nearCells(lat,lng){ const a=Math.floor(lat*2), b=Math.floor(lng*2), out=[]; for(let i=-1;i<=1;i++) for(let j=-1;j<=1;j++) out.push((a+i)+'_'+(b+j)); return out; }
+let reqCellKey='';
+function subscribeRequests(force){
+  if(!driverMode||!myPos||document.hidden) return;
+  const key=cellOf(myPos.lat,myPos.lng); if(!force && key===reqCellKey && reqUnsub) return; reqCellKey=key;
+  if(reqUnsub) reqUnsub();
+  reqUnsub=db.collection('courses').where('status','==','pending').where('cell','in',nearCells(myPos.lat,myPos.lng)).limit(60)
+    .onSnapshot(s=>{ pendingRides=s.docs.map(d=>({id:d.id,...d.data()})); renderRequests(); }, e=>console.warn(e));
 }
 window.addEventListener('beforeunload',()=>{ if(driverMode&&me) db.collection('driverPositions').doc(me.uid).delete(); });
 function canServe(r){ const v=profile.vehicleType||'car'; return v==='moto' ? r.service==='moto' : (r.service==='car'||r.service==='inter'); }
@@ -1350,6 +1374,13 @@ function showInstall(force){
 window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; $('installLink').classList.remove('hide'); setTimeout(()=>showInstall(false),2500); });
 window.addEventListener('appinstalled',()=>{ $('installBar').classList.add('hide'); $('installLink').classList.add('hide'); toast('✓ Rakbin'); });
 if(isIOS && !isStandalone()){ $('installLink').classList.remove('hide'); setTimeout(()=>showInstall(false),2500); }
+
+/* Pause quand l'app est en arrière-plan (économie de lectures) */
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){ if(driversUnsub){ driversUnsub(); driversUnsub=null; } drvKey='';
+    if(reqUnsub){ reqUnsub(); reqUnsub=null; } reqCellKey=''; }
+  else { if(me) watchDrivers(true); if(driverMode){ pushPos(true); subscribeRequests(true); } }
+});
 
 /* ================= Démarrage ================= */
 try{ setTheme(localStorage.getItem('rk_theme')||'light'); $('themeSel').value=localStorage.getItem('rk_theme')||'light'; }catch(e){}
