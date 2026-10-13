@@ -165,6 +165,10 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
 .logoimg{height:52px;width:auto;display:block;margin:0 0 2px}
 .chip{display:inline-flex;align-items:center;gap:6px}
 .chip img{width:30px;height:20px;object-fit:cover;border-radius:5px}
+.modeseg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);border-radius:16px;padding:5px;margin-top:10px}
+.modeseg button{border:0;background:transparent;color:var(--fg);border-radius:12px;padding:10px 4px;font-weight:700;font-size:13.5px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.modeseg button img{width:46px;height:30px;object-fit:cover;border-radius:7px}
+.modeseg button.active{background:#b8f000;color:#111;box-shadow:0 2px 6px rgba(0,0,0,.18)}
 .toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);background:#111827;color:#fff;padding:11px 16px;border-radius:12px;z-index:100;font-size:14px;max-width:90vw;box-shadow:var(--shadow);display:none}
 .badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700}
 .online{background:var(--green);color:#fff;border-radius:12px;padding:10px 12px;text-align:center;font-weight:700;margin-top:6px}
@@ -312,7 +316,10 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
   <a href="#" id="installLink" class="hide" onclick="openDrawer(false);showInstall(true);return false"><img class="mi" src="ic-install.webp" alt=""> <span data-i18n="installApp">Installer l'application</span></a>
   <a href="#" onclick="openDrawer(false);shareApp();return false"><img class="mi" src="ic-whatsapp.webp" alt=""> <span data-i18n="shareWa">Partager avec WhatsApp</span></a>
   <div class="grow"></div>
-  <button class="cta" id="driverBtn" onclick="setDriverMode(!driverMode)" style="background:#b8f000;color:#111" data-i18n="driverMode">Mode conducteur</button>
+  <div class="modeseg">
+    <button id="paxBtn" class="active" onclick="if(driverMode) setDriverMode(false); else openDrawer(false)"><img src="ic-backpack.webp" alt=""><span data-i18n="passengerMode">Mode passager</span></button>
+    <button id="driverBtn" onclick="if(!driverMode) setDriverMode(true); else openDrawer(false)"><img src="tile-car.webp" alt=""><span data-i18n="driverMode">Mode conducteur</span></button>
+  </div>
   <p class="small" style="text-align:center;margin-top:12px">Contact : rakbin55@gmail.com</p>
 </nav>
 
@@ -793,7 +800,7 @@ function refreshDrawer(){
   $('dAv').src=(profile&&profile.photo)||DEFAULT_AV;
   $('dName').textContent=(profile&&profile.name)||(me?((me.displayName||'').split(' ')[0]||t('guest')):t('guest'));
   $('dRating').textContent=me?((profile&&profile.rating)||5).toFixed(2):t('tapLogin');
-  $('driverBtn').textContent=driverMode?t('passengerMode'):t('driverMode');
+  $('driverBtn').classList.toggle('active',!!driverMode); $('paxBtn').classList.toggle('active',!driverMode);
 }
 async function googleLogin(){
   const prov=new firebase.auth.GoogleAuthProvider();
