@@ -116,6 +116,9 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
 .install .x{background:none;border:0;color:var(--muted);font-size:20px;padding:4px}
 .seg{display:flex;background:var(--card);border-radius:14px;padding:4px;margin-top:8px;gap:4px}
 .seg button{flex:1;border:0;background:transparent;color:var(--fg);border-radius:11px;padding:10px 6px;font-weight:600;font-size:14px}
+.seg button{display:flex;align-items:center;justify-content:center;gap:6px}
+.tabimg{width:34px;height:22px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-inline-end:6px;flex-shrink:0}
+.tabico{width:18px;height:18px;flex-shrink:0}
 .seg button.active{background:var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.15);color:var(--green);font-weight:800}
 .banner{width:100%;height:120px;object-fit:cover;border-radius:14px;margin-top:8px;display:block}
 .svc .i img{width:84px;height:42px;object-fit:cover;border-radius:8px}
@@ -164,8 +167,8 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
     <div id="interBox" class="hide">
       <img class="banner" src="ville-a-ville.webp" alt="Rakbin Ville à Ville">
       <div class="seg">
-        <button id="tabFind" class="active" onclick="interTab('find')">🔍 <span data-i18n="tabFind">Trouver un trajet</span></button>
-        <button id="tabOffer" onclick="interTab('offer')">🚗 <span data-i18n="tabOffer">Proposer un trajet</span></button>
+        <button id="tabFind" class="active" onclick="interTab('find')"><svg class="tabico" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span data-i18n="tabFind">Trouver un trajet</span></button>
+        <button id="tabOffer" onclick="interTab('offer')"><img class="tabimg" src="tile-inter.webp" alt=""><span data-i18n="tabOffer">Proposer un trajet</span></button>
       </div>
       <div class="field">
         <input id="fromIn" autocomplete="off" data-i18n-ph="fromPh" placeholder="📍 Départ (ville)">
@@ -187,8 +190,8 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
           <input id="offPrice" type="number" inputmode="numeric" min="1" placeholder="MAD"></div>
       </div>
       <p class="hint" id="offSuggest"></p>
-      <label class="lbl" data-i18n="vehDesc">Véhicule (marque, couleur)</label>
-      <input id="offVeh" maxlength="50" placeholder="Dacia Logan grise">
+      <label class="lbl" data-i18n="vehDesc">Véhicule</label>
+      <div id="offVehPick"></div><input id="offVeh" type="hidden">
       <input id="offNote" maxlength="140" data-i18n-ph="notePh" placeholder="Note : bagages, arrêts possibles…" style="margin-top:8px">
       <button class="cta" onclick="publishTrip()" data-i18n="publish">Publier mon trajet</button>
     </div>
@@ -299,9 +302,9 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
       <label class="check"><input type="checkbox" id="isDriverIn" onchange="$('vehBox').classList.toggle('hide',!this.checked)"> <span data-i18n="iDrive">🚗🏍️ Je veux aussi être conducteur</span></label>
       <div id="vehBox" class="hide">
         <label class="lbl" data-i18n="vehType">Type de véhicule</label>
-        <select id="vehTypeIn"><option value="car" data-i18n="optCar">🚗 Voiture (ville + ville à ville)</option><option value="moto" data-i18n="optMoto">🏍️ Moto (en ville)</option></select>
+        <select id="vehTypeIn" onchange="$('vehIn').value='';buildVehPicker('vehPick','vehIn',this.value,true)"><option value="car" data-i18n="optCar">🚗 Voiture (ville + ville à ville)</option><option value="moto" data-i18n="optMoto">🏍️ Moto (en ville)</option></select>
         <label class="lbl" data-i18n="vehDesc">Véhicule (marque, couleur)</label>
-        <input id="vehIn" maxlength="50" placeholder="Dacia Logan blanche">
+        <div id="vehPick"></div><input id="vehIn" type="hidden">
       </div>
       <button class="cta" id="saveBtn" onclick="saveProfile()" data-i18n="save">Enregistrer</button>
       <button class="ghost" onclick="logout()" data-i18n="logout">Se déconnecter</button>
@@ -426,7 +429,7 @@ const T = {
   minAgo:"min",away:"de vous",seats:"place(s)",noHistory:"Vos courses apparaîtront ici",start:"Commencer",upToDate:"Vous êtes à jour",upToDate2:"Aucune nouvelle notification",
   newOffer:"Nouvelle offre",accepted:"Course acceptée",cancelled:"Course annulée",done:"Terminée",pending:"En attente",confirmDel:"Supprimer définitivement votre compte ?",
   cancelledMsg:"La course a été annulée",offerFrom:"propose",yourPrice:"Prix du passager",asDriver:"Conducteur",asPassenger:"Passager",shareTxt:"Je suis en course Rakbin",
-  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur",installTxt:"Installez l'application sur votre téléphone",install:"Installer",installApp:"Installer l'application",iosTxt:"Touchez ⬆️ Partager puis « Sur l'écran d'accueil »",ok:"OK",tabFind:"Trouver un trajet",tabOffer:"Proposer un trajet",fromPh:"📍 Départ (ville)",departure:"Date et heure de départ",seatsFree:"Places libres",pricePerSeat:"Prix / personne (MAD)",notePh:"Note : bagages, arrêts possibles…",publish:"Publier mon trajet",reqTitle:"Aucun trajet ne vous convient ? Publiez une demande, les conducteurs vous répondront :",myTrips:"Mes trajets Ville à Ville",tripsFound:"trajet(s) disponible(s)",noTrips:"Aucun trajet publié pour cette destination pour l'instant.",book:"Réserver",perSeat:"/ pers.",seatsLeft:"place(s) libre(s)",yourTrip:"Votre trajet",needFrom:"Choisissez la ville de départ",needWhen:"Choisissez une date et une heure à venir",needVeh:"Indiquez votre véhicule",published:"Trajet publié ✓ Les passagers peuvent réserver",booked:"Demande de réservation envoyée ✓",iDriveSec:"🚗 Je conduis",iBookSec:"🎒 Mes réservations",noMyTrips:"Vous n'avez publié aucun trajet.",noMyBookings:"Aucune réservation.",acceptBk:"Accepter",refuseBk:"Refuser",cancelTrip:"Annuler ce trajet",cancelBk:"Annuler ma réservation",waDriverShort:"💬 WhatsApp",st_open:"Ouvert",st_full:"Complet",st_pending:"En attente",st_accepted:"Acceptée",st_refused:"Refusée",st_cancelled:"Annulée",newBooking:"Nouvelle réservation",bookingAccepted:"Votre réservation est acceptée !",notEnoughSeats:"Plus assez de places",howMany:"Combien de places ?",seatsWord:"place(s)"},
+  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur",installTxt:"Installez l'application sur votre téléphone",install:"Installer",installApp:"Installer l'application",iosTxt:"Touchez ⬆️ Partager puis « Sur l'écran d'accueil »",ok:"OK",tabFind:"Trouver un trajet",tabOffer:"Proposer un trajet",fromPh:"📍 Départ (ville)",departure:"Date et heure de départ",seatsFree:"Places libres",pricePerSeat:"Prix / personne (MAD)",notePh:"Note : bagages, arrêts possibles…",publish:"Publier mon trajet",reqTitle:"Aucun trajet ne vous convient ? Publiez une demande, les conducteurs vous répondront :",myTrips:"Mes trajets Ville à Ville",tripsFound:"trajet(s) disponible(s)",noTrips:"Aucun trajet publié pour cette destination pour l'instant.",book:"Réserver",perSeat:"/ pers.",seatsLeft:"place(s) libre(s)",yourTrip:"Votre trajet",needFrom:"Choisissez la ville de départ",needWhen:"Choisissez une date et une heure à venir",needVeh:"Indiquez votre véhicule",published:"Trajet publié ✓ Les passagers peuvent réserver",booked:"Demande de réservation envoyée ✓",iDriveSec:"🚗 Je conduis",iBookSec:"🎒 Mes réservations",noMyTrips:"Vous n'avez publié aucun trajet.",noMyBookings:"Aucune réservation.",acceptBk:"Accepter",refuseBk:"Refuser",cancelTrip:"Annuler ce trajet",cancelBk:"Annuler ma réservation",waDriverShort:"💬 WhatsApp",st_open:"Ouvert",st_full:"Complet",st_pending:"En attente",st_accepted:"Acceptée",st_refused:"Refusée",st_cancelled:"Annulée",newBooking:"Nouvelle réservation",bookingAccepted:"Votre réservation est acceptée !",notEnoughSeats:"Plus assez de places",howMany:"Combien de places ?",seatsWord:"place(s)",brand:"Marque",model:"Modèle",color:"Couleur",other:"Autre…",otherPh:"Écrivez le modèle",needBrand:"Choisissez la marque et le modèle"},
  ar:{from:"من أين",svcCar:"سيارة",svcMoto:"دراجة نارية",svcInter:"بين المدن",destPh:"🔍 إلى أين؟",pricePh:"ثمنك (درهم)",order:"ابحث عن سائق",
   waiting:"جاري البحث عن سائقين قريبين…",cancel:"إلغاء الطلب",confirmed:"تم تأكيد الرحلة",waDriver:"💬 واتساب السائق",share:"📤 شارك رحلتي",
   finish:"✅ وصلت",cancelShort:"إلغاء",driverTitle:"سائق",exitDriver:"خروج",online:"🟢 متصل — الركاب يرونك",chosen:"اختارك الراكب!",
@@ -452,7 +455,7 @@ const T = {
   minAgo:"د",away:"منك",seats:"مقعد",noHistory:"ستظهر رحلاتك هنا",start:"ابدأ",upToDate:"لا جديد",upToDate2:"لا توجد إشعارات جديدة",
   newOffer:"عرض جديد",accepted:"تم قبول الرحلة",cancelled:"ملغاة",done:"منتهية",pending:"في الانتظار",confirmDel:"حذف حسابك نهائياً؟",
   cancelledMsg:"تم إلغاء الرحلة",offerFrom:"يقترح",yourPrice:"ثمن الراكب",asDriver:"سائق",asPassenger:"راكب",shareTxt:"أنا في رحلة مع راكبين",
-  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح",installTxt:"ثبّت التطبيق على هاتفك",install:"تثبيت",installApp:"تثبيت التطبيق",iosTxt:"اضغط ⬆️ مشاركة ثم «إضافة إلى الشاشة الرئيسية»",ok:"حسناً",tabFind:"ابحث عن رحلة",tabOffer:"اقترح رحلة",fromPh:"📍 الانطلاق (المدينة)",departure:"تاريخ وساعة الانطلاق",seatsFree:"المقاعد الفارغة",pricePerSeat:"الثمن للشخص (درهم)",notePh:"ملاحظة: الأمتعة، التوقفات…",publish:"انشر رحلتي",reqTitle:"لم تجد رحلة؟ انشر طلباً وسيجيبك السائقون:",myTrips:"رحلاتي بين المدن",tripsFound:"رحلة متاحة",noTrips:"لا توجد رحلات منشورة لهذه الوجهة حالياً.",book:"احجز",perSeat:"/ للشخص",seatsLeft:"مقعد فارغ",yourTrip:"رحلتك",needFrom:"اختر مدينة الانطلاق",needWhen:"اختر تاريخاً وساعة قادمة",needVeh:"أدخل مركبتك",published:"تم نشر الرحلة ✓ يمكن للركاب الحجز",booked:"تم إرسال طلب الحجز ✓",iDriveSec:"🚗 أنا السائق",iBookSec:"🎒 حجوزاتي",noMyTrips:"لم تنشر أي رحلة.",noMyBookings:"لا توجد حجوزات.",acceptBk:"قبول",refuseBk:"رفض",cancelTrip:"إلغاء هذه الرحلة",cancelBk:"إلغاء حجزي",waDriverShort:"💬 واتساب",st_open:"مفتوحة",st_full:"مكتملة",st_pending:"في الانتظار",st_accepted:"مقبولة",st_refused:"مرفوضة",st_cancelled:"ملغاة",newBooking:"حجز جديد",bookingAccepted:"تم قبول حجزك!",notEnoughSeats:"لا توجد مقاعد كافية",howMany:"كم مقعداً؟",seatsWord:"مقعد"}
+  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح",installTxt:"ثبّت التطبيق على هاتفك",install:"تثبيت",installApp:"تثبيت التطبيق",iosTxt:"اضغط ⬆️ مشاركة ثم «إضافة إلى الشاشة الرئيسية»",ok:"حسناً",tabFind:"ابحث عن رحلة",tabOffer:"اقترح رحلة",fromPh:"📍 الانطلاق (المدينة)",departure:"تاريخ وساعة الانطلاق",seatsFree:"المقاعد الفارغة",pricePerSeat:"الثمن للشخص (درهم)",notePh:"ملاحظة: الأمتعة، التوقفات…",publish:"انشر رحلتي",reqTitle:"لم تجد رحلة؟ انشر طلباً وسيجيبك السائقون:",myTrips:"رحلاتي بين المدن",tripsFound:"رحلة متاحة",noTrips:"لا توجد رحلات منشورة لهذه الوجهة حالياً.",book:"احجز",perSeat:"/ للشخص",seatsLeft:"مقعد فارغ",yourTrip:"رحلتك",needFrom:"اختر مدينة الانطلاق",needWhen:"اختر تاريخاً وساعة قادمة",needVeh:"أدخل مركبتك",published:"تم نشر الرحلة ✓ يمكن للركاب الحجز",booked:"تم إرسال طلب الحجز ✓",iDriveSec:"🚗 أنا السائق",iBookSec:"🎒 حجوزاتي",noMyTrips:"لم تنشر أي رحلة.",noMyBookings:"لا توجد حجوزات.",acceptBk:"قبول",refuseBk:"رفض",cancelTrip:"إلغاء هذه الرحلة",cancelBk:"إلغاء حجزي",waDriverShort:"💬 واتساب",st_open:"مفتوحة",st_full:"مكتملة",st_pending:"في الانتظار",st_accepted:"مقبولة",st_refused:"مرفوضة",st_cancelled:"ملغاة",newBooking:"حجز جديد",bookingAccepted:"تم قبول حجزك!",notEnoughSeats:"لا توجد مقاعد كافية",howMany:"كم مقعداً؟",seatsWord:"مقعد",brand:"العلامة",model:"الطراز",color:"اللون",other:"أخرى…",otherPh:"اكتب الطراز",needBrand:"اختر العلامة والطراز"}
 };
 let lang = 'fr';
 try { lang = localStorage.getItem('rk_lang') || ((navigator.language||'').startsWith('ar') ? 'ar' : 'fr'); } catch(e){}
@@ -669,7 +672,7 @@ function refreshHome(){
   $('orderBox').classList.toggle('hide',!ready || (inter && interMode==='offer'));
   $('reqTitle').classList.toggle('hide',!inter);
   if(inter && interMode==='find' && ready) searchTrips();
-  if(inter && interMode==='offer' && ready){ if(!$('offVeh').value && profile && profile.vehicle) $('offVeh').value=profile.vehicle; suggestSeatPrice(); }
+  if(inter && interMode==='offer' && ready){ if(!$('offVeh').value && profile && profile.vehicle && profile.vehicleType!=='moto') $('offVeh').value=profile.vehicle; buildVehPicker('offVehPick','offVeh','car'); suggestSeatPrice(); }
 }
 
 /* ================= Services & prix ================= */
@@ -732,7 +735,7 @@ function fillProfile(){
   $('nameIn').value=(profile&&profile.name)||((me.displayName||'').split(' ')[0]||'');
   $('phoneIn').value=myPhone||'';
   $('isDriverIn').checked=!!(profile&&profile.isDriver); $('vehBox').classList.toggle('hide',!$('isDriverIn').checked);
-  $('vehTypeIn').value=(profile&&profile.vehicleType)||'car'; $('vehIn').value=(profile&&profile.vehicle)||'';
+  $('vehTypeIn').value=(profile&&profile.vehicleType)||'car'; $('vehIn').value=(profile&&profile.vehicle)||''; buildVehPicker('vehPick','vehIn',$('vehTypeIn').value,true);
 }
 $('selfieIn').addEventListener('change',async e=>{ const f=e.target.files[0]; if(!f) return;
   try{ newSelfie=await compressSelfie(f); $('selfiePrev').src=newSelfie; }catch(_){ toast(t('error')); } });
@@ -746,6 +749,7 @@ async function saveProfile(){
   const name=$('nameIn').value.trim(), phone=normPhone($('phoneIn').value), photo=newSelfie||(profile&&profile.photo);
   if(!photo) return toast(t('needSelfie')); if(!name) return toast(t('needName')); if(!phone) return toast(t('badPhone'));
   const isDriver=$('isDriverIn').checked;
+  if(isDriver && $('vehIn').value.trim().split(' ').length<2) return toast(t('needBrand'));
   const data={name, photo, isDriver, vehicleType:isDriver?$('vehTypeIn').value:'', vehicle:isDriver?$('vehIn').value.trim():'',
     rating:(profile&&profile.rating)||5, updatedAt:TS()};
   $('saveBtn').disabled=true;
@@ -930,6 +934,72 @@ async function driverEnd(status){ if(!activeDriverRide) return;
   try{ await db.collection('courses').doc(activeDriverRide.id).update({status, endedAt:TS()});
     if(pickupMarker){ map.removeLayer(pickupMarker); pickupMarker=null; } }catch(e){ console.error(e); toast(t('error')); } }
 
+/* ================= Choix du véhicule (marques) ================= */
+const BRANDS={car:{
+ 'Dacia':['Logan','Sandero','Sandero Stepway','Duster','Lodgy','Dokker','Jogger','Spring'],
+ 'Renault':['Clio','Symbol','Megane','Captur','Kangoo','Express','Kadjar','Austral','Talisman','Koleos'],
+ 'Peugeot':['208','301','308','2008','3008','5008','508','Partner','Rifter','Expert'],
+ 'Hyundai':['i10','i20','Accent','Elantra','Creta','Tucson','Santa Fe','H1'],
+ 'Kia':['Picanto','Rio','Ceed','Seltos','Sportage','Sorento'],
+ 'Toyota':['Yaris','Corolla','C-HR','RAV4','Hilux','Land Cruiser','Prado'],
+ 'Volkswagen':['Polo','Golf','Jetta','Passat','T-Roc','Tiguan','Touareg','Caddy','Transporter'],
+ 'Citroën':['C3','C-Elysée','C4','C5 Aircross','Berlingo','Jumpy'],
+ 'Fiat':['Panda','500','Punto','Tipo','Doblo','Uno','Ducato'],
+ 'Ford':['Fiesta','Focus','Kuga','EcoSport','Ranger','Transit'],
+ 'Skoda':['Fabia','Octavia','Superb','Karoq','Kodiaq'],
+ 'Seat':['Ibiza','Leon','Arona','Ateca'],
+ 'Opel':['Corsa','Astra','Insignia','Mokka','Combo'],
+ 'Nissan':['Micra','Juke','Qashqai','X-Trail','Navara'],
+ 'Suzuki':['Alto','Celerio','Swift','Dzire','Vitara','Jimny'],
+ 'Mercedes-Benz':['Classe A','Classe C','Classe E','GLA','GLC','Vito','Sprinter'],
+ 'BMW':['Série 1','Série 3','Série 5','X1','X3','X5'],
+ 'Audi':['A3','A4','A6','Q3','Q5','Q7'],
+ 'Chery':['Arrizo 5','Tiggo 2','Tiggo 4','Tiggo 7','Tiggo 8'],
+ 'MG':['MG3','MG5','ZS','HS','RX5'],
+ 'Geely':['Emgrand','Coolray','Tugella'],
+ 'Mitsubishi':['L200','ASX','Outlander','Pajero'],
+ 'Honda':['Jazz','Civic','CR-V'],
+ 'Mazda':['Mazda 2','Mazda 3','Mazda 6','CX-5'],
+ 'Chevrolet':['Spark','Aveo','Cruze','Captiva'],
+ 'Jeep':['Renegade','Compass','Wrangler'],
+ 'Land Rover':['Range Rover Evoque','Discovery','Defender'],
+ 'Tesla':['Model 3','Model Y']},
+moto:{
+ 'Yamaha':['Crypton','NMAX','XMAX','TMAX','MT-07','YBR'],
+ 'Honda':['Wave','PCX','Forza','CBR','CB'],
+ 'Suzuki':['Address','Burgman','GSX','Gixxer'],
+ 'Kymco':['Agility','Like','People','Downtown'],
+ 'SYM':['Symphony','Jet','Orbit','Fiddle'],
+ 'Peugeot':['Kisbee','Tweet','Django','Speedfight'],
+ 'Piaggio':['Liberty','Beverly','Medley','Vespa'],
+ 'Docker':['C50','City'],
+ 'Kawasaki':['Z650','Ninja','Versys'],
+ 'KTM':['Duke','RC'],
+ 'BMW':['C 400','R 1250','F 900']}};
+const COLORS={fr:['Blanche','Noire','Grise','Argent','Bleue','Rouge','Verte','Beige','Marron','Jaune','Orange'],
+ ar:['أبيض','أسود','رمادي','فضي','أزرق','أحمر','أخضر','بيج','بني','أصفر','برتقالي']};
+function buildVehPicker(boxId,targetId,type,force){
+  const box=$(boxId); if(!box) return; if(box.dataset.built===type+lang && !force) return; box.dataset.built=type+lang;
+  const B=BRANDS[type]||BRANDS.car, cur=$(targetId).value||'', o=v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>';
+  box.innerHTML='<div class="row"><select id="'+boxId+'_b"><option value="">'+t('brand')+'</option>'+Object.keys(B).map(o).join('')+'<option value="__o">'+t('other')+'</option></select>'+
+    '<select id="'+boxId+'_m"><option value="">'+t('model')+'</option></select></div>'+
+    '<input id="'+boxId+'_x" class="hide" maxlength="40" placeholder="'+t('otherPh')+'" style="margin-top:8px">'+
+    '<select id="'+boxId+'_c" style="margin-top:8px"><option value="">'+t('color')+'</option>'+COLORS[lang==='ar'?'ar':'fr'].map(o).join('')+'</select>';
+  const sb=$(boxId+'_b'), sm=$(boxId+'_m'), sx=$(boxId+'_x'), sc=$(boxId+'_c');
+  const fillModels=()=>{ const ms=B[sb.value]||[]; sm.innerHTML='<option value="">'+t('model')+'</option>'+ms.map(o).join('')+'<option value="__o">'+t('other')+'</option>'; sm.classList.toggle('hide',sb.value==='__o'||!sb.value); };
+  const showX=()=>sx.classList.toggle('hide',!(sb.value==='__o'||sm.value==='__o'));
+  const upd=()=>{ const brand=sb.value==='__o'?'':sb.value, model=(sb.value==='__o'||sm.value==='__o')?sx.value.trim():sm.value;
+    $(targetId).value=[brand,model,sc.value].filter(Boolean).join(' '); };
+  sb.onchange=()=>{ fillModels(); sx.value=''; showX(); upd(); }; sm.onchange=()=>{ showX(); upd(); }; sx.oninput=upd; sc.onchange=upd;
+  fillModels();
+  let rest=cur; const col=[...COLORS.fr,...COLORS.ar].find(c=>rest.endsWith(' '+c)||rest===c);
+  if(col){ rest=rest.slice(0,rest.length-col.length).trim(); if([...sc.options].some(x=>x.value===col)) sc.value=col; }
+  const br=Object.keys(B).sort((a,b)=>b.length-a.length).find(k=>rest===k||rest.startsWith(k+' '));
+  if(br){ sb.value=br; fillModels(); const m=rest.slice(br.length).trim(); if(m){ if((B[br]||[]).includes(m)) sm.value=m; else { sm.value='__o'; sx.value=m; } } }
+  else if(rest){ sb.value='__o'; fillModels(); sx.value=rest; }
+  showX(); upd();
+}
+
 /* ================= Ville à Ville : trajets publiés (style BlaBlaCar) ================= */
 const fmtWhen=ms=>new Date(ms).toLocaleString(lang==='ar'?'ar-MA':'fr-FR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 function suggestSeatPrice(){ const o=originPos(); if(!o||!destPos){ $('offSuggest').textContent=''; return; }
@@ -941,7 +1011,7 @@ async function publishTrip(){
   const o=originPos(); if(!o) return toast(t('needFrom')); if(!destPos) return toast(t('needDest'));
   const whenMs=$('offWhen').value?new Date($('offWhen').value).getTime():0; if(!(whenMs>Date.now()-600000)) return toast(t('needWhen'));
   const seats=parseInt($('offSeats').value,10)||1, price=parseInt($('offPrice').value,10); if(!(price>0)) return toast(t('needPrice'));
-  const vehicle=$('offVeh').value.trim(); if(!vehicle) return toast(t('needVeh'));
+  const vehicle=$('offVeh').value.trim(); if(!vehicle || vehicle.split(' ').length<2) return toast(t('needBrand'));
   const trip={driverId:me.uid, driverName:profile.name, fromLabel:originLabel(), fromLat:o.lat, fromLng:o.lng, dest:destLabel, destLat:destPos.lat, destLng:destPos.lng,
     km:Math.round(km(o,destPos)*1.3), whenMs, seats, seatsLeft:seats, pricePerSeat:price, vehicle, note:$('offNote').value.trim(), status:'open', createdAt:TS(), createdMs:Date.now()};
   try{ const ref=await db.collection('voyages').add(trip); await ref.collection('contacts').doc(me.uid).set({phone:myPhone});
@@ -959,7 +1029,7 @@ async function searchTrips(){
   if(!list.length){ box.innerHTML='<p class="hint">'+t('noTrips')+'</p>'; return; }
   const html=await Promise.all(list.map(async v=>{ const u=await getUser(v.driverId); const mine=me&&v.driverId===me.uid;
     let opts=''; for(let i=1;i<=Math.min(v.seatsLeft,6);i++) opts+='<option value="'+i+'">'+i+' 👤</option>';
-    return '<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b><span class="small">'+ICON.car+esc(v.vehicle||'')+'</span></div><div class="price">'+v.pricePerSeat+' MAD<div class="small" style="text-align:end">'+t('perSeat')+'</div></div></div>'+
+    return '<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b><span class="small"><img class="tabimg" src="tile-inter.webp" alt="">'+esc(v.vehicle||'')+'</span></div><div class="price">'+v.pricePerSeat+' MAD<div class="small" style="text-align:end">'+t('perSeat')+'</div></div></div>'+
       '<p class="route"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><br>📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p>'+
       '<div class="meta"><span>💺 '+v.seatsLeft+' '+t('seatsLeft')+'</span><span>'+v.km+' km</span></div>'+(v.note?'<p class="small">📝 '+esc(v.note)+'</p>':'')+
       (mine?'<span class="badge">'+t('yourTrip')+'</span>':'<div class="btns"><select id="bs_'+v.id+'" style="max-width:110px">'+opts+'</select><button class="cta" style="margin:0" onclick="bookTrip(\''+v.id+'\')">'+t('book')+'</button></div>')+'</div>'; }));
