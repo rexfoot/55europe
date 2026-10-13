@@ -429,7 +429,7 @@ const T = {
   waPassenger:"💬 WhatsApp du passager",navigate:"🧭 Itinéraire vers le passager",finishRide:"✅ Course terminée",history:"Historique des courses",notifs:"Notifications",
   safety:"Sécurité",settings:"Paramètres",help:"Aide",driverMode:"Mode conducteur",passengerMode:"Mode passager",profile:"Mon profil",
   loginWhy:"Pour éviter les arnaques, chaque passager et conducteur doit avoir un compte avec selfie.",google:"Continuer avec Google",selfie:"Selfie (obligatoire)",
-  name:"Prénom",phone:"Numéro WhatsApp (avec indicatif)",phoneHint:"Tous les pays acceptés (+212, +33, +34…). Visible seulement après acceptation d'une course.",
+  name:"Prénom",phone:"Numéro WhatsApp (avec indicatif)",phoneHint:"⚠️ Mettez le numéro WhatsApp de CE téléphone (le vôtre). Il sera envoyé à l'autre personne seulement après acceptation.",
   iDrive:"🚗🏍️ Je veux aussi être conducteur",vehType:"Type de véhicule",optCar:"🚗 Voiture (ville + ville à ville)",optMoto:"🏍️ Moto (en ville)",vehDesc:"Véhicule (marque, couleur)",
   save:"Enregistrer",logout:"Se déconnecter",all:"Tout",police:"Police",gendarmerie:"Gendarmerie",ambulance:"Ambulance / Pompiers",howProtect:"Comment Rakbin vous protège",
   t1:"Selfie obligatoire pour tous",t2:"Numéro visible seulement après acceptation",t3:"Partagez votre trajet avec un proche",t4:"Vérifiez la photo et le véhicule avant de monter",
@@ -455,7 +455,7 @@ const T = {
   waPassenger:"💬 واتساب الراكب",navigate:"🧭 الطريق إلى الراكب",finishRide:"✅ انتهت الرحلة",history:"سجل الرحلات",notifs:"الإشعارات",
   safety:"الأمان",settings:"الإعدادات",help:"مساعدة",driverMode:"وضع السائق",passengerMode:"وضع الراكب",profile:"حسابي",
   loginWhy:"لتجنب الاحتيال، يجب أن يكون لكل راكب وسائق حساب مع صورة سيلفي.",google:"المتابعة مع Google",selfie:"صورة سيلفي (إجباري)",
-  name:"الاسم",phone:"رقم واتساب (مع رمز الدولة)",phoneHint:"جميع الدول مقبولة (+212، +33، +34…). يظهر فقط بعد قبول الرحلة.",
+  name:"الاسم",phone:"رقم واتساب (مع رمز الدولة)",phoneHint:"⚠️ ضع رقم واتساب الخاص بهذا الهاتف (رقمك). يُرسل للطرف الآخر فقط بعد القبول.",
   iDrive:"أنا أيضاً سائق",vehType:"نوع المركبة",optCar:"🚗 سيارة (داخل المدينة + بين المدن)",optMoto:"🏍️ دراجة نارية (داخل المدينة)",vehDesc:"المركبة (النوع، اللون)",
   save:"حفظ",logout:"تسجيل الخروج",all:"الكل",police:"الشرطة",gendarmerie:"الدرك",ambulance:"الإسعاف / الوقاية المدنية",howProtect:"كيف يحميك راكبين",
   t1:"سيلفي إجباري للجميع",t2:"الرقم يظهر فقط بعد القبول",t3:"شارك رحلتك مع شخص قريب",t4:"تحقق من الصورة والمركبة قبل الركوب",
@@ -1114,7 +1114,7 @@ async function loadMyTrips(){
       let bh='';
       for(const b of bs.filter(b=>b.status!=='cancelled')){ const u=await getUser(b.passengerId); let act='';
         if(b.status==='pending') act='<button class="cta" style="margin:0;padding:9px 12px;width:auto" onclick="answerBooking(\''+v.id+'\',\''+b.passengerId+'\',\'accepted\','+(b.seats||1)+')">'+t('acceptBk')+'</button><button class="ghost" style="margin:0;padding:9px 12px;width:auto" onclick="answerBooking(\''+v.id+'\',\''+b.passengerId+'\',\'refused\',0)">'+t('refuseBk')+'</button>';
-        if(b.status==='accepted'){ const ph=await getContact(v.id,b.passengerId); if(ph) act='<a class="cta wa" style="margin:0;padding:9px 12px;width:auto;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(b.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)))+'">'+t('waDriverShort')+'<br><small>'+fmtPhone(ph)+'</small></a>'; }
+        if(b.status==='accepted'){ const ph=await getContact(v.id,b.passengerId); if(ph) act='<a class="cta wa" style="margin:0;padding:9px 12px;width:auto;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(b.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)))+'">💬 '+esc((u.name||b.name||'').split(' ')[0])+'<br><small>'+fmtPhone(ph)+'</small></a>'; }
         bh+='<div class="bk"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||b.name)+'</b>'+socialHtml(u)+' · '+(b.seats||1)+' '+t('seatsWord')+'<br>'+stBadge(b.status)+'</div>'+act+'</div>'; }
       html+='<div class="card trip" id="tc_'+v.id+'"><div class="row"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><span style="flex:0;display:flex;gap:6px;align-items:center">'+stBadge(v.status)+'<button class="pen" title="'+t('edit')+'" onclick="editTrip(\''+v.id+'\')">'+PEN+'</button></span></div><div id="ed_'+v.id+'"></div><p class="route">📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p><div class="meta"><span>💺 '+v.seatsLeft+'/'+v.seats+'</span><span>'+v.pricePerSeat+' MAD '+t('perSeat')+'</span></div>'+bh+
         '<button class="ghost" style="color:var(--red)" onclick="cancelTrip(\''+v.id+'\')">'+t('cancelTrip')+'</button></div>';
@@ -1129,7 +1129,7 @@ async function loadMyTrips(){
         const bd=await db.collection('voyages').doc(k.vid).collection('bookings').doc(me.uid).get(); if(!bd.exists) continue; b=bd.data(); }catch(e){ continue; }
       if(v.whenMs<Date.now()-2*24*3600e3) continue; n++;
       const st=v.status==='cancelled'?'cancelled':b.status; const u=await getUser(v.driverId); let act='';
-      if(st==='accepted'){ const ph=await getContact(v.id,v.driverId); if(ph) act='<a class="cta wa" style="display:block;text-align:center;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(u.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)+' ('+(b.seats||1)+' '+t('seatsWord')+')'))+'">'+t('waDriver')+'<br><small>'+fmtPhone(ph)+'</small></a>'; }
+      if(st==='accepted'){ const ph=await getContact(v.id,v.driverId); if(ph) act='<a class="cta wa" style="display:block;text-align:center;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(u.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)+' ('+(b.seats||1)+' '+t('seatsWord')+')'))+'">💬 WhatsApp · '+esc(u.name||v.driverName||'')+'<br><small>'+fmtPhone(ph)+'</small></a>'; }
       if(st==='pending'||st==='accepted') act+='<button class="ghost" onclick="cancelBooking(\''+v.id+'\')">'+t('cancelBk')+'</button>';
       html+='<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b>'+socialHtml(u)+'<span class="small">'+esc(v.vehicle||'')+'</span></div>'+stBadge(st)+'</div><p class="route"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><br>📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p><div class="meta"><span>💺 '+(b.seats||1)+' '+t('seatsWord')+'</span><span>'+(v.pricePerSeat*(b.seats||1))+' MAD</span></div>'+act+'</div>';
     }
