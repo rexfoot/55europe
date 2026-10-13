@@ -114,6 +114,21 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
 .install .tx b{font-size:15px}
 .install .go{background:var(--green);color:#fff;border:0;border-radius:12px;padding:10px 14px;font-weight:700}
 .install .x{background:none;border:0;color:var(--muted);font-size:20px;padding:4px}
+.seg{display:flex;background:var(--card);border-radius:14px;padding:4px;margin-top:8px;gap:4px}
+.seg button{flex:1;border:0;background:transparent;color:var(--fg);border-radius:11px;padding:10px 6px;font-weight:600;font-size:14px}
+.seg button.active{background:var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.15);color:var(--green);font-weight:800}
+.banner{width:100%;height:120px;object-fit:cover;border-radius:14px;margin-top:8px;display:block}
+.svc .i img{width:84px;height:42px;object-fit:cover;border-radius:8px}
+.trip .when{font-weight:800;color:var(--fg)}
+.trip .meta{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:4px}
+.sec{margin:18px 0 4px;font-size:17px}
+.bk{display:flex;gap:8px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.bk .av{width:38px;height:38px}
+.bk .info{flex:1;min-width:0;font-size:14px}
+.st{display:inline-block;border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700;background:var(--card)}
+.st.accepted,.st.open{background:var(--green2);color:var(--green)}
+.st.pending{background:#fff4d6;color:#8a6200}
+.st.refused,.st.cancelled{background:#fde8e8;color:var(--red)}
 .toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);background:#111827;color:#fff;padding:11px 16px;border-radius:12px;z-index:100;font-size:14px;max-width:90vw;box-shadow:var(--shadow);display:none}
 .badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700}
 .online{background:var(--green);color:#fff;border-radius:12px;padding:10px 12px;text-align:center;font-weight:700;margin-top:6px}
@@ -143,14 +158,42 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
     <div class="services">
       <button class="svc" data-s="car" onclick="pickService('car')"><div class="i" data-art="car"></div><span data-i18n="svcCar">Voiture</span></button>
       <button class="svc active" data-s="moto" onclick="pickService('moto')"><div class="i" data-art="moto"></div><span data-i18n="svcMoto">Moto</span></button>
-      <button class="svc" data-s="inter" onclick="pickService('inter')"><div class="i" data-art="inter"></div><span data-i18n="svcInter">Ville à Ville</span></button>
+      <button class="svc" data-s="inter" onclick="pickService('inter')"><div class="i"><img src="tile-inter.webp" alt=""></div><span data-i18n="svcInter">Ville à Ville</span></button>
     </div>
     <p class="status" id="nearCount"></p>
+    <div id="interBox" class="hide">
+      <img class="banner" src="ville-a-ville.webp" alt="Rakbin Ville à Ville">
+      <div class="seg">
+        <button id="tabFind" class="active" onclick="interTab('find')">🔍 <span data-i18n="tabFind">Trouver un trajet</span></button>
+        <button id="tabOffer" onclick="interTab('offer')">🚗 <span data-i18n="tabOffer">Proposer un trajet</span></button>
+      </div>
+      <div class="field">
+        <input id="fromIn" autocomplete="off" data-i18n-ph="fromPh" placeholder="📍 Départ (ville)">
+        <div class="sugg" id="suggFrom"></div>
+      </div>
+    </div>
     <div class="field">
       <input id="dest" autocomplete="off" data-i18n-ph="destPh" placeholder="🔍 Où allez-vous ?">
       <div class="sugg" id="sugg"></div>
     </div>
+    <div id="tripResults" class="hide"></div>
+    <div id="offerBox" class="hide">
+      <label class="lbl" data-i18n="departure">Date et heure de départ</label>
+      <input id="offWhen" type="datetime-local">
+      <div class="row">
+        <div><label class="lbl" data-i18n="seatsFree">Places libres</label>
+          <select id="offSeats"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></div>
+        <div><label class="lbl" data-i18n="pricePerSeat">Prix / personne</label>
+          <input id="offPrice" type="number" inputmode="numeric" min="1" placeholder="MAD"></div>
+      </div>
+      <p class="hint" id="offSuggest"></p>
+      <label class="lbl" data-i18n="vehDesc">Véhicule (marque, couleur)</label>
+      <input id="offVeh" maxlength="50" placeholder="Dacia Logan grise">
+      <input id="offNote" maxlength="140" data-i18n-ph="notePh" placeholder="Note : bagages, arrêts possibles…" style="margin-top:8px">
+      <button class="cta" onclick="publishTrip()" data-i18n="publish">Publier mon trajet</button>
+    </div>
     <div id="orderBox" class="hide">
+    <p class="hint hide" id="reqTitle" data-i18n="reqTitle">Aucun trajet ne vous convient ? Publiez une demande, les conducteurs vous répondront :</p>
     <div id="interFields" class="row hide" style="margin-top:8px">
       <input id="when" type="datetime-local">
       <select id="seats" style="max-width:120px">
@@ -224,6 +267,7 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
   <a href="#" onclick="goHome('car');return false">🚗 <span data-i18n="svcCar">Voiture</span></a>
   <a href="#" onclick="goHome('moto');return false">🏍️ <span data-i18n="svcMoto">Moto</span></a>
   <a href="#" onclick="goHome('inter');return false">🛣️ <span data-i18n="svcInter">Ville à Ville</span></a>
+  <a href="#" onclick="openScreen('sTrips');return false">🛣️ <span data-i18n="myTrips">Mes trajets Ville à Ville</span></a>
   <a href="#" onclick="openScreen('sHistory');return false">🕘 <span data-i18n="history">Historique des courses</span></a>
   <a href="#" onclick="openScreen('sNotif');return false">🔔 <span data-i18n="notifs">Notifications</span></a>
   <a href="#" onclick="openScreen('sSecu');return false">🛡️ <span data-i18n="safety">Sécurité</span></a>
@@ -263,6 +307,11 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
       <button class="ghost" onclick="logout()" data-i18n="logout">Se déconnecter</button>
     </div>
   </div>
+</section>
+
+<section class="screen" id="sTrips">
+  <header><button class="round" onclick="closeScreens()">←</button><h2 data-i18n="myTrips">Mes trajets Ville à Ville</h2></header>
+  <div class="body" id="tripsList"></div>
 </section>
 
 <section class="screen" id="sHistory">
@@ -377,7 +426,7 @@ const T = {
   minAgo:"min",away:"de vous",seats:"place(s)",noHistory:"Vos courses apparaîtront ici",start:"Commencer",upToDate:"Vous êtes à jour",upToDate2:"Aucune nouvelle notification",
   newOffer:"Nouvelle offre",accepted:"Course acceptée",cancelled:"Course annulée",done:"Terminée",pending:"En attente",confirmDel:"Supprimer définitivement votre compte ?",
   cancelledMsg:"La course a été annulée",offerFrom:"propose",yourPrice:"Prix du passager",asDriver:"Conducteur",asPassenger:"Passager",shareTxt:"Je suis en course Rakbin",
-  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur",installTxt:"Installez l'application sur votre téléphone",install:"Installer",installApp:"Installer l'application",iosTxt:"Touchez ⬆️ Partager puis « Sur l'écran d'accueil »",ok:"OK"},
+  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur",installTxt:"Installez l'application sur votre téléphone",install:"Installer",installApp:"Installer l'application",iosTxt:"Touchez ⬆️ Partager puis « Sur l'écran d'accueil »",ok:"OK",tabFind:"Trouver un trajet",tabOffer:"Proposer un trajet",fromPh:"📍 Départ (ville)",departure:"Date et heure de départ",seatsFree:"Places libres",pricePerSeat:"Prix / personne (MAD)",notePh:"Note : bagages, arrêts possibles…",publish:"Publier mon trajet",reqTitle:"Aucun trajet ne vous convient ? Publiez une demande, les conducteurs vous répondront :",myTrips:"Mes trajets Ville à Ville",tripsFound:"trajet(s) disponible(s)",noTrips:"Aucun trajet publié pour cette destination pour l'instant.",book:"Réserver",perSeat:"/ pers.",seatsLeft:"place(s) libre(s)",yourTrip:"Votre trajet",needFrom:"Choisissez la ville de départ",needWhen:"Choisissez une date et une heure à venir",needVeh:"Indiquez votre véhicule",published:"Trajet publié ✓ Les passagers peuvent réserver",booked:"Demande de réservation envoyée ✓",iDriveSec:"🚗 Je conduis",iBookSec:"🎒 Mes réservations",noMyTrips:"Vous n'avez publié aucun trajet.",noMyBookings:"Aucune réservation.",acceptBk:"Accepter",refuseBk:"Refuser",cancelTrip:"Annuler ce trajet",cancelBk:"Annuler ma réservation",waDriverShort:"💬 WhatsApp",st_open:"Ouvert",st_full:"Complet",st_pending:"En attente",st_accepted:"Acceptée",st_refused:"Refusée",st_cancelled:"Annulée",newBooking:"Nouvelle réservation",bookingAccepted:"Votre réservation est acceptée !",notEnoughSeats:"Plus assez de places",howMany:"Combien de places ?",seatsWord:"place(s)"},
  ar:{from:"من أين",svcCar:"سيارة",svcMoto:"دراجة نارية",svcInter:"بين المدن",destPh:"🔍 إلى أين؟",pricePh:"ثمنك (درهم)",order:"ابحث عن سائق",
   waiting:"جاري البحث عن سائقين قريبين…",cancel:"إلغاء الطلب",confirmed:"تم تأكيد الرحلة",waDriver:"💬 واتساب السائق",share:"📤 شارك رحلتي",
   finish:"✅ وصلت",cancelShort:"إلغاء",driverTitle:"سائق",exitDriver:"خروج",online:"🟢 متصل — الركاب يرونك",chosen:"اختارك الراكب!",
@@ -403,7 +452,7 @@ const T = {
   minAgo:"د",away:"منك",seats:"مقعد",noHistory:"ستظهر رحلاتك هنا",start:"ابدأ",upToDate:"لا جديد",upToDate2:"لا توجد إشعارات جديدة",
   newOffer:"عرض جديد",accepted:"تم قبول الرحلة",cancelled:"ملغاة",done:"منتهية",pending:"في الانتظار",confirmDel:"حذف حسابك نهائياً؟",
   cancelledMsg:"تم إلغاء الرحلة",offerFrom:"يقترح",yourPrice:"ثمن الراكب",asDriver:"سائق",asPassenger:"راكب",shareTxt:"أنا في رحلة مع راكبين",
-  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح",installTxt:"ثبّت التطبيق على هاتفك",install:"تثبيت",installApp:"تثبيت التطبيق",iosTxt:"اضغط ⬆️ مشاركة ثم «إضافة إلى الشاشة الرئيسية»",ok:"حسناً"}
+  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح",installTxt:"ثبّت التطبيق على هاتفك",install:"تثبيت",installApp:"تثبيت التطبيق",iosTxt:"اضغط ⬆️ مشاركة ثم «إضافة إلى الشاشة الرئيسية»",ok:"حسناً",tabFind:"ابحث عن رحلة",tabOffer:"اقترح رحلة",fromPh:"📍 الانطلاق (المدينة)",departure:"تاريخ وساعة الانطلاق",seatsFree:"المقاعد الفارغة",pricePerSeat:"الثمن للشخص (درهم)",notePh:"ملاحظة: الأمتعة، التوقفات…",publish:"انشر رحلتي",reqTitle:"لم تجد رحلة؟ انشر طلباً وسيجيبك السائقون:",myTrips:"رحلاتي بين المدن",tripsFound:"رحلة متاحة",noTrips:"لا توجد رحلات منشورة لهذه الوجهة حالياً.",book:"احجز",perSeat:"/ للشخص",seatsLeft:"مقعد فارغ",yourTrip:"رحلتك",needFrom:"اختر مدينة الانطلاق",needWhen:"اختر تاريخاً وساعة قادمة",needVeh:"أدخل مركبتك",published:"تم نشر الرحلة ✓ يمكن للركاب الحجز",booked:"تم إرسال طلب الحجز ✓",iDriveSec:"🚗 أنا السائق",iBookSec:"🎒 حجوزاتي",noMyTrips:"لم تنشر أي رحلة.",noMyBookings:"لا توجد حجوزات.",acceptBk:"قبول",refuseBk:"رفض",cancelTrip:"إلغاء هذه الرحلة",cancelBk:"إلغاء حجزي",waDriverShort:"💬 واتساب",st_open:"مفتوحة",st_full:"مكتملة",st_pending:"في الانتظار",st_accepted:"مقبولة",st_refused:"مرفوضة",st_cancelled:"ملغاة",newBooking:"حجز جديد",bookingAccepted:"تم قبول حجزك!",notEnoughSeats:"لا توجد مقاعد كافية",howMany:"كم مقعداً؟",seatsWord:"مقعد"}
 };
 let lang = 'fr';
 try { lang = localStorage.getItem('rk_lang') || ((navigator.language||'').startsWith('ar') ? 'ar' : 'fr'); } catch(e){}
@@ -550,13 +599,15 @@ async function reverseGeo(lat,lng){
   try{ const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=17&accept-language='+lang+'&lat='+lat+'&lon='+lng);
     const j=await r.json(); const a=j.address||{};
     const parts=[a.road||a.neighbourhood||a.suburb, a.house_number, a.city||a.town||a.village].filter(Boolean);
+    myCity=a.city||a.town||a.village||''; if(myCity && service==='inter' && !interFrom && !$('fromIn').value) $('fromIn').value=myCity;
     if(parts.length){ fromLabel=parts.join(' '); $('fromLabel').textContent=fromLabel; } }catch(e){}
 }
 function drawRoute(){
   if(routeLine){ map.removeLayer(routeLine); routeLine=null; }
-  if(myPos && destPos){ routeLine=L.polyline([[myPos.lat,myPos.lng],[destPos.lat,destPos.lng]],{color:'#006233',weight:4,dashArray:'6 8'}).addTo(map); }
+  const o=(typeof originPos==='function')?originPos():myPos;
+  if(o && destPos){ routeLine=L.polyline([[o.lat,o.lng],[destPos.lat,destPos.lng]],{color:'#006233',weight:4,dashArray:'6 8'}).addTo(map); }
 }
-function fitRoute(){ if(myPos&&destPos) map.fitBounds([[myPos.lat,myPos.lng],[destPos.lat,destPos.lng]],{padding:[60,60],paddingBottomRight:[0,$('sheet').offsetHeight]}); else if(destPos) map.setView([destPos.lat,destPos.lng],13); }
+function fitRoute(){ const o=originPos(); if(o&&destPos) map.fitBounds([[o.lat,o.lng],[destPos.lat,destPos.lng]],{padding:[60,60],paddingBottomRight:[0,$('sheet').offsetHeight]}); else if(destPos) map.setView([destPos.lat,destPos.lng],13); }
 
 /* Hauteur du panneau → position du bouton ◎ */
 function sheetH(){ document.documentElement.style.setProperty('--sheetH',($('sheet').classList.contains('mini')?92:$('sheet').offsetHeight)+'px'); }
@@ -579,33 +630,59 @@ $('dest').addEventListener('input',()=>{
   const q=$('dest').value.trim(); if(q.length<3){ $('sugg').innerHTML=''; return; }
   sTimer=setTimeout(()=>searchPlace(q),700);
 });
-async function searchPlace(q){
+async function searchPlace(q, box, cb){
+  box=box||$('sugg'); cb=cb||pickDest;
   let u='https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=ma&accept-language='+lang+'&q='+encodeURIComponent(q);
   if(myPos && service!=='inter') u+='&viewbox='+(myPos.lng-0.5)+','+(myPos.lat+0.5)+','+(myPos.lng+0.5)+','+(myPos.lat-0.5);
-  try{ const a=await (await fetch(u)).json(); const box=$('sugg'); box.innerHTML='';
+  try{ const a=await (await fetch(u)).json(); box.innerHTML='';
     if(!a.length){ box.innerHTML='<div class="sug muted">'+t('noResult')+'</div>'; return; }
     a.forEach(x=>{ const d=document.createElement('div'); d.className='sug'; d.textContent='📍 '+x.display_name;
-      d.onclick=()=>pickDest(+x.lat,+x.lon,x.display_name); box.appendChild(d); });
+      d.onclick=()=>cb(+x.lat,+x.lon,x.display_name); box.appendChild(d); });
   }catch(e){}
 }
 function pickDest(lat,lng,label){
   destPos={lat,lng}; destLabel=label.split(',').slice(0,3).join(',').trim();
   $('dest').value=destLabel; $('sugg').innerHTML=''; $('dest').blur();
   if(destMarker) destMarker.setLatLng([lat,lng]); else destMarker=L.marker([lat,lng],{icon:svgIcon('dest',30,40,15,39)}).addTo(map);
-  $('orderBox').classList.remove('hide');
-  drawRoute(); fitRoute(); $('price').value=''; updatePrice(true);
+  drawRoute(); fitRoute(); $('price').value=''; updatePrice(true); refreshHome();
+}
+/* Départ (Ville à Ville) */
+let interFrom=null, myCity='';
+let sTimer2;
+$('fromIn').addEventListener('focus',()=>setMini(false));
+$('fromIn').addEventListener('input',()=>{ clearTimeout(sTimer2); interFrom=null;
+  const q=$('fromIn').value.trim(); if(q.length<3){ $('suggFrom').innerHTML=''; return; }
+  sTimer2=setTimeout(()=>searchPlace(q,$('suggFrom'),pickFrom),700); });
+function pickFrom(lat,lng,label){ interFrom={lat,lng,label:label.split(',').slice(0,2).join(',').trim()};
+  $('fromIn').value=interFrom.label; $('suggFrom').innerHTML=''; $('fromIn').blur(); drawRoute(); fitRoute(); updatePrice(true); refreshHome(); }
+function originPos(){ return (service==='inter' && interFrom) ? interFrom : myPos; }
+function originLabel(){ return (service==='inter' && interFrom) ? interFrom.label : fromLabel; }
+let interMode='find';
+function interTab(m){ interMode=m; $('tabFind').classList.toggle('active',m==='find'); $('tabOffer').classList.toggle('active',m==='offer'); refreshHome(); }
+function refreshHome(){
+  const inter=service==='inter';
+  $('interBox').classList.toggle('hide',!inter);
+  if(inter && !$('fromIn').value && myCity && !interFrom) $('fromIn').value=myCity;
+  const ready=!!destPos;
+  $('offerBox').classList.toggle('hide',!(inter && interMode==='offer' && ready));
+  $('tripResults').classList.toggle('hide',!(inter && interMode==='find' && ready));
+  $('orderBox').classList.toggle('hide',!ready || (inter && interMode==='offer'));
+  $('reqTitle').classList.toggle('hide',!inter);
+  if(inter && interMode==='find' && ready) searchTrips();
+  if(inter && interMode==='offer' && ready){ if(!$('offVeh').value && profile && profile.vehicle) $('offVeh').value=profile.vehicle; suggestSeatPrice(); }
 }
 
 /* ================= Services & prix ================= */
 let service='moto';
 function pickService(s){
   service=s; document.querySelectorAll('.svc').forEach(b=>b.classList.toggle('active',b.dataset.s===s));
-  $('interFields').classList.toggle('hide', s!=='inter'); $('price').value=''; updatePrice(true);
+  $('interFields').classList.toggle('hide', s!=='inter'); $('price').value=''; drawRoute(); updatePrice(true); refreshHome();
 }
 function updatePrice(fill){
   if(!$('suggest')) return;
-  if(!myPos || !destPos){ $('suggest').textContent=''; return; }
-  lastKm=Math.round(km(myPos,destPos)*1.3*10)/10;
+  const o=originPos();
+  if(!o || !destPos){ $('suggest').textContent=''; return; }
+  lastKm=Math.round(km(o,destPos)*1.3*10)/10;
   const r=RATES[service], p=Math.max(r.min, Math.round(lastKm*r.km/5)*5);
   $('suggest').innerHTML=lastKm+' km · '+t('suggested')+' : <b>'+p+' MAD</b>'+(service==='inter'?' / '+t('seats'):'');
   if(fill && !$('price').value) $('price').value=p;
@@ -616,7 +693,7 @@ function openDrawer(o){ $('drawer').classList.toggle('open',o); $('drawerBg').cl
 function openScreen(id){ openDrawer(false);
   if(id!=='sProfile' && id!=='sSecu' && id!=='sAide' && id!=='sParam' && !me){ id='sProfile'; }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show')); $(id).classList.add('show');
-  if(id==='sProfile') fillProfile(); if(id==='sHistory') loadHistory(); if(id==='sNotif') renderNotifs(); }
+  if(id==='sProfile') fillProfile(); if(id==='sHistory') loadHistory(); if(id==='sTrips') loadMyTrips(); if(id==='sNotif') renderNotifs(); }
 function closeScreens(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show')); }
 function goHome(s){ openDrawer(false); closeScreens(); if(driverMode) setDriverMode(false); pickService(s); }
 function panel(id){ ['pHome','pWait','pRide','pDriver','pDriverRide'].forEach(p=>$(p).classList.toggle('hide',p!==id)); }
@@ -629,7 +706,7 @@ auth.onAuthStateChanged(async u=>{
   if(u){
     try{ const d=await db.collection('users').doc(u.uid).get(); if(d.exists){ profile=d.data(); userCache[u.uid]=profile; } }catch(e){}
     try{ const c=await db.collection('users').doc(u.uid).collection('private').doc('contact').get(); if(c.exists) myPhone=c.data().phone||''; }catch(e){}
-    watchDrivers(); resumeRide();
+    watchDrivers(); resumeRide(); watchTrips();
   }
   refreshDrawer(); if($('sProfile').classList.contains('show')) fillProfile();
 });
@@ -693,10 +770,11 @@ let myRideId=null, rideUnsub=null, offersUnsub=null, myRide=null, chosenDriverPh
 async function requestRide(){
   if(!me){ toast(t('needLogin')); return openScreen('sProfile'); }
   if(!profile||!profile.photo||!myPhone){ toast(t('needProfile')); return openScreen('sProfile'); }
-  if(!myPos){ toast(t('needGeo')); return locate(true); }
+  const o=originPos();
+  if(!o){ if(service==='inter') return toast(t('needFrom')); toast(t('needGeo')); return locate(true); }
   if(!destPos) return toast(t('needDest'));
   const price=parseInt($('price').value,10); if(!(price>0)) return toast(t('needPrice'));
-  const ride={service, passengerId:me.uid, passengerName:profile.name, fromLat:myPos.lat, fromLng:myPos.lng, fromLabel,
+  const ride={service, passengerId:me.uid, passengerName:profile.name, fromLat:o.lat, fromLng:o.lng, fromLabel:originLabel(),
     dest:destLabel, destLat:destPos.lat, destLng:destPos.lng, km:lastKm, price, status:'pending', createdAt:TS(), createdMs:Date.now()};
   if(service==='inter'){ ride.when=$('when').value||''; ride.seats=parseInt($('seats').value,10)||1; }
   try{ const ref=await db.collection('courses').add(ride);
@@ -851,6 +929,120 @@ async function showDriverRide(){
 async function driverEnd(status){ if(!activeDriverRide) return;
   try{ await db.collection('courses').doc(activeDriverRide.id).update({status, endedAt:TS()});
     if(pickupMarker){ map.removeLayer(pickupMarker); pickupMarker=null; } }catch(e){ console.error(e); toast(t('error')); } }
+
+/* ================= Ville à Ville : trajets publiés (style BlaBlaCar) ================= */
+const fmtWhen=ms=>new Date(ms).toLocaleString(lang==='ar'?'ar-MA':'fr-FR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+function suggestSeatPrice(){ const o=originPos(); if(!o||!destPos){ $('offSuggest').textContent=''; return; }
+  const k=Math.round(km(o,destPos)*1.3), p=Math.max(30,Math.round(k*0.5/5)*5);
+  $('offSuggest').innerHTML=k+' km · '+t('suggested')+' : <b>'+p+' MAD</b> '+t('perSeat'); if(!$('offPrice').value) $('offPrice').value=p; }
+async function publishTrip(){
+  if(!me){ toast(t('needLogin')); return openScreen('sProfile'); }
+  if(!profile||!profile.photo||!myPhone){ toast(t('needProfile')); return openScreen('sProfile'); }
+  const o=originPos(); if(!o) return toast(t('needFrom')); if(!destPos) return toast(t('needDest'));
+  const whenMs=$('offWhen').value?new Date($('offWhen').value).getTime():0; if(!(whenMs>Date.now()-600000)) return toast(t('needWhen'));
+  const seats=parseInt($('offSeats').value,10)||1, price=parseInt($('offPrice').value,10); if(!(price>0)) return toast(t('needPrice'));
+  const vehicle=$('offVeh').value.trim(); if(!vehicle) return toast(t('needVeh'));
+  const trip={driverId:me.uid, driverName:profile.name, fromLabel:originLabel(), fromLat:o.lat, fromLng:o.lng, dest:destLabel, destLat:destPos.lat, destLng:destPos.lng,
+    km:Math.round(km(o,destPos)*1.3), whenMs, seats, seatsLeft:seats, pricePerSeat:price, vehicle, note:$('offNote').value.trim(), status:'open', createdAt:TS(), createdMs:Date.now()};
+  try{ const ref=await db.collection('voyages').add(trip); await ref.collection('contacts').doc(me.uid).set({phone:myPhone});
+    toast(t('published')); $('offNote').value=''; openScreen('sTrips'); watchTrips();
+  }catch(e){ console.error(e); toast(t('error')); }
+}
+let tripsCache=null, tripsCacheMs=0;
+async function searchTrips(){
+  const box=$('tripResults'); box.innerHTML='<div class="spinner"></div>';
+  try{ if(!tripsCache||Date.now()-tripsCacheMs>30000){ const s=await db.collection('voyages').where('status','==','open').limit(300).get(); tripsCache=s.docs.map(d=>({id:d.id,...d.data()})); tripsCacheMs=Date.now(); } }
+  catch(e){ console.warn(e); if(!me){ box.innerHTML='<p class="hint">'+t('needLogin')+'</p>'; return; } }
+  const o=originPos();
+  const list=(tripsCache||[]).filter(v=>v.whenMs>Date.now()-3600e3 && v.seatsLeft>0 && destPos && km(destPos,{lat:v.destLat,lng:v.destLng})<40 && (!o || km(o,{lat:v.fromLat,lng:v.fromLng})<60))
+    .sort((a,b)=>a.whenMs-b.whenMs).slice(0,20);
+  if(!list.length){ box.innerHTML='<p class="hint">'+t('noTrips')+'</p>'; return; }
+  const html=await Promise.all(list.map(async v=>{ const u=await getUser(v.driverId); const mine=me&&v.driverId===me.uid;
+    let opts=''; for(let i=1;i<=Math.min(v.seatsLeft,6);i++) opts+='<option value="'+i+'">'+i+' 👤</option>';
+    return '<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b><span class="small">'+ICON.car+esc(v.vehicle||'')+'</span></div><div class="price">'+v.pricePerSeat+' MAD<div class="small" style="text-align:end">'+t('perSeat')+'</div></div></div>'+
+      '<p class="route"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><br>📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p>'+
+      '<div class="meta"><span>💺 '+v.seatsLeft+' '+t('seatsLeft')+'</span><span>'+v.km+' km</span></div>'+(v.note?'<p class="small">📝 '+esc(v.note)+'</p>':'')+
+      (mine?'<span class="badge">'+t('yourTrip')+'</span>':'<div class="btns"><select id="bs_'+v.id+'" style="max-width:110px">'+opts+'</select><button class="cta" style="margin:0" onclick="bookTrip(\''+v.id+'\')">'+t('book')+'</button></div>')+'</div>'; }));
+  box.innerHTML='<p class="status ok">🟢 '+list.length+' '+t('tripsFound')+'</p>'+html.join('');
+}
+async function bookTrip(vid){
+  if(!me){ toast(t('needLogin')); return openScreen('sProfile'); }
+  if(!profile||!profile.photo||!myPhone){ toast(t('needProfile')); return openScreen('sProfile'); }
+  const seats=parseInt($('bs_'+vid).value,10)||1;
+  try{ const ref=db.collection('voyages').doc(vid);
+    await ref.collection('contacts').doc(me.uid).set({phone:myPhone});
+    await ref.collection('bookings').doc(me.uid).set({passengerId:me.uid, name:profile.name, seats, status:'pending', createdMs:Date.now()});
+    await db.collection('users').doc(me.uid).collection('private').doc('bk_'+vid).set({vid, seats, createdMs:Date.now()});
+    toast(t('booked')); openScreen('sTrips'); watchTrips();
+  }catch(e){ console.error(e); toast(t('error')); }
+}
+const stBadge=s=>'<span class="st '+s+'">'+t('st_'+s)+'</span>';
+async function getContact(vid,uid){ try{ const c=await db.collection('voyages').doc(vid).collection('contacts').doc(uid).get(); return c.exists?c.data().phone:''; }catch(e){ return ''; } }
+async function loadMyTrips(){
+  const box=$('tripsList'); box.innerHTML='<div class="spinner"></div>'; let html='';
+  // Je conduis
+  html+='<h3 class="sec">'+t('iDriveSec')+'</h3>';
+  try{ const s=await db.collection('voyages').where('driverId','==',me.uid).limit(30).get();
+    const vs=s.docs.map(d=>({id:d.id,...d.data()})).filter(v=>v.status!=='cancelled' && v.whenMs>Date.now()-2*24*3600e3).sort((a,b)=>a.whenMs-b.whenMs);
+    if(!vs.length) html+='<p class="hint">'+t('noMyTrips')+'</p>';
+    for(const v of vs){
+      const bs=(await db.collection('voyages').doc(v.id).collection('bookings').get()).docs.map(d=>d.data());
+      const used=bs.filter(b=>b.status==='accepted').reduce((n,b)=>n+(b.seats||1),0), left=Math.max(0,v.seats-used), st=left>0?'open':'full';
+      if(left!==v.seatsLeft||st!==v.status){ try{ await db.collection('voyages').doc(v.id).update({seatsLeft:left,status:st}); }catch(e){} v.seatsLeft=left; v.status=st; }
+      let bh='';
+      for(const b of bs.filter(b=>b.status!=='cancelled')){ const u=await getUser(b.passengerId); let act='';
+        if(b.status==='pending') act='<button class="cta" style="margin:0;padding:9px 12px;width:auto" onclick="answerBooking(\''+v.id+'\',\''+b.passengerId+'\',\'accepted\','+(b.seats||1)+')">'+t('acceptBk')+'</button><button class="ghost" style="margin:0;padding:9px 12px;width:auto" onclick="answerBooking(\''+v.id+'\',\''+b.passengerId+'\',\'refused\',0)">'+t('refuseBk')+'</button>';
+        if(b.status==='accepted'){ const ph=await getContact(v.id,b.passengerId); if(ph) act='<a class="cta wa" style="margin:0;padding:9px 12px;width:auto;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(b.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)))+'">'+t('waDriverShort')+'</a>'; }
+        bh+='<div class="bk"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||b.name)+'</b> · '+(b.seats||1)+' '+t('seatsWord')+'<br>'+stBadge(b.status)+'</div>'+act+'</div>'; }
+      html+='<div class="card trip"><div class="row"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span>'+stBadge(v.status)+'</div><p class="route">📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p><div class="meta"><span>💺 '+v.seatsLeft+'/'+v.seats+'</span><span>'+v.pricePerSeat+' MAD '+t('perSeat')+'</span></div>'+bh+
+        '<button class="ghost" style="color:var(--red)" onclick="cancelTrip(\''+v.id+'\')">'+t('cancelTrip')+'</button></div>';
+    }
+  }catch(e){ console.warn(e); }
+  // Mes réservations
+  html+='<h3 class="sec">'+t('iBookSec')+'</h3>';
+  try{ const p=await db.collection('users').doc(me.uid).collection('private').get();
+    const bks=p.docs.filter(d=>d.id.startsWith('bk_')).map(d=>d.data()).sort((a,b)=>b.createdMs-a.createdMs).slice(0,20); let n=0;
+    for(const k of bks){ let v, b;
+      try{ const vd=await db.collection('voyages').doc(k.vid).get(); if(!vd.exists) continue; v={id:vd.id,...vd.data()};
+        const bd=await db.collection('voyages').doc(k.vid).collection('bookings').doc(me.uid).get(); if(!bd.exists) continue; b=bd.data(); }catch(e){ continue; }
+      if(v.whenMs<Date.now()-2*24*3600e3) continue; n++;
+      const st=v.status==='cancelled'?'cancelled':b.status; const u=await getUser(v.driverId); let act='';
+      if(st==='accepted'){ const ph=await getContact(v.id,v.driverId); if(ph) act='<a class="cta wa" style="display:block;text-align:center;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(u.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)+' ('+(b.seats||1)+' '+t('seatsWord')+')'))+'">'+t('waDriver')+'</a>'; }
+      if(st==='pending'||st==='accepted') act+='<button class="ghost" onclick="cancelBooking(\''+v.id+'\')">'+t('cancelBk')+'</button>';
+      html+='<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b><span class="small">'+esc(v.vehicle||'')+'</span></div>'+stBadge(st)+'</div><p class="route"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><br>📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p><div class="meta"><span>💺 '+(b.seats||1)+' '+t('seatsWord')+'</span><span>'+(v.pricePerSeat*(b.seats||1))+' MAD</span></div>'+act+'</div>';
+    }
+    if(!n) html+='<p class="hint">'+t('noMyBookings')+'</p>';
+  }catch(e){ console.warn(e); }
+  box.innerHTML=html;
+}
+async function answerBooking(vid,pid,status,seats){
+  try{ const ref=db.collection('voyages').doc(vid);
+    if(status==='accepted'){ const v=(await ref.get()).data(); if((v.seatsLeft||0)<seats){ toast(t('notEnoughSeats')); return; }
+      await ref.collection('bookings').doc(pid).update({status, updatedMs:Date.now()});
+      const left=v.seatsLeft-seats; await ref.update({seatsLeft:left, status:left>0?'open':'full'});
+    } else await ref.collection('bookings').doc(pid).update({status, updatedMs:Date.now()});
+    tripsCache=null; loadMyTrips();
+  }catch(e){ console.error(e); toast(t('error')); }
+}
+async function cancelTrip(vid){ if(!confirm(t('cancelTrip')+' ?')) return;
+  try{ await db.collection('voyages').doc(vid).update({status:'cancelled'}); tripsCache=null; loadMyTrips(); }catch(e){ toast(t('error')); } }
+async function cancelBooking(vid){
+  try{ await db.collection('voyages').doc(vid).collection('bookings').doc(me.uid).update({status:'cancelled', updatedMs:Date.now()}); loadMyTrips(); }catch(e){ toast(t('error')); } }
+/* Alertes en direct : nouvelle réservation (conducteur) / réservation acceptée (passager) */
+let tripUnsubs=[]; const bkSeen={};
+async function watchTrips(){
+  tripUnsubs.forEach(u=>u()); tripUnsubs=[]; if(!me) return;
+  try{ const s=await db.collection('voyages').where('driverId','==',me.uid).limit(20).get();
+    s.docs.filter(d=>d.data().whenMs>Date.now()-3600e3 && d.data().status!=='cancelled').slice(0,8).forEach(d=>{
+      tripUnsubs.push(d.ref.collection('bookings').onSnapshot(q=>{ q.docChanges().forEach(c=>{ const b=c.doc.data(), key=d.id+c.doc.id+b.status;
+        if(bkSeen[key]) return; bkSeen[key]=1; if(c.type==='added' && tripUnsubs.ready && b.status==='pending'){ notify(t('newBooking')+' : '+(b.name||'')); toast('🔔 '+t('newBooking')+' : '+(b.name||'')); } }); }, e=>{})); });
+    const p=await db.collection('users').doc(me.uid).collection('private').get();
+    p.docs.filter(d=>d.id.startsWith('bk_')).map(d=>d.data()).sort((a,b)=>b.createdMs-a.createdMs).slice(0,8).forEach(k=>{
+      tripUnsubs.push(db.collection('voyages').doc(k.vid).collection('bookings').doc(me.uid).onSnapshot(bd=>{ if(!bd.exists) return; const b=bd.data(), key=k.vid+'me'+b.status;
+        if(bkSeen[key]) return; bkSeen[key]=1; if(tripUnsubs.ready && b.status==='accepted'){ notify(t('bookingAccepted')); toast('🎉 '+t('bookingAccepted')); } }, e=>{})); });
+  }catch(e){ console.warn(e); }
+  setTimeout(()=>{ tripUnsubs.ready=true; },3000);
+}
 
 /* ================= Historique & notifications ================= */
 let histAll=[], histFilter='all';
