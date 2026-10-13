@@ -32,7 +32,11 @@ button{font:inherit;cursor:pointer}
 .logo{font-weight:800;font-size:20px;letter-spacing:.2px}.logo .r{color:var(--red)}.logo .a{color:var(--green)}
 .services{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none}
 .svc{min-width:92px;border:2px solid transparent;border-radius:14px;padding:8px 6px;text-align:center;font-size:12.5px;background:var(--card);color:var(--fg);flex-shrink:0;font-weight:600}
-.svc .i{font-size:26px;line-height:1.2}
+.svc .i{height:42px;display:flex;align-items:center;justify-content:center}
+.svc .i svg{width:84px;height:42px}
+.vi{display:inline-block;vertical-align:middle;width:34px;height:17px;margin-inline-end:4px}
+.vi svg{width:34px;height:17px;display:block}
+.svc{min-width:104px}
 .svc.active{border-color:var(--green);background:var(--green2)}
 .field{position:relative;margin-top:8px}
 input,select,textarea{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--line);font-size:16px;background:var(--card);color:var(--fg);outline:none}
@@ -123,9 +127,9 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
   <div id="pHome">
     <div class="logo"><span class="r">Rakbin</span> · <span class="a">راكبين</span></div>
     <div class="services">
-      <button class="svc" data-s="car" onclick="pickService('car')"><div class="i">🚗</div><span data-i18n="svcCar">Voiture</span></button>
-      <button class="svc active" data-s="moto" onclick="pickService('moto')"><div class="i">🏍️</div><span data-i18n="svcMoto">Moto</span></button>
-      <button class="svc" data-s="inter" onclick="pickService('inter')"><div class="i">🛣️</div><span data-i18n="svcInter">Ville à Ville</span></button>
+      <button class="svc" data-s="car" onclick="pickService('car')"><div class="i" data-art="car"></div><span data-i18n="svcCar">Voiture</span></button>
+      <button class="svc active" data-s="moto" onclick="pickService('moto')"><div class="i" data-art="moto"></div><span data-i18n="svcMoto">Moto</span></button>
+      <button class="svc" data-s="inter" onclick="pickService('inter')"><div class="i" data-art="inter"></div><span data-i18n="svcInter">Ville à Ville</span></button>
     </div>
     <p class="status" id="nearCount"></p>
     <div class="field">
@@ -399,7 +403,90 @@ let toastTimer;
 function toast(m){ const e=$('toast'); e.textContent=m; e.style.display='block'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>e.style.display='none',3200); }
 function km(a,b){ const R=6371,r=x=>x*Math.PI/180; const dLa=r(b.lat-a.lat), dLo=r(b.lng-a.lng);
   const h=Math.sin(dLa/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
-const ICON = {car:'🚗', moto:'🏍️', inter:'🛣️'};
+/* Illustrations Rakbin (SVG originales) */
+const ART = {
+car: `<svg viewBox="0 0 140 70" xmlns="http://www.w3.org/2000/svg">
+<defs>
+ <linearGradient id="cb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e9ecf0"/><stop offset="1" stop-color="#b9c0c9"/></linearGradient>
+ <linearGradient id="cw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b6b7d"/><stop offset=".5" stop-color="#1f2a36"/><stop offset="1" stop-color="#0f161e"/></linearGradient>
+ <radialGradient id="cr" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#f4f6f8"/><stop offset=".6" stop-color="#a7b0ba"/><stop offset="1" stop-color="#5d6772"/></radialGradient>
+</defs>
+<ellipse cx="70" cy="58" rx="60" ry="5" fill="#000" opacity=".18"/>
+<path d="M9 46 Q8 37 17 35 L38 31 Q50 18 67 17 L88 17 Q101 18 112 30 L124 33 Q131 35 131 42 L131 47 Q131 51 126 51 L13 51 Q9 51 9 46Z" fill="url(#cb)" stroke="#9aa3ad" stroke-width=".8"/>
+<path d="M43 31 Q52 21 66 20.5 L68 31Z" fill="url(#cw)"/>
+<path d="M72 20.5 L87 20.5 Q99 21.5 107 31 L72 31Z" fill="url(#cw)"/>
+<path d="M46 29 Q53 23 62 22" stroke="#fff" stroke-opacity=".45" stroke-width="1.5" fill="none"/>
+<path d="M70 31 L70 49 M17 39 L128 39" stroke="#a8b0b9" stroke-width=".8" fill="none"/>
+<rect x="78" y="34" width="7" height="1.6" rx=".8" fill="#8a939d"/><rect x="56" y="34" width="7" height="1.6" rx=".8" fill="#8a939d"/>
+<path d="M122 36 L130 37.5 L130 41 L123 40Z" fill="#fff6c9" stroke="#c9b25a" stroke-width=".6"/>
+<path d="M10 38 L15 37 L15 42 L10 42Z" fill="#C1272D"/>
+<path d="M13 47 L128 47" stroke="#006233" stroke-width="2.2"/>
+<g><circle cx="35" cy="51" r="10.5" fill="#1b1f24"/><circle cx="35" cy="51" r="6.5" fill="url(#cr)"/><circle cx="35" cy="51" r="1.8" fill="#4b545e"/>
+<path d="M35 45 L35 57 M29 51 L41 51 M30.8 46.8 L39.2 55.2 M39.2 46.8 L30.8 55.2" stroke="#7d8792" stroke-width=".9"/></g>
+<g><circle cx="105" cy="51" r="10.5" fill="#1b1f24"/><circle cx="105" cy="51" r="6.5" fill="url(#cr)"/><circle cx="105" cy="51" r="1.8" fill="#4b545e"/>
+<path d="M105 45 L105 57 M99 51 L111 51 M100.8 46.8 L109.2 55.2 M109.2 46.8 L100.8 55.2" stroke="#7d8792" stroke-width=".9"/></g>
+</svg>`,
+moto: `<svg viewBox="0 0 140 70" xmlns="http://www.w3.org/2000/svg">
+<defs>
+ <linearGradient id="mb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2434a"/><stop offset=".6" stop-color="#C1272D"/><stop offset="1" stop-color="#7d1418"/></linearGradient>
+ <linearGradient id="mx" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f4f6"/><stop offset="1" stop-color="#8b949e"/></linearGradient>
+ <radialGradient id="md" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#e8ebee"/><stop offset="1" stop-color="#6f7882"/></radialGradient>
+</defs>
+<ellipse cx="70" cy="62" rx="58" ry="4.5" fill="#000" opacity=".18"/>
+<g><circle cx="30" cy="48" r="15" fill="#1b1f24"/><circle cx="30" cy="48" r="10" fill="#2c3238"/><circle cx="30" cy="48" r="7" fill="url(#md)"/><circle cx="30" cy="48" r="2.2" fill="#3b434b"/></g>
+<g><circle cx="110" cy="48" r="15" fill="#1b1f24"/><circle cx="110" cy="48" r="10" fill="#2c3238"/><circle cx="110" cy="48" r="7" fill="url(#md)"/><circle cx="110" cy="48" r="2.2" fill="#3b434b"/></g>
+<path d="M30 48 L55 40 L70 46 L60 50Z" fill="#30363d"/>
+<path d="M110 48 L98 22" stroke="#9aa3ad" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M44 44 Q38 41 34 42 L46 50 L66 50 Q60 44 44 44Z" fill="url(#mx)"/>
+<rect x="56" y="36" width="20" height="12" rx="3" fill="#3a4148"/>
+<path d="M36 33 L60 30 L64 36 L40 38Z" fill="#1d2228"/>
+<path d="M58 30 Q66 20 82 21 L96 24 L104 32 Q106 40 98 44 L78 46 Q70 38 58 36Z" fill="url(#mb)"/>
+<path d="M62 30 Q70 23 82 24" stroke="#fff" stroke-opacity=".5" stroke-width="1.6" fill="none"/>
+<path d="M96 24 L104 18 L108 20 L104 32Z" fill="#26313b"/>
+<path d="M100 31 L106 30 L106 34 L101 34Z" fill="#fff6c9"/>
+<path d="M93 20 L99 17" stroke="#1d2228" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M78 46 L98 44" stroke="#006233" stroke-width="2"/>
+<path d="M36 37 L22 34" stroke="#C1272D" stroke-width="2.4" stroke-linecap="round"/>
+</svg>`,
+inter: `<svg viewBox="0 0 140 70" xmlns="http://www.w3.org/2000/svg">
+<defs>
+ <linearGradient id="isk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe0f7"/><stop offset="1" stop-color="#eef7fd"/></linearGradient>
+ <linearGradient id="ird" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b7480"/><stop offset="1" stop-color="#3a4048"/></linearGradient>
+ <linearGradient id="icb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#b9c0c9"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="140" height="70" rx="10" fill="url(#isk)"/>
+<path d="M0 40 Q30 30 60 36 Q95 28 140 36 L140 70 L0 70Z" fill="#cfe3b8"/>
+<path d="M0 46 Q40 38 75 44 Q110 38 140 44 L140 70 L0 70Z" fill="#a9cf8a"/>
+<path d="M58 70 L76 38 L82 38 L118 70Z" fill="url(#ird)"/>
+<path d="M79 41 L80 45 M81 49 L83 55 M85 60 L88 68" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+<rect x="18" y="14" width="40" height="20" rx="2.5" fill="#006233" stroke="#fff" stroke-width="1.3"/>
+<path d="M22 24 L32 24 M28 20 L32 24 L28 28" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="36" y="20" width="18" height="2" rx="1" fill="#fff"/><rect x="36" y="25" width="13" height="2" rx="1" fill="#fff"/>
+<path d="M30 34 L30 52 M46 34 L46 52" stroke="#8b949e" stroke-width="1.6"/>
+<g transform="translate(84 40) scale(.42)">
+<path d="M9 46 Q8 37 17 35 L38 31 Q50 18 67 17 L88 17 Q101 18 112 30 L124 33 Q131 35 131 42 L131 47 Q131 51 126 51 L13 51 Q9 51 9 46Z" fill="url(#icb)" stroke="#9aa3ad"/>
+<path d="M43 31 Q52 21 66 20.5 L68 31Z M72 20.5 L87 20.5 Q99 21.5 107 31 L72 31Z" fill="#1f2a36"/>
+<path d="M13 47 L128 47" stroke="#006233" stroke-width="3"/>
+<circle cx="35" cy="51" r="10.5" fill="#1b1f24"/><circle cx="35" cy="51" r="5.5" fill="#b8c0c8"/>
+<circle cx="105" cy="51" r="10.5" fill="#1b1f24"/><circle cx="105" cy="51" r="5.5" fill="#b8c0c8"/>
+</g>
+</svg>`
+};
+/* Marqueurs carte (vue de dessus) */
+const MARK = {
+car: `<svg viewBox="0 0 40 40" width="38" height="38" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="18" fill="#fff" stroke="#006233" stroke-width="2.5"/>
+<rect x="13" y="7" width="14" height="26" rx="5" fill="#f3f5f7" stroke="#59636e" stroke-width="1.2"/><path d="M14.5 13 Q20 10 25.5 13 L24.5 17 L15.5 17Z" fill="#1f2a36"/><path d="M15.5 27 L24.5 27 L25 30 Q20 31.5 15 30Z" fill="#1f2a36"/><rect x="15" y="18.5" width="10" height="7" rx="1.5" fill="#dfe3e8"/></svg>`,
+moto: `<svg viewBox="0 0 40 40" width="38" height="38" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="18" fill="#fff" stroke="#C1272D" stroke-width="2.5"/>
+<rect x="17.5" y="6" width="5" height="7" rx="2" fill="#1b1f24"/><rect x="17.5" y="27" width="5" height="7" rx="2" fill="#1b1f24"/><path d="M12 12.5 L28 12.5" stroke="#1d2228" stroke-width="2" stroke-linecap="round"/><path d="M16 13 Q20 11 24 13 L23 27 L17 27Z" fill="#C1272D"/><rect x="17.5" y="19" width="5" height="7" rx="2" fill="#2a2f35"/></svg>`,
+dest: `<svg viewBox="0 0 30 40" width="30" height="40" xmlns="http://www.w3.org/2000/svg"><path d="M15 39 C15 39 2 23 2 14 A13 13 0 0 1 28 14 C28 23 15 39 15 39Z" fill="#C1272D" stroke="#fff" stroke-width="2"/><circle cx="15" cy="14" r="5" fill="#fff"/></svg>`,
+pickup: `<svg viewBox="0 0 30 40" width="30" height="40" xmlns="http://www.w3.org/2000/svg"><path d="M15 39 C15 39 2 23 2 14 A13 13 0 0 1 28 14 C28 23 15 39 15 39Z" fill="#006233" stroke="#fff" stroke-width="2"/><circle cx="15" cy="11" r="3.6" fill="#fff"/><path d="M8.5 21 Q15 13 21.5 21Z" fill="#fff"/></svg>`
+};
+
+let artN=0;
+function artSvg(k){ const n=++artN; return (ART[k]||ART.car).replace(/id="(\w+)"/g,'id="$1_'+n+'"').replace(/url\(#(\w+)\)/g,'url(#$1_'+n+')'); }
+const ICON = new Proxy({}, {get:(_,k)=>'<span class="vi">'+artSvg(k)+'</span>'});
+document.querySelectorAll('[data-art]').forEach(e=>e.innerHTML=artSvg(e.dataset.art));
+const svgIcon=(k,w,h,ax,ay)=>L.divIcon({html:MARK[k],className:'',iconSize:[w,h],iconAnchor:[ax,ay]});
 const RATES = {moto:{km:2,min:10}, car:{km:3.5,min:15}, inter:{km:0.5,min:30}};
 const DEFAULT_AV = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23d1d5db'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%239ca3af'/%3E%3Cpath d='M10 60c3-14 13-20 22-20s19 6 22 20z' fill='%239ca3af'/%3E%3C/svg%3E";
 function normPhone(p){ p=String(p||'').replace(/[\s\-().]/g,''); if(p.startsWith('00')) p='+'+p.slice(2);
@@ -483,7 +570,7 @@ async function searchPlace(q){
 function pickDest(lat,lng,label){
   destPos={lat,lng}; destLabel=label.split(',').slice(0,3).join(',').trim();
   $('dest').value=destLabel; $('sugg').innerHTML=''; $('dest').blur();
-  if(destMarker) destMarker.setLatLng([lat,lng]); else destMarker=L.marker([lat,lng],{icon:pinIcon('🏁')}).addTo(map);
+  if(destMarker) destMarker.setLatLng([lat,lng]); else destMarker=L.marker([lat,lng],{icon:svgIcon('dest',30,40,15,39)}).addTo(map);
   $('orderBox').classList.remove('hide');
   drawRoute(); fitRoute(); $('price').value=''; updatePrice(true);
 }
@@ -610,7 +697,7 @@ function watchMyRide(id){
     if(!snap.exists){ stopMyRide(); return; }
     myRide={id,...snap.data()};
     if(myRide.status==='pending'){
-      panel('pWait'); $('waitInfo').textContent=ICON[myRide.service]+' '+myRide.dest+' · '+myRide.price+' MAD';
+      panel('pWait'); $('waitInfo').innerHTML=ICON[myRide.service]+' '+esc(myRide.dest)+' · '+myRide.price+' MAD';
       if(!offersUnsub) offersUnsub=db.collection('courses').doc(id).collection('offers').onSnapshot(renderOffers, e=>console.warn(e));
     } else if(myRide.status==='accepted'){
       if(offersUnsub){ offersUnsub(); offersUnsub=null; }
@@ -662,7 +749,7 @@ function watchDrivers(){
       const fresh=Date.now()-(p.updatedMs||0)<3*60e3;
       const show=chosenDriverId ? d.id===chosenDriverId : (fresh && (!myPos || km(myPos,p)<30));
       if(!show) return; keep[d.id]=1;
-      if(!driverMarkers[d.id]) driverMarkers[d.id]=L.marker([p.lat,p.lng],{icon:pinIcon(ICON[p.vehicleType]||'🚗')}).addTo(map);
+      if(!driverMarkers[d.id]) driverMarkers[d.id]=L.marker([p.lat,p.lng],{icon:svgIcon(p.vehicleType==='moto'?'moto':'car',38,38,19,19)}).addTo(map);
       else driverMarkers[d.id].setLatLng([p.lat,p.lng]); });
     Object.keys(driverMarkers).forEach(id=>{ if(!keep[id]){ map.removeLayer(driverMarkers[id]); delete driverMarkers[id]; } });
     const n=Object.keys(keep).length; const nc=$('nearCount');
@@ -735,7 +822,7 @@ let pickupMarker=null;
 async function showDriverRide(){
   const r=activeDriverRide; panel('pDriverRide'); const u=await getUser(r.passengerId);
   $('driverRideCard').innerHTML='<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b><span class="small">'+ICON[r.service]+' '+r.km+' km</span></div><div class="price">'+(r.finalPrice||r.price)+' MAD</div></div><p class="route">📍 '+esc(r.fromLabel)+'<br>🏁 '+esc(r.dest)+'</p></div>';
-  if(pickupMarker) map.removeLayer(pickupMarker); pickupMarker=L.marker([r.fromLat,r.fromLng],{icon:pinIcon('🙋')}).addTo(map);
+  if(pickupMarker) map.removeLayer(pickupMarker); pickupMarker=L.marker([r.fromLat,r.fromLng],{icon:svgIcon('pickup',30,40,15,39)}).addTo(map);
   let phone=''; try{ const c=await db.collection('courses').doc(r.id).collection('contacts').doc(r.passengerId).get(); if(c.exists) phone=c.data().phone; }catch(e){ console.warn(e); }
   $('waPassenger').onclick=()=>{ if(phone) window.open(waLink(phone,'Salam, Rakbin : '+t('driver')+' '+profile.name+' ('+(profile.vehicle||'')+')'),'_blank'); else toast(t('error')); };
   $('navBtn').onclick=()=>window.open('https://www.google.com/maps/dir/?api=1&destination='+r.fromLat+','+r.fromLng,'_blank');
