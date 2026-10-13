@@ -233,7 +233,7 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
       <label class="lbl" data-i18n="phone">Numéro WhatsApp (avec indicatif)</label>
       <input id="phoneIn" type="tel" placeholder="+212 6 12 34 56 78">
       <p class="small" data-i18n="phoneHint">Tous les pays acceptés (+212, +33, +34…). Visible seulement après acceptation d'une course.</p>
-      <label class="check"><input type="checkbox" id="isDriverIn" onchange="$('vehBox').classList.toggle('hide',!this.checked)"> <span data-i18n="iDrive">Je suis aussi conducteur</span></label>
+      <label class="check"><input type="checkbox" id="isDriverIn" onchange="$('vehBox').classList.toggle('hide',!this.checked)"> <span data-i18n="iDrive">🚗🏍️ Je veux aussi être conducteur</span></label>
       <div id="vehBox" class="hide">
         <label class="lbl" data-i18n="vehType">Type de véhicule</label>
         <select id="vehTypeIn"><option value="car" data-i18n="optCar">🚗 Voiture (ville + ville à ville)</option><option value="moto" data-i18n="optMoto">🏍️ Moto (en ville)</option></select>
@@ -334,7 +334,7 @@ const T = {
   safety:"Sécurité",settings:"Paramètres",help:"Aide",driverMode:"Mode conducteur",passengerMode:"Mode passager",profile:"Mon profil",
   loginWhy:"Pour éviter les arnaques, chaque passager et conducteur doit avoir un compte avec selfie.",google:"Continuer avec Google",selfie:"Selfie (obligatoire)",
   name:"Prénom",phone:"Numéro WhatsApp (avec indicatif)",phoneHint:"Tous les pays acceptés (+212, +33, +34…). Visible seulement après acceptation d'une course.",
-  iDrive:"Je suis aussi conducteur",vehType:"Type de véhicule",optCar:"🚗 Voiture (ville + ville à ville)",optMoto:"🏍️ Moto (en ville)",vehDesc:"Véhicule (marque, couleur)",
+  iDrive:"🚗🏍️ Je veux aussi être conducteur",vehType:"Type de véhicule",optCar:"🚗 Voiture (ville + ville à ville)",optMoto:"🏍️ Moto (en ville)",vehDesc:"Véhicule (marque, couleur)",
   save:"Enregistrer",logout:"Se déconnecter",all:"Tout",police:"Police",gendarmerie:"Gendarmerie",ambulance:"Ambulance / Pompiers",howProtect:"Comment Rakbin vous protège",
   t1:"Selfie obligatoire pour tous",t2:"Numéro visible seulement après acceptation",t3:"Partagez votre trajet avec un proche",t4:"Vérifiez la photo et le véhicule avant de monter",
   appearance:"Apparence",light:"Clair",dark:"Sombre",language:"Langue",units:"Unités de distance",legal:"Documents juridiques",
@@ -347,7 +347,7 @@ const T = {
   locating:"Localisation…",geoOff:"Activez la localisation",guest:"Invité",tapLogin:"Touchez pour vous connecter",noResult:"Aucun résultat",
   suggested:"Prix conseillé",needLogin:"Connectez-vous d'abord",needProfile:"Complétez votre profil avec selfie",needGeo:"Activez la localisation",needDest:"Choisissez une destination dans la liste",
   needPrice:"Indiquez votre prix",sent:"Demande envoyée aux conducteurs proches ✓",noOffers:"Aucune offre pour l'instant…",choose:"Choisir",accept:"Accepter",counter:"Proposer",
-  offerSent:"Offre envoyée ✓",noRequests:"Aucune demande pour l'instant. Restez en ligne…",needDriver:"Cochez « Je suis aussi conducteur » dans votre profil",
+  offerSent:"Offre envoyée ✓",noRequests:"Aucune demande pour l'instant. Restez en ligne…",needDriver:"Choisissez votre véhicule puis touchez Enregistrer",
   saved:"Profil enregistré ✓",badPhone:"Numéro invalide. Exemple : +212612345678",needSelfie:"Le selfie est obligatoire",needName:"Indiquez votre prénom",
   minAgo:"min",away:"de vous",seats:"place(s)",noHistory:"Vos courses apparaîtront ici",start:"Commencer",upToDate:"Vous êtes à jour",upToDate2:"Aucune nouvelle notification",
   newOffer:"Nouvelle offre",accepted:"Course acceptée",cancelled:"Course annulée",done:"Terminée",pending:"En attente",confirmDel:"Supprimer définitivement votre compte ?",
@@ -373,7 +373,7 @@ const T = {
   locating:"تحديد الموقع…",geoOff:"فعّل تحديد الموقع",guest:"زائر",tapLogin:"اضغط لتسجيل الدخول",noResult:"لا توجد نتائج",
   suggested:"الثمن المقترح",needLogin:"سجّل الدخول أولاً",needProfile:"أكمل حسابك مع السيلفي",needGeo:"فعّل تحديد الموقع",needDest:"اختر وجهة من القائمة",
   needPrice:"أدخل ثمنك",sent:"تم إرسال الطلب للسائقين القريبين ✓",noOffers:"لا توجد عروض حالياً…",choose:"اختيار",accept:"قبول",counter:"اقتراح",
-  offerSent:"تم إرسال العرض ✓",noRequests:"لا توجد طلبات حالياً. ابقَ متصلاً…",needDriver:"اختر «أنا أيضاً سائق» في حسابك",
+  offerSent:"تم إرسال العرض ✓",noRequests:"لا توجد طلبات حالياً. ابقَ متصلاً…",needDriver:"اختر مركبتك ثم اضغط حفظ",
   saved:"تم حفظ الحساب ✓",badPhone:"رقم غير صحيح. مثال: ‎+212612345678",needSelfie:"السيلفي إجباري",needName:"أدخل اسمك",
   minAgo:"د",away:"منك",seats:"مقعد",noHistory:"ستظهر رحلاتك هنا",start:"ابدأ",upToDate:"لا جديد",upToDate2:"لا توجد إشعارات جديدة",
   newOffer:"عرض جديد",accepted:"تم قبول الرحلة",cancelled:"ملغاة",done:"منتهية",pending:"في الانتظار",confirmDel:"حذف حسابك نهائياً؟",
@@ -567,6 +567,7 @@ async function saveProfile(){
   try{ await db.collection('users').doc(me.uid).set(data,{merge:true});
     await db.collection('users').doc(me.uid).collection('private').doc('contact').set({phone});
     profile=Object.assign({},profile,data); userCache[me.uid]=profile; myPhone=phone; refreshDrawer(); toast(t('saved')); closeScreens();
+    if(wantDriver && isDriver){ wantDriver=false; setDriverMode(true); }
   }catch(e){ console.error(e); toast(t('error')); }
   $('saveBtn').disabled=false;
 }
@@ -671,13 +672,14 @@ function watchDrivers(){
 function watchChosenDriver(id){ chosenDriverId=id; if(me) watchDrivers(); }
 
 /* ================= Mode conducteur ================= */
-let driverMode=false, watchId=null, lastPush=0, reqUnsub=null, myDrRideUnsub=null, pendingRides=[], myOffers={}, activeDriverRide=null;
+let wantDriver=false, driverMode=false, watchId=null, lastPush=0, reqUnsub=null, myDrRideUnsub=null, pendingRides=[], myOffers={}, activeDriverRide=null;
 async function setDriverMode(on){
   openDrawer(false);
   if(on){
     if(!me){ toast(t('needLogin')); return openScreen('sProfile'); }
     if(!profile||!profile.photo||!myPhone){ toast(t('needProfile')); return openScreen('sProfile'); }
-    if(!profile.isDriver){ toast(t('needDriver')); return openScreen('sProfile'); }
+    if(!profile.isDriver){ wantDriver=true; openScreen('sProfile'); $('isDriverIn').checked=true; $('vehBox').classList.remove('hide');
+      $('vehBox').scrollIntoView({behavior:'smooth',block:'center'}); toast(t('needDriver')); return; }
     if(myRideId){ toast(t('cancel')); return; }
     driverMode=true; panel('pDriver'); closeScreens();
     $('gpsStatus').textContent='⏳ GPS…'; $('gpsStatus').className='status';
