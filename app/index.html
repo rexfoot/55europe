@@ -31,6 +31,7 @@ button{font:inherit;cursor:pointer}
 .from b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #locBtn{position:fixed;right:12px;z-index:10;bottom:calc(var(--sheetH,300px) + 12px)}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bg);border-radius:22px 22px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.22);padding:6px 16px calc(16px + env(safe-area-inset-bottom));max-height:62vh;overflow:auto;max-width:640px;margin:0 auto;transition:transform .25s ease}
+.sheet.full{max-height:calc(100vh - 74px - env(safe-area-inset-top))}
 .sheet.mini{transform:translateY(calc(100% - 92px));overflow:hidden}
 .gripzone{padding:6px 0 10px;margin:-6px -16px 0;cursor:pointer;touch-action:none}
 .grip{width:52px;height:6px;border-radius:99px;background:#c4c8cf;margin:2px auto 0}
@@ -84,7 +85,9 @@ input:focus,select:focus{border-color:var(--green)}
 .drawer .head{display:flex;gap:12px;align-items:center;padding:8px 0 14px;border-bottom:1px solid var(--line)}
 .drawer .head .av{width:58px;height:58px}
 .stars{color:#f5b301}
-.drawer a{display:flex;gap:14px;align-items:center;padding:13px 4px;text-decoration:none;color:var(--fg);font-size:16px}
+.mi{width:34px;height:34px;border-radius:9px;object-fit:cover;flex-shrink:0}
+.mv{width:46px;height:30px;border-radius:7px;object-fit:cover;flex-shrink:0}
+.drawer a{display:flex;gap:14px;align-items:center;padding:9px 4px;text-decoration:none;color:var(--fg);font-size:16px}
 .drawer .grow{flex:1}
 .screen{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;display:none;padding:0 0 40px}
 .screen.show{display:block}
@@ -161,9 +164,9 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
   <div id="pHome">
     <div class="logo"><span class="r">Rakbin</span> · <span class="a">راكبين</span></div>
     <div class="services">
-      <button class="svc" data-s="car" onclick="pickService('car')"><div class="i"><img src="tile-car.webp" alt=""></div><span data-i18n="svcCar">Voiture</span></button>
-      <button class="svc active" data-s="moto" onclick="pickService('moto')"><div class="i"><img src="tile-moto.webp" alt=""></div><span data-i18n="svcMoto">Moto</span></button>
-      <button class="svc" data-s="inter" onclick="pickService('inter')"><div class="i"><img src="tile-inter.webp" alt=""></div><span data-i18n="svcInter">Ville à Ville</span></button>
+      <button class="svc" data-s="car" onclick="pickService('car');openFull()"><div class="i"><img src="tile-car.webp" alt=""></div><span data-i18n="svcCar">Voiture</span></button>
+      <button class="svc active" data-s="moto" onclick="pickService('moto');openFull()"><div class="i"><img src="tile-moto.webp" alt=""></div><span data-i18n="svcMoto">Moto</span></button>
+      <button class="svc" data-s="inter" onclick="pickService('inter');openFull()"><div class="i"><img src="tile-inter.webp" alt=""></div><span data-i18n="svcInter">Ville à Ville</span></button>
     </div>
     <p class="status" id="nearCount"></p>
     <div id="interBox" class="hide">
@@ -269,16 +272,17 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
     </div>
     <span>›</span>
   </div>
-  <a href="#" onclick="goHome('car');return false">🚗 <span data-i18n="svcCar">Voiture</span></a>
-  <a href="#" onclick="goHome('moto');return false">🏍️ <span data-i18n="svcMoto">Moto</span></a>
-  <a href="#" onclick="goHome('inter');return false">🛣️ <span data-i18n="svcInter">Ville à Ville</span></a>
-  <a href="#" onclick="openScreen('sTrips');return false">🛣️ <span data-i18n="myTrips">Mes trajets Ville à Ville</span></a>
-  <a href="#" onclick="openScreen('sHistory');return false">🕘 <span data-i18n="history">Historique des courses</span></a>
-  <a href="#" onclick="openScreen('sNotif');return false">🔔 <span data-i18n="notifs">Notifications</span></a>
-  <a href="#" onclick="openScreen('sSecu');return false">🛡️ <span data-i18n="safety">Sécurité</span></a>
-  <a href="#" onclick="openScreen('sParam');return false">⚙️ <span data-i18n="settings">Paramètres</span></a>
-  <a href="#" onclick="openScreen('sAide');return false">❓ <span data-i18n="help">Aide</span></a>
-  <a href="#" id="installLink" class="hide" onclick="openDrawer(false);showInstall(true);return false">📲 <span data-i18n="installApp">Installer l'application</span></a>
+  <a href="#" onclick="goHome('car');return false"><img class="mv" src="tile-car.webp" alt=""> <span data-i18n="svcCar">Voiture</span></a>
+  <a href="#" onclick="goHome('moto');return false"><img class="mv" src="tile-moto.webp" alt=""> <span data-i18n="svcMoto">Moto</span></a>
+  <a href="#" onclick="goHome('inter');return false"><img class="mv" src="tile-inter.webp" alt=""> <span data-i18n="svcInter">Ville à Ville</span></a>
+  <a href="#" onclick="openScreen('sTrips');return false"><img class="mv" src="tile-inter.webp" alt=""> <span data-i18n="myTrips">Mes trajets Ville à Ville</span></a>
+  <a href="#" onclick="openScreen('sHistory');return false"><img class="mi" src="ic-history.webp" alt=""> <span data-i18n="history">Historique des courses</span></a>
+  <a href="#" onclick="openScreen('sNotif');return false"><img class="mi" src="ic-notif.webp" alt=""> <span data-i18n="notifs">Notifications</span></a>
+  <a href="#" onclick="openScreen('sSecu');return false"><img class="mi" src="ic-safety.webp" alt=""> <span data-i18n="safety">Sécurité</span></a>
+  <a href="#" onclick="openScreen('sParam');return false"><img class="mi" src="ic-settings.webp" alt=""> <span data-i18n="settings">Paramètres</span></a>
+  <a href="#" onclick="openScreen('sAide');return false"><img class="mi" src="ic-help.webp" alt=""> <span data-i18n="help">Aide</span></a>
+  <a href="#" id="installLink" class="hide" onclick="openDrawer(false);showInstall(true);return false"><img class="mi" src="ic-install.webp" alt=""> <span data-i18n="installApp">Installer l'application</span></a>
+  <a href="#" onclick="openDrawer(false);shareApp();return false"><img class="mi" src="ic-whatsapp.webp" alt=""> <span data-i18n="shareWa">Partager avec WhatsApp</span></a>
   <div class="grow"></div>
   <button class="cta" id="driverBtn" onclick="setDriverMode(!driverMode)" style="background:#b8f000;color:#111" data-i18n="driverMode">Mode conducteur</button>
   <p class="small" style="text-align:center;margin-top:12px">Contact : footrexofficial@gmail.com</p>
@@ -436,7 +440,7 @@ const T = {
   minAgo:"min",away:"de vous",seats:"place(s)",noHistory:"Vos courses apparaîtront ici",start:"Commencer",upToDate:"Vous êtes à jour",upToDate2:"Aucune nouvelle notification",
   newOffer:"Nouvelle offre",accepted:"Course acceptée",cancelled:"Course annulée",done:"Terminée",pending:"En attente",confirmDel:"Supprimer définitivement votre compte ?",
   cancelledMsg:"La course a été annulée",offerFrom:"propose",yourPrice:"Prix du passager",asDriver:"Conducteur",asPassenger:"Passager",shareTxt:"Je suis en course Rakbin",
-  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur",installTxt:"Installez l'application sur votre téléphone",install:"Installer",installApp:"Installer l'application",iosTxt:"Touchez ⬆️ Partager puis « Sur l'écran d'accueil »",ok:"OK",tabFind:"Trouver un trajet",tabOffer:"Proposer un trajet",fromPh:"📍 Départ (ville)",departure:"Date et heure de départ",seatsFree:"Places libres",pricePerSeat:"Prix / personne (MAD)",notePh:"Note : bagages, arrêts possibles…",publish:"Publier mon trajet",reqTitle:"Aucun trajet ne vous convient ? Publiez une demande, les conducteurs vous répondront :",myTrips:"Mes trajets Ville à Ville",tripsFound:"trajet(s) disponible(s)",noTrips:"Aucun trajet publié pour cette destination pour l'instant.",book:"Réserver",perSeat:"/ pers.",seatsLeft:"place(s) libre(s)",yourTrip:"Votre trajet",needFrom:"Choisissez la ville de départ",needWhen:"Choisissez une date et une heure à venir",needVeh:"Indiquez votre véhicule",published:"Trajet publié ✓ Les passagers peuvent réserver",booked:"Demande de réservation envoyée ✓",iDriveSec:"🚗 Je conduis",iBookSec:"🎒 Mes réservations",noMyTrips:"Vous n'avez publié aucun trajet.",noMyBookings:"Aucune réservation.",acceptBk:"Accepter",refuseBk:"Refuser",cancelTrip:"Annuler ce trajet",cancelBk:"Annuler ma réservation",waDriverShort:"💬 WhatsApp",st_open:"Ouvert",st_full:"Complet",st_pending:"En attente",st_accepted:"Acceptée",st_refused:"Refusée",st_cancelled:"Annulée",newBooking:"Nouvelle réservation",bookingAccepted:"Votre réservation est acceptée !",notEnoughSeats:"Plus assez de places",howMany:"Combien de places ?",seatsWord:"place(s)",brand:"Marque",model:"Modèle",color:"Couleur",other:"Autre…",otherPh:"Écrivez le modèle",needBrand:"Choisissez la marque et le modèle",noTrips2:"Revenez plus tard : les conducteurs publient leurs trajets avec places libres.",socialTitle:"Vos réseaux (conseillé, pour inspirer confiance)",socialHint:"Les autres membres pourront voir votre profil avant de voyager avec vous."},
+  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur",installTxt:"Installez l'application sur votre téléphone",install:"Installer",installApp:"Installer l'application",iosTxt:"Touchez ⬆️ Partager puis « Sur l'écran d'accueil »",ok:"OK",tabFind:"Trouver un trajet",tabOffer:"Proposer un trajet",fromPh:"📍 Départ (ville)",departure:"Date et heure de départ",seatsFree:"Places libres",pricePerSeat:"Prix / personne (MAD)",notePh:"Note : bagages, arrêts possibles…",publish:"Publier mon trajet",reqTitle:"Aucun trajet ne vous convient ? Publiez une demande, les conducteurs vous répondront :",myTrips:"Mes trajets Ville à Ville",tripsFound:"trajet(s) disponible(s)",noTrips:"Aucun trajet publié pour cette destination pour l'instant.",book:"Réserver",perSeat:"/ pers.",seatsLeft:"place(s) libre(s)",yourTrip:"Votre trajet",needFrom:"Choisissez la ville de départ",needWhen:"Choisissez une date et une heure à venir",needVeh:"Indiquez votre véhicule",published:"Trajet publié ✓ Les passagers peuvent réserver",booked:"Demande de réservation envoyée ✓",iDriveSec:"🚗 Je conduis",iBookSec:"🎒 Mes réservations",noMyTrips:"Vous n'avez publié aucun trajet.",noMyBookings:"Aucune réservation.",acceptBk:"Accepter",refuseBk:"Refuser",cancelTrip:"Annuler ce trajet",cancelBk:"Annuler ma réservation",waDriverShort:"💬 WhatsApp",st_open:"Ouvert",st_full:"Complet",st_pending:"En attente",st_accepted:"Acceptée",st_refused:"Refusée",st_cancelled:"Annulée",newBooking:"Nouvelle réservation",bookingAccepted:"Votre réservation est acceptée !",notEnoughSeats:"Plus assez de places",howMany:"Combien de places ?",seatsWord:"place(s)",brand:"Marque",model:"Modèle",color:"Couleur",other:"Autre…",otherPh:"Écrivez le modèle",needBrand:"Choisissez la marque et le modèle",shareWa:"Partager avec WhatsApp",shareAppTxt:"Découvrez Rakbin · راكبين : voiture, moto et covoiturage au Maroc, vous proposez votre prix 👉",noTrips2:"Revenez plus tard : les conducteurs publient leurs trajets avec places libres.",socialTitle:"Vos réseaux (conseillé, pour inspirer confiance)",socialHint:"Les autres membres pourront voir votre profil avant de voyager avec vous."},
  ar:{from:"من أين",svcCar:"سيارة",svcMoto:"دراجة نارية",svcInter:"بين المدن",destPh:"🔍 إلى أين؟",pricePh:"ثمنك (درهم)",order:"ابحث عن سائق",
   waiting:"جاري البحث عن سائقين قريبين…",cancel:"إلغاء الطلب",confirmed:"تم تأكيد الرحلة",waDriver:"💬 واتساب السائق",share:"📤 شارك رحلتي",
   finish:"✅ وصلت",cancelShort:"إلغاء",driverTitle:"سائق",exitDriver:"خروج",online:"🟢 متصل — الركاب يرونك",chosen:"اختارك الراكب!",
@@ -462,7 +466,7 @@ const T = {
   minAgo:"د",away:"منك",seats:"مقعد",noHistory:"ستظهر رحلاتك هنا",start:"ابدأ",upToDate:"لا جديد",upToDate2:"لا توجد إشعارات جديدة",
   newOffer:"عرض جديد",accepted:"تم قبول الرحلة",cancelled:"ملغاة",done:"منتهية",pending:"في الانتظار",confirmDel:"حذف حسابك نهائياً؟",
   cancelledMsg:"تم إلغاء الرحلة",offerFrom:"يقترح",yourPrice:"ثمن الراكب",asDriver:"سائق",asPassenger:"راكب",shareTxt:"أنا في رحلة مع راكبين",
-  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح",installTxt:"ثبّت التطبيق على هاتفك",install:"تثبيت",installApp:"تثبيت التطبيق",iosTxt:"اضغط ⬆️ مشاركة ثم «إضافة إلى الشاشة الرئيسية»",ok:"حسناً",tabFind:"ابحث عن رحلة",tabOffer:"اقترح رحلة",fromPh:"📍 الانطلاق (المدينة)",departure:"تاريخ وساعة الانطلاق",seatsFree:"المقاعد الفارغة",pricePerSeat:"الثمن للشخص (درهم)",notePh:"ملاحظة: الأمتعة، التوقفات…",publish:"انشر رحلتي",reqTitle:"لم تجد رحلة؟ انشر طلباً وسيجيبك السائقون:",myTrips:"رحلاتي بين المدن",tripsFound:"رحلة متاحة",noTrips:"لا توجد رحلات منشورة لهذه الوجهة حالياً.",book:"احجز",perSeat:"/ للشخص",seatsLeft:"مقعد فارغ",yourTrip:"رحلتك",needFrom:"اختر مدينة الانطلاق",needWhen:"اختر تاريخاً وساعة قادمة",needVeh:"أدخل مركبتك",published:"تم نشر الرحلة ✓ يمكن للركاب الحجز",booked:"تم إرسال طلب الحجز ✓",iDriveSec:"🚗 أنا السائق",iBookSec:"🎒 حجوزاتي",noMyTrips:"لم تنشر أي رحلة.",noMyBookings:"لا توجد حجوزات.",acceptBk:"قبول",refuseBk:"رفض",cancelTrip:"إلغاء هذه الرحلة",cancelBk:"إلغاء حجزي",waDriverShort:"💬 واتساب",st_open:"مفتوحة",st_full:"مكتملة",st_pending:"في الانتظار",st_accepted:"مقبولة",st_refused:"مرفوضة",st_cancelled:"ملغاة",newBooking:"حجز جديد",bookingAccepted:"تم قبول حجزك!",notEnoughSeats:"لا توجد مقاعد كافية",howMany:"كم مقعداً؟",seatsWord:"مقعد",brand:"العلامة",model:"الطراز",color:"اللون",other:"أخرى…",otherPh:"اكتب الطراز",needBrand:"اختر العلامة والطراز",noTrips2:"عد لاحقاً: السائقون ينشرون رحلاتهم مع المقاعد الفارغة.",socialTitle:"حساباتك (مستحسن لبناء الثقة)",socialHint:"يمكن للأعضاء رؤية حسابك قبل السفر معك."}
+  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح",installTxt:"ثبّت التطبيق على هاتفك",install:"تثبيت",installApp:"تثبيت التطبيق",iosTxt:"اضغط ⬆️ مشاركة ثم «إضافة إلى الشاشة الرئيسية»",ok:"حسناً",tabFind:"ابحث عن رحلة",tabOffer:"اقترح رحلة",fromPh:"📍 الانطلاق (المدينة)",departure:"تاريخ وساعة الانطلاق",seatsFree:"المقاعد الفارغة",pricePerSeat:"الثمن للشخص (درهم)",notePh:"ملاحظة: الأمتعة، التوقفات…",publish:"انشر رحلتي",reqTitle:"لم تجد رحلة؟ انشر طلباً وسيجيبك السائقون:",myTrips:"رحلاتي بين المدن",tripsFound:"رحلة متاحة",noTrips:"لا توجد رحلات منشورة لهذه الوجهة حالياً.",book:"احجز",perSeat:"/ للشخص",seatsLeft:"مقعد فارغ",yourTrip:"رحلتك",needFrom:"اختر مدينة الانطلاق",needWhen:"اختر تاريخاً وساعة قادمة",needVeh:"أدخل مركبتك",published:"تم نشر الرحلة ✓ يمكن للركاب الحجز",booked:"تم إرسال طلب الحجز ✓",iDriveSec:"🚗 أنا السائق",iBookSec:"🎒 حجوزاتي",noMyTrips:"لم تنشر أي رحلة.",noMyBookings:"لا توجد حجوزات.",acceptBk:"قبول",refuseBk:"رفض",cancelTrip:"إلغاء هذه الرحلة",cancelBk:"إلغاء حجزي",waDriverShort:"💬 واتساب",st_open:"مفتوحة",st_full:"مكتملة",st_pending:"في الانتظار",st_accepted:"مقبولة",st_refused:"مرفوضة",st_cancelled:"ملغاة",newBooking:"حجز جديد",bookingAccepted:"تم قبول حجزك!",notEnoughSeats:"لا توجد مقاعد كافية",howMany:"كم مقعداً؟",seatsWord:"مقعد",brand:"العلامة",model:"الطراز",color:"اللون",other:"أخرى…",otherPh:"اكتب الطراز",needBrand:"اختر العلامة والطراز",shareWa:"مشاركة عبر واتساب",shareAppTxt:"اكتشف راكبين · Rakbin: سيارة، دراجة نارية ونقل مشترك في المغرب، اقترح ثمنك 👉",noTrips2:"عد لاحقاً: السائقون ينشرون رحلاتهم مع المقاعد الفارغة.",socialTitle:"حساباتك (مستحسن لبناء الثقة)",socialHint:"يمكن للأعضاء رؤية حسابك قبل السفر معك."}
 };
 let lang = 'fr';
 try { lang = localStorage.getItem('rk_lang') || ((navigator.language||'').startsWith('ar') ? 'ar' : 'fr'); } catch(e){}
@@ -632,7 +636,7 @@ function fitRoute(){ const o=originPos(); if(o&&destPos) map.fitBounds([[o.lat,o
 /* Hauteur du panneau → position du bouton ◎ */
 function sheetH(){ document.documentElement.style.setProperty('--sheetH',($('sheet').classList.contains('mini')?92:$('sheet').offsetHeight)+'px'); }
 new ResizeObserver(sheetH).observe($('sheet'));
-function setMini(on){ $('sheet').classList.toggle('mini',on); if(on){ $('sugg').innerHTML=''; document.activeElement&&document.activeElement.blur&&document.activeElement.blur(); } $('sheet').scrollTop=0; sheetH(); }
+function setMini(on){ $('sheet').classList.toggle('mini',on); if(on) $('sheet').classList.remove('full'); if(on){ $('sugg').innerHTML=''; document.activeElement&&document.activeElement.blur&&document.activeElement.blur(); } $('sheet').scrollTop=0; sheetH(); }
 $('gripzone').addEventListener('click',()=>setMini(!$('sheet').classList.contains('mini')));
 let tY=null;
 $('gripzone').addEventListener('touchstart',e=>{ tY=e.touches[0].clientY; },{passive:true});
@@ -726,7 +730,10 @@ function openScreen(id){ openDrawer(false);
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show')); $(id).classList.add('show');
   if(id==='sProfile') fillProfile(); if(id==='sHistory') loadHistory(); if(id==='sTrips') loadMyTrips(); if(id==='sNotif') renderNotifs(); }
 function closeScreens(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show')); }
-function goHome(s){ openDrawer(false); closeScreens(); if(driverMode) setDriverMode(false); pickService(s); }
+function goHome(s){ openDrawer(false); closeScreens(); if(driverMode) setDriverMode(false); pickService(s); openFull(); }
+function openFull(){ $('sheet').classList.remove('mini'); $('sheet').classList.add('full'); $('sheet').scrollTop=0; sheetH(); }
+function shareApp(){ const url='https://55europe.com/app/'; const txt=t('shareAppTxt')+' '+url;
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank'); }
 function panel(id){ ['pHome','pWait','pRide','pDriver','pDriverRide'].forEach(p=>$(p).classList.toggle('hide',p!==id)); }
 
 /* ================= Compte & profil ================= */
