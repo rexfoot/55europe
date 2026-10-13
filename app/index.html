@@ -132,6 +132,8 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
 .st.accepted,.st.open{background:var(--green2);color:var(--green)}
 .st.pending{background:#fff4d6;color:#8a6200}
 .st.refused,.st.cancelled{background:#fde8e8;color:var(--red)}
+.socs{display:inline-flex;gap:4px;flex-wrap:wrap;margin-inline-start:6px;vertical-align:middle}
+.soc{color:#fff!important;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;text-decoration:none}
 .toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);background:#111827;color:#fff;padding:11px 16px;border-radius:12px;z-index:100;font-size:14px;max-width:90vw;box-shadow:var(--shadow);display:none}
 .badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700}
 .online{background:var(--green);color:#fff;border-radius:12px;padding:10px 12px;text-align:center;font-weight:700;margin-top:6px}
@@ -159,8 +161,8 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
   <div id="pHome">
     <div class="logo"><span class="r">Rakbin</span> · <span class="a">راكبين</span></div>
     <div class="services">
-      <button class="svc" data-s="car" onclick="pickService('car')"><div class="i" data-art="car"></div><span data-i18n="svcCar">Voiture</span></button>
-      <button class="svc active" data-s="moto" onclick="pickService('moto')"><div class="i" data-art="moto"></div><span data-i18n="svcMoto">Moto</span></button>
+      <button class="svc" data-s="car" onclick="pickService('car')"><div class="i"><img src="tile-car.webp" alt=""></div><span data-i18n="svcCar">Voiture</span></button>
+      <button class="svc active" data-s="moto" onclick="pickService('moto')"><div class="i"><img src="tile-moto.webp" alt=""></div><span data-i18n="svcMoto">Moto</span></button>
       <button class="svc" data-s="inter" onclick="pickService('inter')"><div class="i"><img src="tile-inter.webp" alt=""></div><span data-i18n="svcInter">Ville à Ville</span></button>
     </div>
     <p class="status" id="nearCount"></p>
@@ -299,6 +301,11 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
       <label class="lbl" data-i18n="phone">Numéro WhatsApp (avec indicatif)</label>
       <input id="phoneIn" type="tel" placeholder="+212 6 12 34 56 78">
       <p class="small" data-i18n="phoneHint">Tous les pays acceptés (+212, +33, +34…). Visible seulement après acceptation d'une course.</p>
+      <label class="lbl" data-i18n="socialTitle">Vos réseaux (conseillé, pour inspirer confiance)</label>
+      <input id="fbIn" maxlength="120" placeholder="Facebook : lien ou nom de profil" style="margin-top:6px">
+      <input id="ttIn" maxlength="80" placeholder="TikTok : @votrecompte" style="margin-top:8px">
+      <input id="igIn" maxlength="80" placeholder="Instagram : @votrecompte" style="margin-top:8px">
+      <p class="small" data-i18n="socialHint">Les autres membres pourront voir votre profil avant de voyager avec vous.</p>
       <label class="check"><input type="checkbox" id="isDriverIn" onchange="$('vehBox').classList.toggle('hide',!this.checked)"> <span data-i18n="iDrive">🚗🏍️ Je veux aussi être conducteur</span></label>
       <div id="vehBox" class="hide">
         <label class="lbl" data-i18n="vehType">Type de véhicule</label>
@@ -429,7 +436,7 @@ const T = {
   minAgo:"min",away:"de vous",seats:"place(s)",noHistory:"Vos courses apparaîtront ici",start:"Commencer",upToDate:"Vous êtes à jour",upToDate2:"Aucune nouvelle notification",
   newOffer:"Nouvelle offre",accepted:"Course acceptée",cancelled:"Course annulée",done:"Terminée",pending:"En attente",confirmDel:"Supprimer définitivement votre compte ?",
   cancelledMsg:"La course a été annulée",offerFrom:"propose",yourPrice:"Prix du passager",asDriver:"Conducteur",asPassenger:"Passager",shareTxt:"Je suis en course Rakbin",
-  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur",installTxt:"Installez l'application sur votre téléphone",install:"Installer",installApp:"Installer l'application",iosTxt:"Touchez ⬆️ Partager puis « Sur l'écran d'accueil »",ok:"OK",tabFind:"Trouver un trajet",tabOffer:"Proposer un trajet",fromPh:"📍 Départ (ville)",departure:"Date et heure de départ",seatsFree:"Places libres",pricePerSeat:"Prix / personne (MAD)",notePh:"Note : bagages, arrêts possibles…",publish:"Publier mon trajet",reqTitle:"Aucun trajet ne vous convient ? Publiez une demande, les conducteurs vous répondront :",myTrips:"Mes trajets Ville à Ville",tripsFound:"trajet(s) disponible(s)",noTrips:"Aucun trajet publié pour cette destination pour l'instant.",book:"Réserver",perSeat:"/ pers.",seatsLeft:"place(s) libre(s)",yourTrip:"Votre trajet",needFrom:"Choisissez la ville de départ",needWhen:"Choisissez une date et une heure à venir",needVeh:"Indiquez votre véhicule",published:"Trajet publié ✓ Les passagers peuvent réserver",booked:"Demande de réservation envoyée ✓",iDriveSec:"🚗 Je conduis",iBookSec:"🎒 Mes réservations",noMyTrips:"Vous n'avez publié aucun trajet.",noMyBookings:"Aucune réservation.",acceptBk:"Accepter",refuseBk:"Refuser",cancelTrip:"Annuler ce trajet",cancelBk:"Annuler ma réservation",waDriverShort:"💬 WhatsApp",st_open:"Ouvert",st_full:"Complet",st_pending:"En attente",st_accepted:"Acceptée",st_refused:"Refusée",st_cancelled:"Annulée",newBooking:"Nouvelle réservation",bookingAccepted:"Votre réservation est acceptée !",notEnoughSeats:"Plus assez de places",howMany:"Combien de places ?",seatsWord:"place(s)",brand:"Marque",model:"Modèle",color:"Couleur",other:"Autre…",otherPh:"Écrivez le modèle",needBrand:"Choisissez la marque et le modèle"},
+  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur",installTxt:"Installez l'application sur votre téléphone",install:"Installer",installApp:"Installer l'application",iosTxt:"Touchez ⬆️ Partager puis « Sur l'écran d'accueil »",ok:"OK",tabFind:"Trouver un trajet",tabOffer:"Proposer un trajet",fromPh:"📍 Départ (ville)",departure:"Date et heure de départ",seatsFree:"Places libres",pricePerSeat:"Prix / personne (MAD)",notePh:"Note : bagages, arrêts possibles…",publish:"Publier mon trajet",reqTitle:"Aucun trajet ne vous convient ? Publiez une demande, les conducteurs vous répondront :",myTrips:"Mes trajets Ville à Ville",tripsFound:"trajet(s) disponible(s)",noTrips:"Aucun trajet publié pour cette destination pour l'instant.",book:"Réserver",perSeat:"/ pers.",seatsLeft:"place(s) libre(s)",yourTrip:"Votre trajet",needFrom:"Choisissez la ville de départ",needWhen:"Choisissez une date et une heure à venir",needVeh:"Indiquez votre véhicule",published:"Trajet publié ✓ Les passagers peuvent réserver",booked:"Demande de réservation envoyée ✓",iDriveSec:"🚗 Je conduis",iBookSec:"🎒 Mes réservations",noMyTrips:"Vous n'avez publié aucun trajet.",noMyBookings:"Aucune réservation.",acceptBk:"Accepter",refuseBk:"Refuser",cancelTrip:"Annuler ce trajet",cancelBk:"Annuler ma réservation",waDriverShort:"💬 WhatsApp",st_open:"Ouvert",st_full:"Complet",st_pending:"En attente",st_accepted:"Acceptée",st_refused:"Refusée",st_cancelled:"Annulée",newBooking:"Nouvelle réservation",bookingAccepted:"Votre réservation est acceptée !",notEnoughSeats:"Plus assez de places",howMany:"Combien de places ?",seatsWord:"place(s)",brand:"Marque",model:"Modèle",color:"Couleur",other:"Autre…",otherPh:"Écrivez le modèle",needBrand:"Choisissez la marque et le modèle",noTrips2:"Revenez plus tard : les conducteurs publient leurs trajets avec places libres.",socialTitle:"Vos réseaux (conseillé, pour inspirer confiance)",socialHint:"Les autres membres pourront voir votre profil avant de voyager avec vous."},
  ar:{from:"من أين",svcCar:"سيارة",svcMoto:"دراجة نارية",svcInter:"بين المدن",destPh:"🔍 إلى أين؟",pricePh:"ثمنك (درهم)",order:"ابحث عن سائق",
   waiting:"جاري البحث عن سائقين قريبين…",cancel:"إلغاء الطلب",confirmed:"تم تأكيد الرحلة",waDriver:"💬 واتساب السائق",share:"📤 شارك رحلتي",
   finish:"✅ وصلت",cancelShort:"إلغاء",driverTitle:"سائق",exitDriver:"خروج",online:"🟢 متصل — الركاب يرونك",chosen:"اختارك الراكب!",
@@ -455,7 +462,7 @@ const T = {
   minAgo:"د",away:"منك",seats:"مقعد",noHistory:"ستظهر رحلاتك هنا",start:"ابدأ",upToDate:"لا جديد",upToDate2:"لا توجد إشعارات جديدة",
   newOffer:"عرض جديد",accepted:"تم قبول الرحلة",cancelled:"ملغاة",done:"منتهية",pending:"في الانتظار",confirmDel:"حذف حسابك نهائياً؟",
   cancelledMsg:"تم إلغاء الرحلة",offerFrom:"يقترح",yourPrice:"ثمن الراكب",asDriver:"سائق",asPassenger:"راكب",shareTxt:"أنا في رحلة مع راكبين",
-  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح",installTxt:"ثبّت التطبيق على هاتفك",install:"تثبيت",installApp:"تثبيت التطبيق",iosTxt:"اضغط ⬆️ مشاركة ثم «إضافة إلى الشاشة الرئيسية»",ok:"حسناً",tabFind:"ابحث عن رحلة",tabOffer:"اقترح رحلة",fromPh:"📍 الانطلاق (المدينة)",departure:"تاريخ وساعة الانطلاق",seatsFree:"المقاعد الفارغة",pricePerSeat:"الثمن للشخص (درهم)",notePh:"ملاحظة: الأمتعة، التوقفات…",publish:"انشر رحلتي",reqTitle:"لم تجد رحلة؟ انشر طلباً وسيجيبك السائقون:",myTrips:"رحلاتي بين المدن",tripsFound:"رحلة متاحة",noTrips:"لا توجد رحلات منشورة لهذه الوجهة حالياً.",book:"احجز",perSeat:"/ للشخص",seatsLeft:"مقعد فارغ",yourTrip:"رحلتك",needFrom:"اختر مدينة الانطلاق",needWhen:"اختر تاريخاً وساعة قادمة",needVeh:"أدخل مركبتك",published:"تم نشر الرحلة ✓ يمكن للركاب الحجز",booked:"تم إرسال طلب الحجز ✓",iDriveSec:"🚗 أنا السائق",iBookSec:"🎒 حجوزاتي",noMyTrips:"لم تنشر أي رحلة.",noMyBookings:"لا توجد حجوزات.",acceptBk:"قبول",refuseBk:"رفض",cancelTrip:"إلغاء هذه الرحلة",cancelBk:"إلغاء حجزي",waDriverShort:"💬 واتساب",st_open:"مفتوحة",st_full:"مكتملة",st_pending:"في الانتظار",st_accepted:"مقبولة",st_refused:"مرفوضة",st_cancelled:"ملغاة",newBooking:"حجز جديد",bookingAccepted:"تم قبول حجزك!",notEnoughSeats:"لا توجد مقاعد كافية",howMany:"كم مقعداً؟",seatsWord:"مقعد",brand:"العلامة",model:"الطراز",color:"اللون",other:"أخرى…",otherPh:"اكتب الطراز",needBrand:"اختر العلامة والطراز"}
+  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح",installTxt:"ثبّت التطبيق على هاتفك",install:"تثبيت",installApp:"تثبيت التطبيق",iosTxt:"اضغط ⬆️ مشاركة ثم «إضافة إلى الشاشة الرئيسية»",ok:"حسناً",tabFind:"ابحث عن رحلة",tabOffer:"اقترح رحلة",fromPh:"📍 الانطلاق (المدينة)",departure:"تاريخ وساعة الانطلاق",seatsFree:"المقاعد الفارغة",pricePerSeat:"الثمن للشخص (درهم)",notePh:"ملاحظة: الأمتعة، التوقفات…",publish:"انشر رحلتي",reqTitle:"لم تجد رحلة؟ انشر طلباً وسيجيبك السائقون:",myTrips:"رحلاتي بين المدن",tripsFound:"رحلة متاحة",noTrips:"لا توجد رحلات منشورة لهذه الوجهة حالياً.",book:"احجز",perSeat:"/ للشخص",seatsLeft:"مقعد فارغ",yourTrip:"رحلتك",needFrom:"اختر مدينة الانطلاق",needWhen:"اختر تاريخاً وساعة قادمة",needVeh:"أدخل مركبتك",published:"تم نشر الرحلة ✓ يمكن للركاب الحجز",booked:"تم إرسال طلب الحجز ✓",iDriveSec:"🚗 أنا السائق",iBookSec:"🎒 حجوزاتي",noMyTrips:"لم تنشر أي رحلة.",noMyBookings:"لا توجد حجوزات.",acceptBk:"قبول",refuseBk:"رفض",cancelTrip:"إلغاء هذه الرحلة",cancelBk:"إلغاء حجزي",waDriverShort:"💬 واتساب",st_open:"مفتوحة",st_full:"مكتملة",st_pending:"في الانتظار",st_accepted:"مقبولة",st_refused:"مرفوضة",st_cancelled:"ملغاة",newBooking:"حجز جديد",bookingAccepted:"تم قبول حجزك!",notEnoughSeats:"لا توجد مقاعد كافية",howMany:"كم مقعداً؟",seatsWord:"مقعد",brand:"العلامة",model:"الطراز",color:"اللون",other:"أخرى…",otherPh:"اكتب الطراز",needBrand:"اختر العلامة والطراز",noTrips2:"عد لاحقاً: السائقون ينشرون رحلاتهم مع المقاعد الفارغة.",socialTitle:"حساباتك (مستحسن لبناء الثقة)",socialHint:"يمكن للأعضاء رؤية حسابك قبل السفر معك."}
 };
 let lang = 'fr';
 try { lang = localStorage.getItem('rk_lang') || ((navigator.language||'').startsWith('ar') ? 'ar' : 'fr'); } catch(e){}
@@ -566,6 +573,16 @@ function normPhone(p){ p=String(p||'').replace(/[\s\-().]/g,''); if(p.startsWith
   if(/^0[5-7]\d{8}$/.test(p)) p='+212'+p.slice(1); return /^\+\d{8,15}$/.test(p) ? p : null; }
 function waLink(phone,msg){ return 'https://wa.me/'+String(phone).replace(/\D/g,'')+'?text='+encodeURIComponent(msg||''); }
 function ago(ms){ const m=Math.max(0,Math.round((Date.now()-ms)/60000)); return m+' '+t('minAgo'); }
+function normSocial(k,v){ v=String(v||'').trim(); if(!v) return '';
+  if(/^https?:\/\//i.test(v)) return v.slice(0,200);
+  v=v.replace(/^@/,'').replace(/\s+/g,'');
+  if(k==='fb') return 'https://www.facebook.com/'+encodeURIComponent(v);
+  if(k==='tt') return 'https://www.tiktok.com/@'+encodeURIComponent(v);
+  return 'https://www.instagram.com/'+encodeURIComponent(v); }
+function socialHtml(u){ const so=(u&&u.social)||{}; let h='';
+  const pill=(url,bg,txt)=>url&&/^https:\/\//.test(url)?'<a class="soc" style="background:'+bg+'" target="_blank" rel="noopener" href="'+esc(url)+'">'+txt+'</a>':'';
+  h=pill(so.fb,'#1877F2','Facebook')+pill(so.tt,'#111','TikTok')+pill(so.ig,'#C13584','Instagram');
+  return h?'<span class="socs">'+h+'</span>':''; }
 const userCache = {};
 async function getUser(uid){ if(userCache[uid]) return userCache[uid];
   try{ const d=await db.collection('users').doc(uid).get(); userCache[uid]=d.exists?d.data():{name:'?',photo:''}; }catch(e){ userCache[uid]={name:'?',photo:''}; }
@@ -635,16 +652,28 @@ $('dest').addEventListener('input',()=>{
 });
 async function searchPlace(q, box, cb){
   box=box||$('sugg'); cb=cb||pickDest;
-  let u='https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=ma&accept-language='+lang+'&q='+encodeURIComponent(q);
+  let u='https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&countrycodes=ma&accept-language='+lang+'&q='+encodeURIComponent(q);
   if(myPos && service!=='inter') u+='&viewbox='+(myPos.lng-0.5)+','+(myPos.lat+0.5)+','+(myPos.lng+0.5)+','+(myPos.lat-0.5);
   try{ const a=await (await fetch(u)).json(); box.innerHTML='';
     if(!a.length){ box.innerHTML='<div class="sug muted">'+t('noResult')+'</div>'; return; }
-    a.forEach(x=>{ const d=document.createElement('div'); d.className='sug'; d.textContent='📍 '+x.display_name;
-      d.onclick=()=>cb(+x.lat,+x.lon,x.display_name); box.appendChild(d); });
+    const seen={};
+    a.forEach(x=>{ const L=niceLabel(x); if(seen[L.full]) return; seen[L.full]=1;
+      const d=document.createElement('div'); d.className='sug'; d.innerHTML='📍 <b>'+esc(L.main)+'</b>'+(L.sub?'<br><span class="small">'+esc(L.sub)+'</span>':'');
+      d.onclick=()=>cb(+x.lat,+x.lon,L.full); box.appendChild(d); });
   }catch(e){}
 }
+const ADMIN=/pachalik|pr[ée]fecture|province|arrondissement|cercle|ca[iï]dat|commune|r[ée]gion|municipalit|district|باشوية|عمالة|إقليم|مقاطعة|قيادة|جماعة|جهة/i;
+function niceLabel(x){
+  const a=x.address||{}, city=a.city||a.town||a.village||a.hamlet||a.municipality||'';
+  const name=(x.name||'').trim();
+  const bits=[name, (a.road&&a.road!==name)?a.road:'', (a.neighbourhood||a.suburb||a.quarter||''), city].filter(v=>v && !ADMIN.test(v));
+  let uniq=[...new Set(bits)]; if(uniq.length>3) uniq=uniq.filter(v=>v!==(a.neighbourhood||a.suburb||a.quarter)).slice(0,3); const main=uniq[0]||city||(x.display_name||'').split(',')[0];
+  const rest=uniq.slice(1); const region=(a.state||'').replace(/^Région\s+/i,'');
+  const sub=rest.length?rest.join(', '):(region&&region!==main?region:'');
+  return {main, sub, full:[main,...rest].join(', ')};
+}
 function pickDest(lat,lng,label){
-  destPos={lat,lng}; destLabel=label.split(',').slice(0,3).join(',').trim();
+  destPos={lat,lng}; destLabel=label.split(',').filter(v=>!ADMIN.test(v)).slice(0,3).join(',').trim();
   $('dest').value=destLabel; $('sugg').innerHTML=''; $('dest').blur();
   if(destMarker) destMarker.setLatLng([lat,lng]); else destMarker=L.marker([lat,lng],{icon:svgIcon('dest',30,40,15,39)}).addTo(map);
   drawRoute(); fitRoute(); $('price').value=''; updatePrice(true); refreshHome();
@@ -656,7 +685,7 @@ $('fromIn').addEventListener('focus',()=>setMini(false));
 $('fromIn').addEventListener('input',()=>{ clearTimeout(sTimer2); interFrom=null;
   const q=$('fromIn').value.trim(); if(q.length<3){ $('suggFrom').innerHTML=''; return; }
   sTimer2=setTimeout(()=>searchPlace(q,$('suggFrom'),pickFrom),700); });
-function pickFrom(lat,lng,label){ interFrom={lat,lng,label:label.split(',').slice(0,2).join(',').trim()};
+function pickFrom(lat,lng,label){ interFrom={lat,lng,label:label.split(',').filter(v=>!ADMIN.test(v)).slice(0,2).join(',').trim()};
   $('fromIn').value=interFrom.label; $('suggFrom').innerHTML=''; $('fromIn').blur(); drawRoute(); fitRoute(); updatePrice(true); refreshHome(); }
 function originPos(){ return (service==='inter' && interFrom) ? interFrom : myPos; }
 function originLabel(){ return (service==='inter' && interFrom) ? interFrom.label : fromLabel; }
@@ -669,8 +698,7 @@ function refreshHome(){
   const ready=!!destPos;
   $('offerBox').classList.toggle('hide',!(inter && interMode==='offer' && ready));
   $('tripResults').classList.toggle('hide',!(inter && interMode==='find' && ready));
-  $('orderBox').classList.toggle('hide',!ready || (inter && interMode==='offer'));
-  $('reqTitle').classList.toggle('hide',!inter);
+  $('orderBox').classList.toggle('hide',!ready || inter);
   if(inter && interMode==='find' && ready) searchTrips();
   if(inter && interMode==='offer' && ready){ if(!$('offVeh').value && profile && profile.vehicle && profile.vehicleType!=='moto') $('offVeh').value=profile.vehicle; buildVehPicker('offVehPick','offVeh','car'); suggestSeatPrice(); }
 }
@@ -733,7 +761,7 @@ function fillProfile(){
   newSelfie=null; $('selfieIn').value='';
   $('selfiePrev').src=(profile&&profile.photo)||DEFAULT_AV;
   $('nameIn').value=(profile&&profile.name)||((me.displayName||'').split(' ')[0]||'');
-  $('phoneIn').value=myPhone||'';
+  $('phoneIn').value=myPhone||''; const so=(profile&&profile.social)||{}; $('fbIn').value=so.fb||''; $('ttIn').value=so.tt||''; $('igIn').value=so.ig||'';
   $('isDriverIn').checked=!!(profile&&profile.isDriver); $('vehBox').classList.toggle('hide',!$('isDriverIn').checked);
   $('vehTypeIn').value=(profile&&profile.vehicleType)||'car'; $('vehIn').value=(profile&&profile.vehicle)||''; buildVehPicker('vehPick','vehIn',$('vehTypeIn').value,true);
 }
@@ -751,7 +779,7 @@ async function saveProfile(){
   const isDriver=$('isDriverIn').checked;
   if(isDriver && $('vehIn').value.trim().split(' ').length<2) return toast(t('needBrand'));
   const data={name, photo, isDriver, vehicleType:isDriver?$('vehTypeIn').value:'', vehicle:isDriver?$('vehIn').value.trim():'',
-    rating:(profile&&profile.rating)||5, updatedAt:TS()};
+    rating:(profile&&profile.rating)||5, social:{fb:normSocial('fb',$('fbIn').value), tt:normSocial('tt',$('ttIn').value), ig:normSocial('ig',$('igIn').value)}, updatedAt:TS()};
   $('saveBtn').disabled=true;
   try{ await db.collection('users').doc(me.uid).set(data,{merge:true});
     await db.collection('users').doc(me.uid).collection('private').doc('contact').set({phone});
@@ -818,7 +846,7 @@ async function renderOffers(s){
   if(!list.length){ box.innerHTML='<p class="small" style="text-align:center">'+t('noOffers')+'</p>'; return; }
   const html=await Promise.all(list.map(async o=>{ const u=await getUser(o.driverId);
     const dist=(myPos&&o.lat)?' · '+km(myPos,{lat:o.lat,lng:o.lng}).toFixed(1)+' km':'';
-    return '<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b><span class="small">'+ICON[u.vehicleType||'car']+' '+esc(u.vehicle||'')+dist+'</span><br><span class="stars">★</span> <span class="small">'+((u.rating||5).toFixed(1))+'</span></div><div class="price">'+o.price+' MAD</div></div>'+
+    return '<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b>'+socialHtml(u)+'<span class="small">'+ICON[u.vehicleType||'car']+' '+esc(u.vehicle||'')+dist+'</span><br><span class="stars">★</span> <span class="small">'+((u.rating||5).toFixed(1))+'</span></div><div class="price">'+o.price+' MAD</div></div>'+
       '<button class="cta" onclick="chooseOffer(\''+esc(o.driverId)+'\','+Number(o.price)+')">'+t('choose')+'</button></div>'; }));
   box.innerHTML=html.join('');
 }
@@ -828,7 +856,7 @@ async function chooseOffer(driverId,price){
 }
 async function showChosenDriver(){
   const u=await getUser(myRide.driverId);
-  $('rideCard').innerHTML='<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b><span class="small">'+ICON[u.vehicleType||'car']+' '+esc(u.vehicle||'')+'</span></div><div class="price">'+(myRide.finalPrice||myRide.price)+' MAD</div></div><p class="route">📍 '+esc(myRide.fromLabel)+'<br>🏁 '+esc(myRide.dest)+'</p></div>';
+  $('rideCard').innerHTML='<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b>'+socialHtml(u)+'<span class="small">'+ICON[u.vehicleType||'car']+' '+esc(u.vehicle||'')+'</span></div><div class="price">'+(myRide.finalPrice||myRide.price)+' MAD</div></div><p class="route">📍 '+esc(myRide.fromLabel)+'<br>🏁 '+esc(myRide.dest)+'</p></div>';
   chosenDriverPhone='';
   try{ const c=await db.collection('courses').doc(myRide.id).collection('contacts').doc(myRide.driverId).get(); if(c.exists) chosenDriverPhone=c.data().phone; }catch(e){ console.warn(e); }
   $('waDriver').onclick=()=>{ if(chosenDriverPhone) window.open(waLink(chosenDriverPhone,'Salam, Rakbin : '+myRide.fromLabel+' → '+myRide.dest+' ('+(myRide.finalPrice||myRide.price)+' MAD)'),'_blank'); else toast(t('error')); };
@@ -905,7 +933,7 @@ async function renderRequests(){
   const box=$('requests');
   if(!list.length){ box.innerHTML='<div class="empty"><div class="big">📭</div>'+t('noRequests')+'</div>'; return; }
   const html=await Promise.all(list.map(async r=>{ const u=await getUser(r.passengerId); const off=myOffers[r.id];
-    return '<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||r.passengerName)+'</b><span class="small">'+ICON[r.service]+' · '+ago(r.createdMs)+(myPos?' · '+r.dist.toFixed(1)+' km '+t('away'):'')+'</span></div><div class="price">'+r.price+' MAD</div></div>'+
+    return '<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||r.passengerName)+'</b>'+socialHtml(u)+'<span class="small">'+ICON[r.service]+' · '+ago(r.createdMs)+(myPos?' · '+r.dist.toFixed(1)+' km '+t('away'):'')+'</span></div><div class="price">'+r.price+' MAD</div></div>'+
       '<p class="route">📍 '+esc(r.fromLabel)+'<br>🏁 '+esc(r.dest)+' <span class="small">('+r.km+' km'+(r.service==='inter'?' · '+(r.seats||1)+' '+t('seats')+(r.when?' · '+esc(r.when.replace('T',' ')):''):'')+')</span></p>'+
       (off?'<p class="badge">'+t('offerSent')+' — '+off+' MAD</p>':'')+
       '<div class="btns"><button class="cta" onclick="sendOffer(\''+r.id+'\','+Number(r.price)+')">'+t('accept')+' '+r.price+'</button>'+
@@ -924,7 +952,7 @@ async function sendOffer(rideId,price){
 let pickupMarker=null;
 async function showDriverRide(){
   const r=activeDriverRide; panel('pDriverRide'); const u=await getUser(r.passengerId);
-  $('driverRideCard').innerHTML='<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b><span class="small">'+ICON[r.service]+' '+r.km+' km</span></div><div class="price">'+(r.finalPrice||r.price)+' MAD</div></div><p class="route">📍 '+esc(r.fromLabel)+'<br>🏁 '+esc(r.dest)+'</p></div>';
+  $('driverRideCard').innerHTML='<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b>'+socialHtml(u)+'<span class="small">'+ICON[r.service]+' '+r.km+' km</span></div><div class="price">'+(r.finalPrice||r.price)+' MAD</div></div><p class="route">📍 '+esc(r.fromLabel)+'<br>🏁 '+esc(r.dest)+'</p></div>';
   if(pickupMarker) map.removeLayer(pickupMarker); pickupMarker=L.marker([r.fromLat,r.fromLng],{icon:svgIcon('pickup',30,40,15,39)}).addTo(map);
   let phone=''; try{ const c=await db.collection('courses').doc(r.id).collection('contacts').doc(r.passengerId).get(); if(c.exists) phone=c.data().phone; }catch(e){ console.warn(e); }
   $('waPassenger').onclick=()=>{ if(phone) window.open(waLink(phone,'Salam, Rakbin : '+t('driver')+' '+profile.name+' ('+(profile.vehicle||'')+')'),'_blank'); else toast(t('error')); };
@@ -1026,10 +1054,10 @@ async function searchTrips(){
   const o=originPos();
   const list=(tripsCache||[]).filter(v=>v.whenMs>Date.now()-3600e3 && v.seatsLeft>0 && destPos && km(destPos,{lat:v.destLat,lng:v.destLng})<40 && (!o || km(o,{lat:v.fromLat,lng:v.fromLng})<60))
     .sort((a,b)=>a.whenMs-b.whenMs).slice(0,20);
-  if(!list.length){ box.innerHTML='<p class="hint">'+t('noTrips')+'</p>'; return; }
+  if(!list.length){ box.innerHTML='<div class="empty" style="padding:16px 6px"><p>'+t('noTrips')+'</p><p class="small">'+t('noTrips2')+'</p></div>'; return; }
   const html=await Promise.all(list.map(async v=>{ const u=await getUser(v.driverId); const mine=me&&v.driverId===me.uid;
     let opts=''; for(let i=1;i<=Math.min(v.seatsLeft,6);i++) opts+='<option value="'+i+'">'+i+' 👤</option>';
-    return '<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b><span class="small"><img class="tabimg" src="tile-inter.webp" alt="">'+esc(v.vehicle||'')+'</span></div><div class="price">'+v.pricePerSeat+' MAD<div class="small" style="text-align:end">'+t('perSeat')+'</div></div></div>'+
+    return '<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b>'+socialHtml(u)+'<span class="small"><img class="tabimg" src="tile-inter.webp" alt="">'+esc(v.vehicle||'')+'</span></div><div class="price">'+v.pricePerSeat+' MAD<div class="small" style="text-align:end">'+t('perSeat')+'</div></div></div>'+
       '<p class="route"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><br>📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p>'+
       '<div class="meta"><span>💺 '+v.seatsLeft+' '+t('seatsLeft')+'</span><span>'+v.km+' km</span></div>'+(v.note?'<p class="small">📝 '+esc(v.note)+'</p>':'')+
       (mine?'<span class="badge">'+t('yourTrip')+'</span>':'<div class="btns"><select id="bs_'+v.id+'" style="max-width:110px">'+opts+'</select><button class="cta" style="margin:0" onclick="bookTrip(\''+v.id+'\')">'+t('book')+'</button></div>')+'</div>'; }));
@@ -1063,7 +1091,7 @@ async function loadMyTrips(){
       for(const b of bs.filter(b=>b.status!=='cancelled')){ const u=await getUser(b.passengerId); let act='';
         if(b.status==='pending') act='<button class="cta" style="margin:0;padding:9px 12px;width:auto" onclick="answerBooking(\''+v.id+'\',\''+b.passengerId+'\',\'accepted\','+(b.seats||1)+')">'+t('acceptBk')+'</button><button class="ghost" style="margin:0;padding:9px 12px;width:auto" onclick="answerBooking(\''+v.id+'\',\''+b.passengerId+'\',\'refused\',0)">'+t('refuseBk')+'</button>';
         if(b.status==='accepted'){ const ph=await getContact(v.id,b.passengerId); if(ph) act='<a class="cta wa" style="margin:0;padding:9px 12px;width:auto;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(b.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)))+'">'+t('waDriverShort')+'</a>'; }
-        bh+='<div class="bk"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||b.name)+'</b> · '+(b.seats||1)+' '+t('seatsWord')+'<br>'+stBadge(b.status)+'</div>'+act+'</div>'; }
+        bh+='<div class="bk"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||b.name)+'</b>'+socialHtml(u)+' · '+(b.seats||1)+' '+t('seatsWord')+'<br>'+stBadge(b.status)+'</div>'+act+'</div>'; }
       html+='<div class="card trip"><div class="row"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span>'+stBadge(v.status)+'</div><p class="route">📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p><div class="meta"><span>💺 '+v.seatsLeft+'/'+v.seats+'</span><span>'+v.pricePerSeat+' MAD '+t('perSeat')+'</span></div>'+bh+
         '<button class="ghost" style="color:var(--red)" onclick="cancelTrip(\''+v.id+'\')">'+t('cancelTrip')+'</button></div>';
     }
@@ -1079,7 +1107,7 @@ async function loadMyTrips(){
       const st=v.status==='cancelled'?'cancelled':b.status; const u=await getUser(v.driverId); let act='';
       if(st==='accepted'){ const ph=await getContact(v.id,v.driverId); if(ph) act='<a class="cta wa" style="display:block;text-align:center;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(u.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)+' ('+(b.seats||1)+' '+t('seatsWord')+')'))+'">'+t('waDriver')+'</a>'; }
       if(st==='pending'||st==='accepted') act+='<button class="ghost" onclick="cancelBooking(\''+v.id+'\')">'+t('cancelBk')+'</button>';
-      html+='<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b><span class="small">'+esc(v.vehicle||'')+'</span></div>'+stBadge(st)+'</div><p class="route"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><br>📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p><div class="meta"><span>💺 '+(b.seats||1)+' '+t('seatsWord')+'</span><span>'+(v.pricePerSeat*(b.seats||1))+' MAD</span></div>'+act+'</div>';
+      html+='<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b>'+socialHtml(u)+'<span class="small">'+esc(v.vehicle||'')+'</span></div>'+stBadge(st)+'</div><p class="route"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><br>📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p><div class="meta"><span>💺 '+(b.seats||1)+' '+t('seatsWord')+'</span><span>'+(v.pricePerSeat*(b.seats||1))+' MAD</span></div>'+act+'</div>';
     }
     if(!n) html+='<p class="hint">'+t('noMyBookings')+'</p>';
   }catch(e){ console.warn(e); }
