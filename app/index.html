@@ -305,7 +305,13 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
       <label class="lbl" data-i18n="name">Prénom</label>
       <input id="nameIn" maxlength="40">
       <label class="lbl" data-i18n="phone">Numéro WhatsApp (avec indicatif)</label>
-      <input id="phoneIn" type="tel" placeholder="+212 6 12 34 56 78">
+      <div class="row"><select id="ccIn" style="max-width:150px">
+        <option value="+212">🇲🇦 +212</option><option value="+33">🇫🇷 +33</option><option value="+34">🇪🇸 +34</option><option value="+32">🇧🇪 +32</option>
+        <option value="+39">🇮🇹 +39</option><option value="+49">🇩🇪 +49</option><option value="+31">🇳🇱 +31</option><option value="+44">🇬🇧 +44</option>
+        <option value="+41">🇨🇭 +41</option><option value="+1">🇺🇸🇨🇦 +1</option><option value="+213">🇩🇿 +213</option><option value="+216">🇹🇳 +216</option>
+        <option value="+966">🇸🇦 +966</option><option value="+971">🇦🇪 +971</option><option value="+90">🇹🇷 +90</option></select>
+        <input id="phoneIn" type="tel" inputmode="tel" placeholder="6 12 34 56 78"></div>
+      <p class="small" id="phonePreview"></p>
       <p class="small" data-i18n="phoneHint">Tous les pays acceptés (+212, +33, +34…). Visible seulement après acceptation d'une course.</p>
       <label class="lbl" data-i18n="socialTitle">Vos réseaux (conseillé, pour inspirer confiance)</label>
       <input id="fbIn" maxlength="120" placeholder="Facebook : lien ou nom de profil" style="margin-top:6px">
@@ -575,8 +581,12 @@ document.querySelectorAll('[data-art]').forEach(e=>e.innerHTML=artSvg(e.dataset.
 const svgIcon=(k,w,h,ax,ay)=>L.divIcon({html:MARK[k],className:'',iconSize:[w,h],iconAnchor:[ax,ay]});
 const RATES = {moto:{km:2,min:10}, car:{km:3.5,min:15}, inter:{km:0.5,min:30}};
 const DEFAULT_AV = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23d1d5db'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%239ca3af'/%3E%3Cpath d='M10 60c3-14 13-20 22-20s19 6 22 20z' fill='%239ca3af'/%3E%3C/svg%3E";
-function normPhone(p){ p=String(p||'').replace(/[\s\-().]/g,''); if(p.startsWith('00')) p='+'+p.slice(2);
-  if(/^0[5-7]\d{8}$/.test(p)) p='+212'+p.slice(1); return /^\+\d{8,15}$/.test(p) ? p : null; }
+function normPhone(p,cc){ p=String(p||'').replace(/[\s\-().\/]/g,''); if(p.startsWith('00')) p='+'+p.slice(2);
+  if(!p.startsWith('+')){ p=p.replace(/^0+/,''); p=(cc||'+212')+p; }
+  return /^\+\d{8,15}$/.test(p) ? p : null; }
+const CCS=['+212','+213','+216','+966','+971','+33','+34','+32','+39','+49','+31','+44','+41','+90','+1'];
+function splitPhone(ph){ ph=ph||''; const cc=CCS.filter(c=>ph.startsWith(c)).sort((a,b)=>b.length-a.length)[0]; return cc?{cc,local:ph.slice(cc.length)}:{cc:'+212',local:ph}; }
+function fmtPhone(ph){ const {cc,local}=splitPhone(ph); return cc+' '+local.replace(/^(\d)(\d+)$/,(m,x,y)=>x+' '+y.replace(/(\d{2})(?=\d)/g,'$1 ')); }
 function waLink(phone,msg){ return 'https://wa.me/'+String(phone).replace(/\D/g,'')+'?text='+encodeURIComponent(msg||''); }
 function ago(ms){ const m=Math.max(0,Math.round((Date.now()-ms)/60000)); return m+' '+t('minAgo'); }
 function normSocial(k,v){ v=String(v||'').trim(); if(!v) return '';
@@ -589,6 +599,8 @@ function socialHtml(u){ const so=(u&&u.social)||{}; let h='';
   const pill=(url,bg,txt)=>url&&/^https:\/\//.test(url)?'<a class="soc" style="background:'+bg+'" target="_blank" rel="noopener" href="'+esc(url)+'">'+txt+'</a>':'';
   h=pill(so.fb,'#1877F2','Facebook')+pill(so.tt,'#111','TikTok')+pill(so.ig,'#C13584','Instagram');
   return h?'<span class="socs">'+h+'</span>':''; }
+function updPhonePreview(){ const ph=normPhone($('phoneIn').value,$('ccIn').value); $('phonePreview').textContent=ph?('WhatsApp : '+fmtPhone(ph)+' ✓'):''; }
+setTimeout(()=>{ ['phoneIn','ccIn'].forEach(id=>{ const e=document.getElementById(id); if(e) e.addEventListener(id==='ccIn'?'change':'input',updPhonePreview); }); },0);
 const userCache = {};
 async function getUser(uid){ if(userCache[uid]) return userCache[uid];
   try{ const d=await db.collection('users').doc(uid).get(); userCache[uid]=d.exists?d.data():{name:'?',photo:''}; }catch(e){ userCache[uid]={name:'?',photo:''}; }
@@ -770,7 +782,7 @@ function fillProfile(){
   newSelfie=null; $('selfieIn').value='';
   $('selfiePrev').src=(profile&&profile.photo)||DEFAULT_AV;
   $('nameIn').value=(profile&&profile.name)||((me.displayName||'').split(' ')[0]||'');
-  $('phoneIn').value=myPhone||''; const so=(profile&&profile.social)||{}; $('fbIn').value=so.fb||''; $('ttIn').value=so.tt||''; $('igIn').value=so.ig||'';
+  { const sp=splitPhone(myPhone); $('ccIn').value=sp.cc; $('phoneIn').value=sp.local; updPhonePreview(); } const so=(profile&&profile.social)||{}; $('fbIn').value=so.fb||''; $('ttIn').value=so.tt||''; $('igIn').value=so.ig||'';
   $('isDriverIn').checked=!!(profile&&profile.isDriver); $('vehBox').classList.toggle('hide',!$('isDriverIn').checked);
   $('vehTypeIn').value=(profile&&profile.vehicleType)||'car'; $('vehIn').value=(profile&&profile.vehicle)||''; buildVehPicker('vehPick','vehIn',$('vehTypeIn').value,true);
 }
@@ -783,7 +795,7 @@ function compressSelfie(file){ return new Promise((res,rej)=>{ const img=new Ima
     URL.revokeObjectURL(img.src); res(url); };
   img.onerror=rej; img.src=URL.createObjectURL(file); }); }
 async function saveProfile(){
-  const name=$('nameIn').value.trim(), phone=normPhone($('phoneIn').value), photo=newSelfie||(profile&&profile.photo);
+  const name=$('nameIn').value.trim(), phone=normPhone($('phoneIn').value,$('ccIn').value), photo=newSelfie||(profile&&profile.photo);
   if(!photo) return toast(t('needSelfie')); if(!name) return toast(t('needName')); if(!phone) return toast(t('badPhone'));
   const isDriver=$('isDriverIn').checked;
   if(isDriver && $('vehIn').value.trim().split(' ').length<2) return toast(t('needBrand'));
@@ -868,6 +880,7 @@ async function showChosenDriver(){
   $('rideCard').innerHTML='<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b>'+socialHtml(u)+'<span class="small">'+ICON[u.vehicleType||'car']+' '+esc(u.vehicle||'')+'</span></div><div class="price">'+(myRide.finalPrice||myRide.price)+' MAD</div></div><p class="route">📍 '+esc(myRide.fromLabel)+'<br>🏁 '+esc(myRide.dest)+'</p></div>';
   chosenDriverPhone='';
   try{ const c=await db.collection('courses').doc(myRide.id).collection('contacts').doc(myRide.driverId).get(); if(c.exists) chosenDriverPhone=c.data().phone; }catch(e){ console.warn(e); }
+  $('waDriver').innerHTML=t('waDriver')+(chosenDriverPhone?'<br><small>'+fmtPhone(chosenDriverPhone)+'</small>':'');
   $('waDriver').onclick=()=>{ if(chosenDriverPhone) window.open(waLink(chosenDriverPhone,'Salam, Rakbin : '+myRide.fromLabel+' → '+myRide.dest+' ('+(myRide.finalPrice||myRide.price)+' MAD)'),'_blank'); else toast(t('error')); };
   watchChosenDriver(myRide.driverId);
 }
@@ -964,6 +977,7 @@ async function showDriverRide(){
   $('driverRideCard').innerHTML='<div class="card"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name)+'</b>'+socialHtml(u)+'<span class="small">'+ICON[r.service]+' '+r.km+' km</span></div><div class="price">'+(r.finalPrice||r.price)+' MAD</div></div><p class="route">📍 '+esc(r.fromLabel)+'<br>🏁 '+esc(r.dest)+'</p></div>';
   if(pickupMarker) map.removeLayer(pickupMarker); pickupMarker=L.marker([r.fromLat,r.fromLng],{icon:svgIcon('pickup',30,40,15,39)}).addTo(map);
   let phone=''; try{ const c=await db.collection('courses').doc(r.id).collection('contacts').doc(r.passengerId).get(); if(c.exists) phone=c.data().phone; }catch(e){ console.warn(e); }
+  $('waPassenger').innerHTML=t('waPassenger')+(phone?'<br><small>'+fmtPhone(phone)+'</small>':'');
   $('waPassenger').onclick=()=>{ if(phone) window.open(waLink(phone,'Salam, Rakbin : '+t('driver')+' '+profile.name+' ('+(profile.vehicle||'')+')'),'_blank'); else toast(t('error')); };
   $('navBtn').onclick=()=>window.open('https://www.google.com/maps/dir/?api=1&destination='+r.fromLat+','+r.fromLng,'_blank');
 }
@@ -1100,7 +1114,7 @@ async function loadMyTrips(){
       let bh='';
       for(const b of bs.filter(b=>b.status!=='cancelled')){ const u=await getUser(b.passengerId); let act='';
         if(b.status==='pending') act='<button class="cta" style="margin:0;padding:9px 12px;width:auto" onclick="answerBooking(\''+v.id+'\',\''+b.passengerId+'\',\'accepted\','+(b.seats||1)+')">'+t('acceptBk')+'</button><button class="ghost" style="margin:0;padding:9px 12px;width:auto" onclick="answerBooking(\''+v.id+'\',\''+b.passengerId+'\',\'refused\',0)">'+t('refuseBk')+'</button>';
-        if(b.status==='accepted'){ const ph=await getContact(v.id,b.passengerId); if(ph) act='<a class="cta wa" style="margin:0;padding:9px 12px;width:auto;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(b.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)))+'">'+t('waDriverShort')+'</a>'; }
+        if(b.status==='accepted'){ const ph=await getContact(v.id,b.passengerId); if(ph) act='<a class="cta wa" style="margin:0;padding:9px 12px;width:auto;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(b.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)))+'">'+t('waDriverShort')+'<br><small>'+fmtPhone(ph)+'</small></a>'; }
         bh+='<div class="bk"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||b.name)+'</b>'+socialHtml(u)+' · '+(b.seats||1)+' '+t('seatsWord')+'<br>'+stBadge(b.status)+'</div>'+act+'</div>'; }
       html+='<div class="card trip" id="tc_'+v.id+'"><div class="row"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><span style="flex:0;display:flex;gap:6px;align-items:center">'+stBadge(v.status)+'<button class="pen" title="'+t('edit')+'" onclick="editTrip(\''+v.id+'\')">'+PEN+'</button></span></div><div id="ed_'+v.id+'"></div><p class="route">📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p><div class="meta"><span>💺 '+v.seatsLeft+'/'+v.seats+'</span><span>'+v.pricePerSeat+' MAD '+t('perSeat')+'</span></div>'+bh+
         '<button class="ghost" style="color:var(--red)" onclick="cancelTrip(\''+v.id+'\')">'+t('cancelTrip')+'</button></div>';
@@ -1115,7 +1129,7 @@ async function loadMyTrips(){
         const bd=await db.collection('voyages').doc(k.vid).collection('bookings').doc(me.uid).get(); if(!bd.exists) continue; b=bd.data(); }catch(e){ continue; }
       if(v.whenMs<Date.now()-2*24*3600e3) continue; n++;
       const st=v.status==='cancelled'?'cancelled':b.status; const u=await getUser(v.driverId); let act='';
-      if(st==='accepted'){ const ph=await getContact(v.id,v.driverId); if(ph) act='<a class="cta wa" style="display:block;text-align:center;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(u.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)+' ('+(b.seats||1)+' '+t('seatsWord')+')'))+'">'+t('waDriver')+'</a>'; }
+      if(st==='accepted'){ const ph=await getContact(v.id,v.driverId); if(ph) act='<a class="cta wa" style="display:block;text-align:center;text-decoration:none" target="_blank" href="'+esc(waLink(ph,'Salam '+(u.name||'')+', Rakbin : '+v.fromLabel+' → '+v.dest+' — '+fmtWhen(v.whenMs)+' ('+(b.seats||1)+' '+t('seatsWord')+')'))+'">'+t('waDriver')+'<br><small>'+fmtPhone(ph)+'</small></a>'; }
       if(st==='pending'||st==='accepted') act+='<button class="ghost" onclick="cancelBooking(\''+v.id+'\')">'+t('cancelBk')+'</button>';
       html+='<div class="card trip"><div class="person"><img class="av" src="'+esc(u.photo||DEFAULT_AV)+'"><div class="info"><b>'+esc(u.name||v.driverName)+'</b>'+socialHtml(u)+'<span class="small">'+esc(v.vehicle||'')+'</span></div>'+stBadge(st)+'</div><p class="route"><span class="when">🗓️ '+fmtWhen(v.whenMs)+'</span><br>📍 '+esc(v.fromLabel)+'<br>🏁 '+esc(v.dest)+'</p><div class="meta"><span>💺 '+(b.seats||1)+' '+t('seatsWord')+'</span><span>'+(v.pricePerSeat*(b.seats||1))+' MAD</span></div>'+act+'</div>';
     }
