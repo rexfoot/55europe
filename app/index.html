@@ -696,6 +696,7 @@ function niceLabel(x){
   const sub=rest.length?rest.join(', '):(region&&region!==main?region:'');
   return {main, sub, full:[main,...rest].join(', ')};
 }
+function cleanLbl(l){ return String(l||'').split(',').map(x=>x.trim()).filter(x=>x && !ADMIN.test(x)).slice(0,3).join(', '); }
 function pickDest(lat,lng,label){
   destPos={lat,lng}; destLabel=label.split(',').filter(v=>!ADMIN.test(v)).slice(0,3).join(',').trim();
   $('dest').value=destLabel; $('sugg').innerHTML=''; $('dest').blur();
@@ -1222,7 +1223,7 @@ async function loadHistory(){
 function renderHistory(){
   const l=histAll.filter(r=>!hiddenIds.has('c_'+r.id) && (histFilter==='all'||r.service===histFilter)); histShown=l;
   if(!l.length){ $('histList').innerHTML='<div class="empty"><img src="tile-car.webp" alt="" style="width:120px;border-radius:12px"><p>'+t('noHistory')+'</p><button class="cta" onclick="closeScreens()">'+t('start')+'</button></div>'; return; }
-  $('histList').innerHTML=l.map(r=>'<div class="card"><div class="row"><b>'+ICON[r.service]+' '+(r.role==='d'?t('asDriver'):t('asPassenger'))+'</b><span style="flex:0;display:flex;gap:8px;align-items:center"><span class="price" style="font-size:16px">'+(r.finalPrice||r.price)+' MAD</span><button class="trash" onclick="hideItem(\'c_'+r.id+'\')">'+TRASH+'</button></span></div><p class="route">📍 '+esc(r.fromLabel)+'<br>🏁 '+esc(r.dest)+'</p><span class="small">'+new Date(r.createdMs||0).toLocaleString(lang==='ar'?'ar-MA':'fr-FR')+' · '+t(r.status)+'</span></div>').join('');
+  $('histList').innerHTML=l.map(r=>'<div class="card"><div class="row"><b>'+ICON[r.service]+' '+(r.role==='d'?t('asDriver'):t('asPassenger'))+'</b><span style="flex:0;display:flex;gap:8px;align-items:center"><span class="price" style="font-size:16px">'+(r.finalPrice||r.price)+' MAD</span><button class="trash" onclick="hideItem(\'c_'+r.id+'\')">'+TRASH+'</button></span></div><p class="route">📍 '+esc(cleanLbl(r.fromLabel))+'<br>🏁 '+esc(cleanLbl(r.dest))+'</p><span class="small">'+new Date(r.createdMs||0).toLocaleString(lang==='ar'?'ar-MA':'fr-FR')+' · '+t(r.status)+'</span></div>').join('');
 }
 function renderNotifs(){
   $('notifList').innerHTML=notifs.length?notifs.map(n=>'<div class="card">'+esc(n.txt)+'<br><span class="small">'+ago(n.ms)+'</span></div>').join('')
