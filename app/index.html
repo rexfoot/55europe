@@ -22,8 +22,13 @@ button{font:inherit;cursor:pointer}
 .from small{display:block;color:#6b7280;font-size:11px}
 .from b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #locBtn{position:fixed;right:12px;z-index:10;bottom:calc(var(--sheetH,300px) + 12px)}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bg);border-radius:22px 22px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.22);padding:6px 16px calc(16px + env(safe-area-inset-bottom));max-height:70vh;overflow:auto;max-width:640px;margin:0 auto}
-.grip{width:44px;height:5px;border-radius:99px;background:#d1d5db;margin:4px auto 8px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bg);border-radius:22px 22px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.22);padding:6px 16px calc(16px + env(safe-area-inset-bottom));max-height:62vh;overflow:auto;max-width:640px;margin:0 auto;transition:transform .25s ease}
+.sheet.mini{transform:translateY(calc(100% - 92px));overflow:hidden}
+.gripzone{padding:6px 0 10px;margin:-6px -16px 0;cursor:pointer;touch-action:none}
+.grip{width:52px;height:6px;border-radius:99px;background:#c4c8cf;margin:2px auto 0}
+.status{font-size:13px;margin:4px 2px 0;color:var(--muted)}
+.status.ok{color:var(--green);font-weight:600}
+.status.warn{color:var(--red);font-weight:600}
 .logo{font-weight:800;font-size:20px;letter-spacing:.2px}.logo .r{color:var(--red)}.logo .a{color:var(--green)}
 .services{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none}
 .svc{min-width:92px;border:2px solid transparent;border-radius:14px;padding:8px 6px;text-align:center;font-size:12.5px;background:var(--card);color:var(--fg);flex-shrink:0;font-weight:600}
@@ -112,7 +117,7 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
 
 <!-- ===== Panneau du bas ===== -->
 <div class="sheet" id="sheet">
-  <div class="grip"></div>
+  <div class="gripzone" id="gripzone"><div class="grip"></div></div>
 
   <!-- Accueil passager -->
   <div id="pHome">
@@ -122,10 +127,12 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
       <button class="svc active" data-s="moto" onclick="pickService('moto')"><div class="i">🏍️</div><span data-i18n="svcMoto">Moto</span></button>
       <button class="svc" data-s="inter" onclick="pickService('inter')"><div class="i">🛣️</div><span data-i18n="svcInter">Ville à Ville</span></button>
     </div>
+    <p class="status" id="nearCount"></p>
     <div class="field">
       <input id="dest" autocomplete="off" data-i18n-ph="destPh" placeholder="🔍 Où allez-vous ?">
       <div class="sugg" id="sugg"></div>
     </div>
+    <div id="orderBox" class="hide">
     <div id="interFields" class="row hide" style="margin-top:8px">
       <input id="when" type="datetime-local">
       <select id="seats" style="max-width:120px">
@@ -137,6 +144,7 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
     </div>
     <p class="hint" id="suggest"></p>
     <button class="cta" onclick="requestRide()" data-i18n="order">Trouver un conducteur</button>
+    </div>
   </div>
 
   <!-- Attente des offres -->
@@ -167,6 +175,7 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
       <button class="ghost" style="margin:0" onclick="setDriverMode(false)" data-i18n="exitDriver">Quitter</button>
     </div>
     <div class="online" data-i18n="online">🟢 En ligne — les passagers vous voient</div>
+    <p class="status" id="gpsStatus"></p>
     <div id="requests"></div>
   </div>
 
@@ -343,7 +352,7 @@ const T = {
   minAgo:"min",away:"de vous",seats:"place(s)",noHistory:"Vos courses apparaîtront ici",start:"Commencer",upToDate:"Vous êtes à jour",upToDate2:"Aucune nouvelle notification",
   newOffer:"Nouvelle offre",accepted:"Course acceptée",cancelled:"Course annulée",done:"Terminée",pending:"En attente",confirmDel:"Supprimer définitivement votre compte ?",
   cancelledMsg:"La course a été annulée",offerFrom:"propose",yourPrice:"Prix du passager",asDriver:"Conducteur",asPassenger:"Passager",shareTxt:"Je suis en course Rakbin",
-  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre"},
+  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur"},
  ar:{from:"من أين",svcCar:"سيارة",svcMoto:"دراجة نارية",svcInter:"بين المدن",destPh:"🔍 إلى أين؟",pricePh:"ثمنك (درهم)",order:"ابحث عن سائق",
   waiting:"جاري البحث عن سائقين قريبين…",cancel:"إلغاء الطلب",confirmed:"تم تأكيد الرحلة",waDriver:"💬 واتساب السائق",share:"📤 شارك رحلتي",
   finish:"✅ وصلت",cancelShort:"إلغاء",driverTitle:"سائق",exitDriver:"خروج",online:"🟢 متصل — الركاب يرونك",chosen:"اختارك الراكب!",
@@ -369,7 +378,7 @@ const T = {
   minAgo:"د",away:"منك",seats:"مقعد",noHistory:"ستظهر رحلاتك هنا",start:"ابدأ",upToDate:"لا جديد",upToDate2:"لا توجد إشعارات جديدة",
   newOffer:"عرض جديد",accepted:"تم قبول الرحلة",cancelled:"ملغاة",done:"منتهية",pending:"في الانتظار",confirmDel:"حذف حسابك نهائياً؟",
   cancelledMsg:"تم إلغاء الرحلة",offerFrom:"يقترح",yourPrice:"ثمن الراكب",asDriver:"سائق",asPassenger:"راكب",shareTxt:"أنا في رحلة مع راكبين",
-  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك"}
+  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح"}
 };
 let lang = 'fr';
 try { lang = localStorage.getItem('rk_lang') || ((navigator.language||'').startsWith('ar') ? 'ar' : 'fr'); } catch(e){}
@@ -413,8 +422,11 @@ let geoAsked=false;
 function locate(center){
   if(!navigator.geolocation){ $('fromLabel').textContent=t('geoOff'); return; }
   $('fromLabel').textContent=t('locating');
-  navigator.geolocation.getCurrentPosition(p=>setMyPos(p.coords.latitude,p.coords.longitude,center!==false),
-    ()=>{ $('fromLabel').textContent=t('geoOff'); }, {enableHighAccuracy:true, timeout:12000, maximumAge:30000});
+  const ok=p=>setMyPos(p.coords.latitude,p.coords.longitude,center!==false);
+  navigator.geolocation.getCurrentPosition(ok, e=>{
+    if(e && e.code===1){ $('fromLabel').textContent=t('geoOff'); toast(t('geoDenied')); return; }
+    navigator.geolocation.getCurrentPosition(ok,()=>{ $('fromLabel').textContent=t('geoOff'); },{enableHighAccuracy:false,timeout:15000,maximumAge:300000});
+  }, {enableHighAccuracy:true, timeout:10000, maximumAge:30000});
 }
 function setMyPos(lat,lng,center){
   myPos={lat,lng};
@@ -439,7 +451,18 @@ function drawRoute(){
 function fitRoute(){ if(myPos&&destPos) map.fitBounds([[myPos.lat,myPos.lng],[destPos.lat,destPos.lng]],{padding:[60,60],paddingBottomRight:[0,$('sheet').offsetHeight]}); else if(destPos) map.setView([destPos.lat,destPos.lng],13); }
 
 /* Hauteur du panneau → position du bouton ◎ */
-new ResizeObserver(()=>document.documentElement.style.setProperty('--sheetH',$('sheet').offsetHeight+'px')).observe($('sheet'));
+function sheetH(){ document.documentElement.style.setProperty('--sheetH',($('sheet').classList.contains('mini')?92:$('sheet').offsetHeight)+'px'); }
+new ResizeObserver(sheetH).observe($('sheet'));
+function setMini(on){ $('sheet').classList.toggle('mini',on); if(on){ $('sugg').innerHTML=''; document.activeElement&&document.activeElement.blur&&document.activeElement.blur(); } $('sheet').scrollTop=0; sheetH(); }
+$('gripzone').addEventListener('click',()=>setMini(!$('sheet').classList.contains('mini')));
+let tY=null;
+$('gripzone').addEventListener('touchstart',e=>{ tY=e.touches[0].clientY; },{passive:true});
+$('gripzone').addEventListener('touchend',e=>{ if(tY==null) return; const dy=e.changedTouches[0].clientY-tY; tY=null;
+  if(dy>30){ setMini(true); e.preventDefault(); } else if(dy<-30){ setMini(false); e.preventDefault(); } });
+map.on('dragstart',()=>setMini(true));
+map.on('click',()=>{ if(!$('sheet').classList.contains('mini')) setMini(true); });
+$('sheet').addEventListener('click',e=>{ if($('sheet').classList.contains('mini') && !e.target.closest('#gripzone')) setMini(false); });
+$('dest').addEventListener('focus',()=>setMini(false));
 
 /* ================= Destination (Nominatim gratuit) ================= */
 let sTimer;
@@ -461,6 +484,7 @@ function pickDest(lat,lng,label){
   destPos={lat,lng}; destLabel=label.split(',').slice(0,3).join(',').trim();
   $('dest').value=destLabel; $('sugg').innerHTML=''; $('dest').blur();
   if(destMarker) destMarker.setLatLng([lat,lng]); else destMarker=L.marker([lat,lng],{icon:pinIcon('🏁')}).addTo(map);
+  $('orderBox').classList.remove('hide');
   drawRoute(); fitRoute(); $('price').value=''; updatePrice(true);
 }
 
@@ -640,6 +664,8 @@ function watchDrivers(){
       if(!driverMarkers[d.id]) driverMarkers[d.id]=L.marker([p.lat,p.lng],{icon:pinIcon(ICON[p.vehicleType]||'🚗')}).addTo(map);
       else driverMarkers[d.id].setLatLng([p.lat,p.lng]); });
     Object.keys(driverMarkers).forEach(id=>{ if(!keep[id]){ map.removeLayer(driverMarkers[id]); delete driverMarkers[id]; } });
+    const n=Object.keys(keep).length; const nc=$('nearCount');
+    nc.textContent = n ? '🟢 '+n+' '+t('driversOnline') : t('noDriversOnline'); nc.className='status'+(n?' ok':'');
   }, e=>console.warn(e));
 }
 function watchChosenDriver(id){ chosenDriverId=id; if(me) watchDrivers(); }
@@ -654,8 +680,10 @@ async function setDriverMode(on){
     if(!profile.isDriver){ toast(t('needDriver')); return openScreen('sProfile'); }
     if(myRideId){ toast(t('cancel')); return; }
     driverMode=true; panel('pDriver'); closeScreens();
-    if(navigator.geolocation) watchId=navigator.geolocation.watchPosition(p=>{ setMyPos(p.coords.latitude,p.coords.longitude,!lastPush); pushPos(); },
-      ()=>toast(t('needGeo')),{enableHighAccuracy:true, maximumAge:10000});
+    $('gpsStatus').textContent='⏳ GPS…'; $('gpsStatus').className='status';
+    if(navigator.geolocation) watchId=navigator.geolocation.watchPosition(p=>{ setMyPos(p.coords.latitude,p.coords.longitude,!lastPush); pushPos();
+        $('gpsStatus').textContent='📍 '+t('gpsOk'); $('gpsStatus').className='status ok'; },
+      e=>{ $('gpsStatus').textContent='⚠️ '+t('gpsOff'); $('gpsStatus').className='status warn'; toast(t('needGeo')); },{enableHighAccuracy:true, maximumAge:10000, timeout:20000});
     reqUnsub=db.collection('courses').where('status','==','pending').limit(100).onSnapshot(s=>{ pendingRides=s.docs.map(d=>({id:d.id,...d.data()})); renderRequests(); }, e=>console.warn(e));
     myDrRideUnsub=db.collection('courses').where('driverId','==',me.uid).where('status','==','accepted').limit(3).onSnapshot(s=>{
       const r=s.docs.map(d=>({id:d.id,...d.data()}))[0];
