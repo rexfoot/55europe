@@ -4,9 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#C1272D">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rakbin">
+<meta name="application-name" content="Rakbin">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Rakbin · راكبين — Covoiturage et moto au Maroc</title>
 <meta name="description" content="Rakbin · راكبين : voiture, moto et covoiturage ville à ville au Maroc. Vous proposez votre prix, les conducteurs répondent.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23C1272D'/><text x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'>R</text></svg>">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="alternate icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23C1272D'/><text x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'>R</text></svg>">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{--red:#C1272D;--green:#006233;--green2:#e7f3ec;--bg:#fff;--fg:#111827;--muted:#6b7280;--card:#f4f5f7;--line:#e5e7eb;--shadow:0 2px 10px rgba(0,0,0,.18)}
@@ -100,6 +108,12 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
 .selfie{width:110px;height:110px;border-radius:50%;object-fit:cover;background:var(--card);display:block;margin:10px auto;border:3px solid var(--green)}
 .empty{text-align:center;padding:40px 10px;color:var(--muted)}
 .empty .big{font-size:56px}
+.install{position:fixed;left:12px;right:12px;top:calc(68px + env(safe-area-inset-top));z-index:60;background:var(--bg);color:var(--fg);border-radius:16px;box-shadow:var(--shadow);padding:12px;display:flex;gap:12px;align-items:center;max-width:520px;margin:0 auto}
+.install img{width:46px;height:46px;border-radius:11px}
+.install .tx{flex:1;font-size:14px;line-height:1.3}
+.install .tx b{font-size:15px}
+.install .go{background:var(--green);color:#fff;border:0;border-radius:12px;padding:10px 14px;font-weight:700}
+.install .x{background:none;border:0;color:var(--muted);font-size:20px;padding:4px}
 .toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);background:#111827;color:#fff;padding:11px 16px;border-radius:12px;z-index:100;font-size:14px;max-width:90vw;box-shadow:var(--shadow);display:none}
 .badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:99px;padding:2px 8px;font-size:12px;font-weight:700}
 .online{background:var(--green);color:#fff;border-radius:12px;padding:10px 12px;text-align:center;font-weight:700;margin-top:6px}
@@ -215,6 +229,7 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
   <a href="#" onclick="openScreen('sSecu');return false">🛡️ <span data-i18n="safety">Sécurité</span></a>
   <a href="#" onclick="openScreen('sParam');return false">⚙️ <span data-i18n="settings">Paramètres</span></a>
   <a href="#" onclick="openScreen('sAide');return false">❓ <span data-i18n="help">Aide</span></a>
+  <a href="#" id="installLink" class="hide" onclick="openDrawer(false);showInstall(true);return false">📲 <span data-i18n="installApp">Installer l'application</span></a>
   <div class="grow"></div>
   <button class="cta" id="driverBtn" onclick="setDriverMode(!driverMode)" style="background:#b8f000;color:#111" data-i18n="driverMode">Mode conducteur</button>
   <p class="small" style="text-align:center;margin-top:12px">Contact : footrexofficial@gmail.com</p>
@@ -310,6 +325,12 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
   </div>
 </section>
 
+<div class="install hide" id="installBar">
+  <img src="icon-192.png" alt="Rakbin">
+  <div class="tx"><b>Rakbin · راكبين</b><br><span id="installTxt" data-i18n="installTxt">Installez l'application sur votre téléphone</span></div>
+  <button class="go" id="installGo" data-i18n="install">Installer</button>
+  <button class="x" onclick="closeInstall()" aria-label="Fermer">✕</button>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -356,7 +377,7 @@ const T = {
   minAgo:"min",away:"de vous",seats:"place(s)",noHistory:"Vos courses apparaîtront ici",start:"Commencer",upToDate:"Vous êtes à jour",upToDate2:"Aucune nouvelle notification",
   newOffer:"Nouvelle offre",accepted:"Course acceptée",cancelled:"Course annulée",done:"Terminée",pending:"En attente",confirmDel:"Supprimer définitivement votre compte ?",
   cancelledMsg:"La course a été annulée",offerFrom:"propose",yourPrice:"Prix du passager",asDriver:"Conducteur",asPassenger:"Passager",shareTxt:"Je suis en course Rakbin",
-  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur"},
+  driver:"Conducteur",passenger:"Passager",loginErr:"Connexion impossible, réessayez",error:"Erreur, réessayez",yourOffer:"Votre offre",driversOnline:"conducteur(s) en ligne près de vous",noDriversOnline:"Aucun conducteur en ligne pour le moment",gpsOk:"Votre position est envoyée aux passagers",gpsOff:"GPS désactivé : activez la localisation, sinon les passagers ne vous voient pas",geoDenied:"Localisation refusée : autorisez-la dans les réglages du navigateur",installTxt:"Installez l'application sur votre téléphone",install:"Installer",installApp:"Installer l'application",iosTxt:"Touchez ⬆️ Partager puis « Sur l'écran d'accueil »",ok:"OK"},
  ar:{from:"من أين",svcCar:"سيارة",svcMoto:"دراجة نارية",svcInter:"بين المدن",destPh:"🔍 إلى أين؟",pricePh:"ثمنك (درهم)",order:"ابحث عن سائق",
   waiting:"جاري البحث عن سائقين قريبين…",cancel:"إلغاء الطلب",confirmed:"تم تأكيد الرحلة",waDriver:"💬 واتساب السائق",share:"📤 شارك رحلتي",
   finish:"✅ وصلت",cancelShort:"إلغاء",driverTitle:"سائق",exitDriver:"خروج",online:"🟢 متصل — الركاب يرونك",chosen:"اختارك الراكب!",
@@ -382,7 +403,7 @@ const T = {
   minAgo:"د",away:"منك",seats:"مقعد",noHistory:"ستظهر رحلاتك هنا",start:"ابدأ",upToDate:"لا جديد",upToDate2:"لا توجد إشعارات جديدة",
   newOffer:"عرض جديد",accepted:"تم قبول الرحلة",cancelled:"ملغاة",done:"منتهية",pending:"في الانتظار",confirmDel:"حذف حسابك نهائياً؟",
   cancelledMsg:"تم إلغاء الرحلة",offerFrom:"يقترح",yourPrice:"ثمن الراكب",asDriver:"سائق",asPassenger:"راكب",shareTxt:"أنا في رحلة مع راكبين",
-  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح"}
+  driver:"السائق",passenger:"الراكب",loginErr:"تعذر تسجيل الدخول، حاول مجدداً",error:"خطأ، حاول مجدداً",yourOffer:"عرضك",driversOnline:"سائق(ين) متصل قريب منك",noDriversOnline:"لا يوجد سائق متصل حالياً",gpsOk:"موقعك يُرسل للركاب",gpsOff:"GPS معطل: فعّل تحديد الموقع وإلا لن يراك الركاب",geoDenied:"تم رفض تحديد الموقع: اسمح به في إعدادات المتصفح",installTxt:"ثبّت التطبيق على هاتفك",install:"تثبيت",installApp:"تثبيت التطبيق",iosTxt:"اضغط ⬆️ مشاركة ثم «إضافة إلى الشاشة الرئيسية»",ok:"حسناً"}
 };
 let lang = 'fr';
 try { lang = localStorage.getItem('rk_lang') || ((navigator.language||'').startsWith('ar') ? 'ar' : 'fr'); } catch(e){}
@@ -853,6 +874,26 @@ function renderNotifs(){
   $('notifList').innerHTML=notifs.length?notifs.map(n=>'<div class="card">'+esc(n.txt)+'<br><span class="small">'+ago(n.ms)+'</span></div>').join('')
     :'<div class="empty"><div class="big">🛸</div><h3>'+t('upToDate')+'</h3><p>'+t('upToDate2')+'</p></div>';
 }
+
+/* ================= Installation (Android + iPhone) ================= */
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+let deferredPrompt=null;
+const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+function closeInstall(){ $('installBar').classList.add('hide'); try{localStorage.setItem('rk_inst_closed',Date.now())}catch(e){} }
+function showInstall(force){
+  if(isStandalone()) return;
+  let closed=0; try{closed=+localStorage.getItem('rk_inst_closed')||0}catch(e){}
+  if(!force && Date.now()-closed<3*24*3600e3) return;
+  if(isIOS){ $('installTxt').textContent=t('iosTxt'); $('installGo').textContent=t('ok'); $('installGo').onclick=closeInstall; }
+  else if(deferredPrompt){ $('installTxt').textContent=t('installTxt'); $('installGo').textContent=t('install');
+    $('installGo').onclick=async()=>{ deferredPrompt.prompt(); try{ await deferredPrompt.userChoice; }catch(e){} deferredPrompt=null; $('installBar').classList.add('hide'); }; }
+  else return;
+  $('installBar').classList.remove('hide');
+}
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; $('installLink').classList.remove('hide'); setTimeout(()=>showInstall(false),2500); });
+window.addEventListener('appinstalled',()=>{ $('installBar').classList.add('hide'); $('installLink').classList.add('hide'); toast('✓ Rakbin'); });
+if(isIOS && !isStandalone()){ $('installLink').classList.remove('hide'); setTimeout(()=>showInstall(false),2500); }
 
 /* ================= Démarrage ================= */
 try{ setTheme(localStorage.getItem('rk_theme')||'light'); $('themeSel').value=localStorage.getItem('rk_theme')||'light'; }catch(e){}
