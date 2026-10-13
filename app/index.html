@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#C1272D">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Rakbin · راكبين">
+<meta property="og:title" content="Rakbin · راكبين — Covoiturage et moto au Maroc">
+<meta property="og:description" content="Voiture, moto et covoiturage ville à ville. Vous proposez votre prix, contact direct sur WhatsApp.">
+<meta property="og:url" content="https://55europe.com/">
+<meta property="og:image" content="https://55europe.com/app/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -765,7 +773,7 @@ function openScreen(id){ openDrawer(false);
 function closeScreens(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show')); }
 function goHome(s){ openDrawer(false); closeScreens(); if(driverMode) setDriverMode(false); pickService(s); openFull(); }
 function openFull(){ $('sheet').classList.remove('mini'); $('sheet').classList.add('full'); $('sheet').scrollTop=0; sheetH(); }
-function shareApp(){ const url='https://55europe.com/app/'; const txt=t('shareAppTxt')+' '+url;
+function shareApp(){ const url='https://55europe.com'; const txt=t('shareAppTxt')+' '+url;
   window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank'); }
 function panel(id){ ['pHome','pWait','pRide','pDriver','pDriverRide'].forEach(p=>$(p).classList.toggle('hide',p!==id)); }
 
