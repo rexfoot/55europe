@@ -145,6 +145,15 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
 .soc{color:#fff!important;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;text-decoration:none}
 .pen{border:0;background:var(--green2);color:var(--green);width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .editbox{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
+.logorow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-items:center;justify-items:center;margin:2px 0 0}
+.logorow img{max-width:100%;height:auto;display:block}
+.logorow .lt{height:30px;width:auto}
+.logorow .ls{height:46px;width:auto}
+.logorow .la{height:38px;width:auto}
+.services{display:grid!important;grid-template-columns:repeat(3,1fr);overflow:visible!important}
+.services .svc{min-width:0!important;width:100%}
+.services .svc .i{height:60px}
+.services .svc .i img{width:100%;height:60px;border-radius:10px}
 .logoimg{height:52px;width:auto;display:block;margin:0 0 2px}
 .chip{display:inline-flex;align-items:center;gap:6px}
 .chip img{width:30px;height:20px;object-fit:cover;border-radius:5px}
@@ -173,7 +182,7 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
 
   <!-- Accueil passager -->
   <div id="pHome">
-    <img class="logoimg" src="logo-rakbin.webp" alt="Rakbin · راكبين">
+    <div class="logorow" aria-label="Rakbin · راكبين"><img src="logo-txt.webp" alt="Rakbin" class="lt"><img src="logo-star.webp" alt="" class="ls"><img src="logo-ar.webp" alt="راكبين" class="la"></div>
     <div class="services">
       <button class="svc" data-s="car" onclick="pickService('car');openFull()"><div class="i"><img src="tile-car.webp" alt=""></div><span data-i18n="svcCar">Voiture</span></button>
       <button class="svc active" data-s="moto" onclick="pickService('moto');openFull()"><div class="i"><img src="tile-moto.webp" alt=""></div><span data-i18n="svcMoto">Moto</span></button>
