@@ -12,6 +12,7 @@
 <meta property="og:image" content="https://55europe.com/app/og.jpg">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://55europe.com/app/">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -317,7 +318,7 @@ label.lbl{display:block;margin-top:12px;font-weight:600;font-size:14px}
   <a href="#" onclick="openDrawer(false);shareApp();return false"><img class="mi" src="ic-whatsapp.webp" alt=""> <span data-i18n="shareWa">Partager avec WhatsApp</span></a>
   <div class="grow"></div>
   <div class="modeseg">
-    <button id="paxBtn" class="active" onclick="if(driverMode) setDriverMode(false); else openDrawer(false)"><img src="ic-backpack.webp" alt=""><span data-i18n="passengerMode">Mode passager</span></button>
+    <button id="paxBtn" class="active" onclick="if(!me){ toast(t('needLogin')); openScreen('sProfile'); } else if(driverMode) setDriverMode(false); else openDrawer(false)"><img src="ic-backpack.webp" alt=""><span data-i18n="passengerMode">Mode passager</span></button>
     <button id="driverBtn" onclick="if(!driverMode) setDriverMode(true); else openDrawer(false)"><img src="tile-car.webp" alt=""><span data-i18n="driverMode">Mode conducteur</span></button>
   </div>
   <p class="small" style="text-align:center;margin-top:12px">Contact : rakbin55@gmail.com</p>
