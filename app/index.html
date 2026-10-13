@@ -503,7 +503,7 @@ auth.onAuthStateChanged(async u=>{
 });
 function refreshDrawer(){
   $('dAv').src=(profile&&profile.photo)||DEFAULT_AV;
-  $('dName').textContent=profile?profile.name:(me?(me.displayName||t('guest')):t('guest'));
+  $('dName').textContent=(profile&&profile.name)||(me?((me.displayName||'').split(' ')[0]||t('guest')):t('guest'));
   $('dRating').textContent=me?((profile&&profile.rating)||5).toFixed(2):t('tapLogin');
   $('driverBtn').textContent=driverMode?t('passengerMode'):t('driverMode');
 }
@@ -520,7 +520,7 @@ function fillProfile(){
   if(!me) return;
   newSelfie=null; $('selfieIn').value='';
   $('selfiePrev').src=(profile&&profile.photo)||DEFAULT_AV;
-  $('nameIn').value=profile?profile.name:((me.displayName||'').split(' ')[0]||'');
+  $('nameIn').value=(profile&&profile.name)||((me.displayName||'').split(' ')[0]||'');
   $('phoneIn').value=myPhone||'';
   $('isDriverIn').checked=!!(profile&&profile.isDriver); $('vehBox').classList.toggle('hide',!$('isDriverIn').checked);
   $('vehTypeIn').value=(profile&&profile.vehicleType)||'car'; $('vehIn').value=(profile&&profile.vehicle)||'';
